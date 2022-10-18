@@ -1,0 +1,1676 @@
+package sdk
+
+import (
+	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+	curve "github.com/zecrey-labs/zecrey-crypto/ecc/ztwistededwards/tebn254"
+	"sort"
+
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"math/big"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
+)
+
+type client struct {
+	zkbasURL   string
+	keyManager KeyManager
+}
+
+func (c *client) SetKeyManager(keyManager KeyManager) {
+	c.keyManager = keyManager
+}
+
+/*=========================== account =======================*/
+
+func (c *client) CreateAccount(accountPk string, offset, limit uint32) (total uint32, txs []*Tx, err error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/tx/getTxsByPubKey?account_pk=%s&offset=%d&limit=%d",
+			accountPk, offset, limit))
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetTxsByPubKey{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, nil, err
+	}
+	return result.Total, result.Txs, nil
+}
+func (c *client) CreateAccountWithPrivatekey(accountPk string, offset, limit uint32) (total uint32, txs []*Tx, err error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/tx/getTxsByPubKey?account_pk=%s&offset=%d&limit=%d",
+			accountPk, offset, limit))
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetTxsByPubKey{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, nil, err
+	}
+	return result.Total, result.Txs, nil
+}
+func (c *client) GetAccountByAccountName(accountPk string, offset, limit uint32) (total uint32, txs []*Tx, err error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/tx/getTxsByPubKey?account_pk=%s&offset=%d&limit=%d",
+			accountPk, offset, limit))
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetTxsByPubKey{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, nil, err
+	}
+	return result.Total, result.Txs, nil
+}
+
+/*=========================== collection =======================*/
+
+func (c *client) CreateCollection(
+	accountName string,
+	ShortName string,
+	CategoryId string,
+	CollectionUrl string,
+	ExternalLink string,
+	TwitterLink string,
+	InstagramLink string,
+	TelegramLink string,
+	DiscordLink string,
+	LogoImage string,
+	FeaturedImage string,
+	BannerImage string,
+	CreatorEarningRate string,
+	PaymentAssetIds string,
+	Transaction string,
+	AccountIndex int64,
+	accountSeed string) (*RespCreateCollection, error) {
+	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
+	if err != nil {
+		return nil, err
+	}
+	nonce, err := c.GetNextNonce(int64(accountInfo.Index))
+	if err != nil {
+		return nil, err
+	}
+	tx := PrepareCreateCollectionTxInfo(accountSeed, AccountIndex, nonce)
+
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/collection/createCollection",
+		url.Values{"short_name": {ShortName},
+			"category_id":          {CategoryId},
+			"collection_url":       {CollectionUrl},
+			"external_link":        {ExternalLink},
+			"twitter_link":         {TwitterLink},
+			"instagram_link":       {InstagramLink},
+			"telegram_link":        {TelegramLink},
+			"discord_link":         {DiscordLink},
+			"logo_image":           {LogoImage},
+			"featured_image":       {FeaturedImage},
+			"banner_image":         {BannerImage},
+			"creator_earning_rate": {CreatorEarningRate},
+			"payment_asset_ids":    {PaymentAssetIds},
+			"transaction":          {tx}})
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespCreateCollection{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// api/v1/action/actionGetCollectionById
+
+func (c *client) GetCollectionById(collectionId int64) (*RespGetCollectionByCollectionId, error) {
+	Input := InputCollectionByIdActionBody{CollectionId: collectionId}
+	params := &ReqGetCollectionById{
+		Input: Input,
+	}
+	request_query := ""
+	data, err := json.Marshal(params)
+	fmt.Println("data:", string(data))
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/action/actionGetCollectionById",
+		url.Values{"input": {fmt.Sprintf("%d", collectionId)},
+			"request_query": {request_query}},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetCollectionByCollectionId{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+func (c *client) UpdateCollection(
+	Id string,
+	AccountName string,
+	Name string,
+	CollectionUrl string,
+	Description string,
+	CategoryId string,
+	ExternalLink string,
+	TwitterLink string,
+	InstagramLink string,
+	TelegramLink string,
+	DiscordLink string,
+	LogoImage string,
+	FeaturedImage string,
+	BannerImage string,
+	Timestamp string,
+	Signature string) (total uint32, txs []*Tx, err error) {
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/collection/updateCollection",
+		url.Values{
+			"id":             {Id},
+			"account_name":   {AccountName},
+			"name":           {Name},
+			"collection_url": {CollectionUrl},
+			"description":    {Description},
+			"category_id":    {CategoryId},
+			"external_link":  {ExternalLink},
+			"twitter_link":   {TwitterLink},
+			"instagram_link": {InstagramLink},
+			"telegram_link":  {TelegramLink},
+			"discord_link":   {DiscordLink},
+			"logo_image":     {LogoImage},
+			"featured_image": {FeaturedImage},
+			"banner_image":   {BannerImage},
+			"timestamp":      {Timestamp},
+			"signature":      {Signature}},
+	)
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetTxsByPubKey{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, nil, err
+	}
+	return result.Total, result.Txs, nil
+}
+func (c *client) GetCollectionsByAccountIndex(AccountIndex int64) (total uint32, txs []*Tx, err error) {
+	Input := InputCollectionByIdActionBody{CollectionId: AccountIndex}
+	params := &ReqGetCollectionById{
+		Input: Input,
+	}
+	data, err := json.Marshal(params)
+	fmt.Println("data:", string(data))
+	request_query := ""
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/action/actionGetAccountCollections",
+		url.Values{"input": {fmt.Sprintf("%d", AccountIndex)},
+			"request_query": {request_query}},
+	)
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetTxsByPubKey{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, nil, err
+	}
+	return result.Total, result.Txs, nil
+}
+
+/*=========================== nft =======================*/
+
+func (c *client) MintNft(CollectionId int64,
+	NftUrl string,
+	Name string,
+	Description string,
+	Media string,
+	Properties string,
+	Levels string,
+	Stats string,
+	accountSeed string,
+	accountIndex int64,
+	accountName string,
+	l2NftCollectionId int64) (*RespCreateAsset, error) {
+	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
+	if err != nil {
+		return nil, err
+	}
+	nonce, err := c.GetNextNonce(int64(accountInfo.Index))
+	if err != nil {
+		return nil, err
+	}
+	ContentHash, err := calculateContentHash(accountName, CollectionId, Name, Properties, Levels, Stats)
+	tx := PrepareMintNftTxInfo(accountSeed, accountName, accountIndex, nonce, l2NftCollectionId, ContentHash)
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/asset/createAsset",
+		url.Values{
+			"collection_id": {fmt.Sprintf("%d", CollectionId)},
+			"nft_url":       {NftUrl},
+			"name":          {Name},
+			"description":   {Description},
+			"media":         {Media},
+			"properties":    {Properties},
+			"levels":        {Levels},
+			"stats":         {Stats},
+			"transaction":   {tx},
+		},
+	)
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespCreateAsset{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+func (c *client) GetNftByNftId(AssetId int64) (*RespetAssetByAssetId, error) {
+	Input := InputGetAssetByIdActionBody{AssetId: AssetId}
+	params := &ReqGetAssetById{
+		Input: Input,
+	}
+	data, err := json.Marshal(params)
+	fmt.Println("data:", string(data))
+	request_query := ""
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/action/actionGetAssetByAssetId",
+		url.Values{"input": {fmt.Sprintf("%d", AssetId)},
+			"request_query": {request_query}},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespetAssetByAssetId{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+
+}
+
+func (c *client) TransferNft(
+	AssetId int64,
+	accountSeed string,
+	accountName string,
+	toAccountName string) (*ResqSendTransferNft, error) {
+	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
+	if err != nil {
+		return nil, err
+	}
+	toAccountInfo, err := c.GetAccountInfoByAccountName(accountName)
+	if err != nil {
+		return nil, err
+	}
+	nonce, err := c.GetNextNonce(int64(accountInfo.Index))
+	if err != nil {
+		return nil, err
+	}
+	nftInfo, err := c.GetNftByNftId(AssetId)
+	txInfo := PrepareTransferNftTxInfo(accountSeed, int64(accountInfo.Index), nonce, int64(nftInfo.Asset.NftIndex), toAccountName, int64(toAccountInfo.Index))
+
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/asset/sendTransferNft",
+		url.Values{
+			"asset_id":    {fmt.Sprintf("%d", AssetId)},
+			"transaction": {txInfo},
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &ResqSendTransferNft{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+func (c *client) WithdrawNft(accountSeed string, accountName string, AssetId int64) (*ResqSendWithdrawNft, error) {
+	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
+	if err != nil {
+		return nil, err
+	}
+
+	nonce, err := c.GetNextNonce(int64(accountInfo.Index))
+	if err != nil {
+		return nil, err
+	}
+	nftInfo, err := c.GetNftByNftId(AssetId)
+	toAddress := "0x0000000000000000000000000000000000001000"
+	nftcontentHash := ""
+
+	txInfo := PrepareWithdrawNftTxInfo(accountSeed, accountName, int64(accountInfo.Index), nonce, nftInfo.Asset.NftIndex, toAddress, nftcontentHash)
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/asset/sendWithdrawNft",
+		url.Values{
+			"asset_id":    {fmt.Sprintf("%d", AssetId)},
+			"transaction": {txInfo},
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &ResqSendWithdrawNft{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+func (c *client) SellNft(accountSeed string, accountName string, AssetId int64) (*RespListOffer, error) {
+	nftInfo, err := c.GetNftByNftId(AssetId)
+	l2OfferId, err := c.GetNextOfferId(accountName)
+	if err != nil {
+		return nil, err
+	}
+	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
+	if err != nil {
+		return nil, err
+	}
+
+	tx := PrepareOfferTxInfo(accountSeed, int64(accountInfo.Index), nftInfo.Asset.NftIndex, l2OfferId.Id, true)
+	return c.Offer(accountName, tx)
+}
+func (c *client) BuyNft(accountSeed string, accountName string, AssetId int64) (*RespListOffer, error) {
+	nftInfo, err := c.GetNftByNftId(AssetId)
+	l2OfferId, err := c.GetNextOfferId(accountName)
+	if err != nil {
+		return nil, err
+	}
+	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
+	if err != nil {
+		return nil, err
+	}
+
+	tx := PrepareOfferTxInfo(accountSeed, int64(accountInfo.Index), nftInfo.Asset.NftIndex, l2OfferId.Id, true)
+	return c.Offer(accountName, tx)
+}
+func (c *client) Offer(accountName string, tx string) (*RespListOffer, error) {
+
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/offer/listOffer",
+		url.Values{
+			"accountName": {accountName},
+			"transaction": {tx},
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespListOffer{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *client) GetNextOfferId(AccountName string) (*RespGetNextOfferId, error) {
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/offer/listOffer",
+		url.Values{
+			"account_name": {AccountName},
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetNextOfferId{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// ================ nft tool ===
+func PrepareCreateCollectionTxInfo(seed string, accountIndex, accountNonce int64) string {
+	key, err := curve.GenerateEddsaPrivateKey(seed)
+	if err != nil {
+		panic(err)
+	}
+	publicKey := hex.EncodeToString(key.PublicKey.Bytes())
+	fmt.Println("=== PrepareCreateCollectionTxInfo ===  Pubkey: ", publicKey)
+	expiredAt := time.Now().Add(time.Hour * 24 * 2).UnixMilli()
+	txInfo := &CreateCollectionTxInfo{
+		AccountIndex:      accountIndex,
+		Name:              fmt.Sprintf("Nft Collection - %d", accountNonce),
+		Introduction:      "Great Nft!",
+		GasAccountIndex:   1,
+		GasFeeAssetId:     0,
+		GasFeeAssetAmount: big.NewInt(5000),
+		ExpiredAt:         expiredAt,
+		Nonce:             accountNonce,
+		Sig:               nil,
+	}
+	tx, err := ConstructCreateCollectionTx(key, txInfo) //sign tx message
+	if err != nil {
+		panic(err)
+	}
+	//fmt.Println("=== pk ===", hex.EncodeToString(pk.Bytes()))
+	//fmt.Println("=== AccountName ===", accountInfoMap[txInfo.AccountIndex].AccountName)
+	parsed, err := ParseCreateCollectionTxInfo(tx)
+	if err != nil {
+		panic(err)
+	}
+	err = VerifyCreateCollectionTxSig(publicKey, parsed)
+	if err != nil {
+		panic(err)
+	}
+	return tx
+}
+func PrepareMintNftTxInfo(seed string, accountName string, accountIndex, accountNonce, nftCollectionId int64, contentHash string) string {
+	key, err := curve.GenerateEddsaPrivateKey(seed)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("pubkey ", hex.EncodeToString(key.PublicKey.Bytes()))
+
+	nameHash, err := accountNameHash(accountName)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("nameHash ", nameHash)
+
+	expiredAt := time.Now().Add(time.Hour * 24 * 2).UnixMilli()
+	txInfo := &MintNftTxInfo{
+		CreatorAccountIndex: accountIndex,
+		ToAccountIndex:      accountIndex,
+		ToAccountNameHash:   nameHash,
+		NftContentHash:      contentHash,
+		NftCollectionId:     nftCollectionId,
+		CreatorTreasuryRate: 0,
+		GasAccountIndex:     1,
+		GasFeeAssetId:       0,
+		GasFeeAssetAmount:   big.NewInt(100000000),
+		ExpiredAt:           expiredAt,
+		Nonce:               accountNonce,
+		Sig:                 nil,
+	}
+
+	tx, err := ConstructMintNftTx(key, txInfo)
+	if err != nil {
+		panic(err)
+	}
+	return tx
+}
+func accountNameHash(accountName string) (res string, err error) {
+	// TODO Keccak256
+	words := strings.Split(accountName, ".")
+	if len(words) != 2 {
+		return "", errors.New("[AccountNameHash] invalid account name")
+	}
+	rootNode := make([]byte, 32)
+	hashOfBaseNode := keccakHash(append(rootNode, keccakHash([]byte(words[1]))...))
+
+	baseNode := big.NewInt(0).Mod(big.NewInt(0).SetBytes(hashOfBaseNode), curve.Modulus)
+	baseNodeBytes := make([]byte, 32)
+	baseNode.FillBytes(baseNodeBytes)
+
+	nameHash := keccakHash([]byte(words[0]))
+	subNameHash := keccakHash(append(baseNodeBytes, nameHash...))
+
+	subNode := big.NewInt(0).Mod(big.NewInt(0).SetBytes(subNameHash), curve.Modulus)
+	subNodeBytes := make([]byte, 32)
+	subNode.FillBytes(subNodeBytes)
+
+	res = common.Bytes2Hex(subNodeBytes)
+	return res, nil
+}
+func keccakHash(value []byte) []byte {
+	hashVal := crypto.Keccak256Hash(value)
+	return hashVal[:]
+}
+func calculateContentHash(accountName string, collectionId int64, name string, _properties string, _levels string, _stats string) (string, error) {
+
+	var (
+		properties []Propertie
+		levels     []Level
+		stats      []Stat
+	)
+	err := json.Unmarshal([]byte(_properties), &properties)
+	if err != nil {
+		return "", fmt.Errorf("json Unmarshal err properties%s", _properties)
+	}
+	err = json.Unmarshal([]byte(_levels), &levels)
+	if err != nil {
+		return "", fmt.Errorf("json Unmarshal err levels%s", _levels)
+	}
+	err = json.Unmarshal([]byte(_stats), &stats)
+	if err != nil {
+		return "", fmt.Errorf("json Unmarshal err stats%s", _stats)
+	}
+
+	content := fmt.Sprintf("ACC:%s CID:%d NFT:%s", accountName, collectionId, name)
+
+	if len(properties) == 0 {
+		content = content + " PROPERTIES: empty"
+	} else {
+		content = content + " PROPERTIES: "
+		m := make(map[string]string, 0)
+		keys := make([]string, 0)
+		for _, k := range properties {
+			m[k.Name] = k.Value
+			keys = append(keys, k.Name)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			content = content + fmt.Sprintf("k:%s v:%s", k, m[k])
+		}
+	}
+
+	if len(levels) == 0 {
+		content = content + " LEVELS: empty"
+	} else {
+		content = content + " LEVELS: "
+		m := make(map[string]int64, 0)
+		keys := make([]string, 0)
+		for _, k := range levels {
+			m[k.Name] = k.Value
+			keys = append(keys, k.Name)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			content = content + fmt.Sprintf("k:%s v:%d", k, m[k])
+		}
+	}
+
+	if len(stats) == 0 {
+		content = content + " STATS: empty"
+	} else {
+		content = content + " STATS: "
+		m := make(map[string]int64, 0)
+		keys := make([]string, 0)
+		for _, k := range stats {
+			m[k.Name] = k.Value
+			keys = append(keys, k.Name)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			content = content + fmt.Sprintf("k:%s v:%d", k, m[k])
+		}
+	}
+
+	hFunc := mimc.NewMiMC()
+	hFunc.Write([]byte(content))
+	bytes := crypto.Keccak256Hash([]byte(content))
+	fmt.Println("==nft content ==", content)
+	return common.Bytes2Hex(bytes[:]), nil
+}
+func PrepareTransferNftTxInfo(seed string, accountIndex, accountNonce, nftIndex int64, toAccountName string, toAccountIndex int64) string {
+	key, err := curve.GenerateEddsaPrivateKey(seed)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("pubkey ", hex.EncodeToString(key.PublicKey.Bytes()))
+
+	nameHash, err := accountNameHash(toAccountName)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("nameHash ", nameHash)
+
+	expiredAt := time.Now().Add(time.Hour * 24 * 2).UnixMilli()
+	txInfo := &TransferNftTxInfo{
+		FromAccountIndex:  accountIndex,
+		ToAccountIndex:    toAccountIndex,
+		ToAccountNameHash: nameHash,
+		NftIndex:          nftIndex,
+		GasAccountIndex:   1,
+		GasFeeAssetId:     0,
+		GasFeeAssetAmount: big.NewInt(1000),
+		ExpiredAt:         expiredAt,
+		Nonce:             accountNonce,
+		CallData:          "",
+		CallDataHash:      nil,
+		Sig:               nil,
+	}
+	// compute hash
+	hFunc := mimc.NewMiMC()
+	hFunc.Write([]byte(txInfo.CallData))
+	callDataHash := hFunc.Sum(nil)
+	txInfo.CallDataHash = callDataHash
+
+	tx, err := ConstructTransferNftTx(key, txInfo)
+	if err != nil {
+		panic(err)
+	}
+	return tx
+}
+func PrepareWithdrawNftTxInfo(seed string, accountName string, accountIndex, accountNonce, nftIndex int64, toAddress string, nftContentHash string) string {
+	key, err := curve.GenerateEddsaPrivateKey(seed)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("pubkey ", hex.EncodeToString(key.PublicKey.Bytes()))
+
+	nameHash, err := accountNameHash(accountName)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("nameHash ", nameHash)
+
+	expiredAt := time.Now().Add(time.Hour * 24 * 2).UnixMilli()
+	txInfo := &WithdrawNftTxInfo{
+		AccountIndex:           accountIndex,
+		CreatorAccountIndex:    accountIndex,
+		CreatorAccountNameHash: common.Hex2Bytes(nameHash),
+		CreatorTreasuryRate:    0,
+		NftContentHash:         nil,
+		NftL1Address:           "",
+		NftL1TokenId:           nil,
+		CollectionId:           0,
+		ToAddress:              toAddress,
+		NftIndex:               nftIndex,
+		GasAccountIndex:        1,
+		GasFeeAssetId:          0,
+		GasFeeAssetAmount:      big.NewInt(5000),
+		ExpiredAt:              expiredAt,
+		Nonce:                  accountNonce,
+		Sig:                    nil,
+	}
+	hFunc := mimc.NewMiMC()
+	hFunc.Write([]byte(nftContentHash))
+	NftContentHash := hFunc.Sum(nil)
+	txInfo.NftContentHash = NftContentHash
+	fmt.Println("===txInfo===", common.Bytes2Hex(txInfo.NftContentHash))
+
+	tx, err := ConstructWithdrawNftTx(key, txInfo)
+	if err != nil {
+		panic(err)
+	}
+	return tx
+}
+func PrepareOfferTxInfo(seed string, accountIndex, nftIndex, offerId int64, sell bool) string {
+	key, err := curve.GenerateEddsaPrivateKey(seed)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("pubkey ", hex.EncodeToString(key.PublicKey.Bytes()))
+
+	listedAt := time.Now().UnixMilli()
+	expiredAt := time.Now().Add(time.Hour * 24 * 2).UnixMilli()
+	offerType := 0 // buy
+	if sell {
+		offerType = 1 // sell
+	}
+	txInfo := &OfferTxInfo{
+		Type:         int64(offerType),
+		OfferId:      offerId,
+		AccountIndex: accountIndex,
+		NftIndex:     nftIndex,
+		AssetId:      0, //payment asset id-> The reserved field information is useless
+		AssetAmount:  big.NewInt(1000000000000),
+		ListedAt:     listedAt,
+		ExpiredAt:    expiredAt,
+		TreasuryRate: 200,
+		Sig:          nil,
+	}
+
+	tx, err := ConstructOfferTx(key, txInfo)
+	if err != nil {
+		panic(err)
+	}
+	return tx
+}
+
+/* ================ legend ========================= */
+
+func (c *client) GetTxsByPubKey(accountPk string, offset, limit uint32) (total uint32, txs []*Tx, err error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/tx/getTxsByPubKey?account_pk=%s&offset=%d&limit=%d",
+			accountPk, offset, limit))
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetTxsByPubKey{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, nil, err
+	}
+	return result.Total, result.Txs, nil
+}
+
+func (c *client) GetTxsByAccountName(accountName string, offset, limit uint32) (total uint32, txs []*Tx, err error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/tx/getTxsByAccountName?account_name=%s&offset=%d&limit=%d",
+			accountName, offset, limit))
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetTxsByAccountName{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, nil, err
+	}
+	return result.Total, result.Txs, nil
+}
+
+func (c *client) GetTxsByAccountIndexAndTxType(accountIndex int64, txType, offset, limit uint32) (total uint32, txs []*Tx, err error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/tx/getTxsByAccountIndexAndTxType?account_index=%d&tx_type=%d&offset=%d&limit=%d",
+			accountIndex, txType, offset, limit))
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetTxsByAccountIndexAndTxType{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, nil, err
+	}
+	return result.Total, result.Txs, nil
+}
+
+func (c *client) GetTxsListByAccountIndex(accountIndex int64, offset, limit uint32) (total uint32, txs []*Tx, err error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/tx/getTxsListByAccountIndex?account_index=%d&offset=%d&limit=%d", accountIndex, offset, limit))
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetTxsListByAccountIndex{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, nil, err
+	}
+	return result.Total, result.Txs, nil
+}
+
+func (c *client) Search(info string) (*RespSearch, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/info/search?info=%s", info))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespSearch{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *client) GetAccounts(offset, limit uint32) (*RespGetAccounts, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/info/getAccounts?offset=%d&limit=%d", offset, limit))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetAccounts{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *client) GetGasFeeAssetList() (*RespGetGasFeeAssetList, error) {
+	resp, err := http.Get(c.zkbasURL + "/api/v1/info/getGasFeeAssetList")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetGasFeeAssetList{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *client) GetWithdrawGasFee(assetId, withdrawAssetId uint32, withdrawAmount uint64) (int64, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/info/getWithdrawGasFee?asset_id=%d&withdraw_asset_id=%d&withdraw_amount=%d",
+			assetId, withdrawAssetId, withdrawAmount))
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf(string(body))
+	}
+	result := &RespGetGasFee{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, err
+	}
+	return result.GasFee, nil
+}
+
+func (c *client) GetGasFee(assetId uint32) (int64, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/info/getGasFee?asset_id=%d", assetId))
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf(string(body))
+	}
+	result := &RespGetGasFee{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, err
+	}
+	return result.GasFee, nil
+}
+
+func (c *client) GetCurrencyPrices(symbol string) (*RespGetCurrencyPrices, error) {
+	resp, err := http.Get(c.zkbasURL + "/api/v1/info/getCurrencyPrices")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetCurrencyPrices{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *client) GetCurrencyPriceBySymbol(symbol string) (*RespGetCurrencyPriceBySymbol, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/info/getCurrencyPriceBySymbol?symbol=%s", symbol))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetCurrencyPriceBySymbol{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *client) GetAssetsList() (*RespGetAssetsList, error) {
+	resp, err := http.Get(c.zkbasURL + "/api/v1/info/getAssetsList")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetAssetsList{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *client) GetLayer2BasicInfo() (*RespGetLayer2BasicInfo, error) {
+	resp, err := http.Get(c.zkbasURL + "/api/v1/info/getLayer2BasicInfo")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetLayer2BasicInfo{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *client) GetBlockByCommitment(blockCommitment string) (*Block, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/block/getBlockByCommitment?block_commitment=%s", blockCommitment))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetBlockByCommitment{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return &result.Block, nil
+}
+
+func (c *client) GetBalanceByAssetIdAndAccountName(assetId uint32, accountName string) (string, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/account/getBalanceByAssetIdAndAccountName?asset_id=%d&account_name=%s", assetId, accountName))
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf(string(body))
+	}
+	result := &RespGetBalanceInfoByAssetIdAndAccountName{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return "", err
+	}
+	return result.Balance, nil
+}
+
+func (c *client) GetAccountStatusByAccountName(accountName string) (*RespGetAccountStatusByAccountName, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/account/getAccountStatusByAccountName?account_name=%s", accountName))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetAccountStatusByAccountName{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *client) GetAccountInfoByAccountIndex(accountIndex int64) (*RespGetAccountInfoByAccountIndex, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/account/getAccountInfoByAccountIndex?account_index=%d", accountIndex))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetAccountInfoByAccountIndex{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *client) GetAccountInfoByPubKey(accountPk string) (*RespGetAccountInfoByPubKey, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/account/getAccountInfoByPubKey?account_pk=%s", accountPk))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetAccountInfoByPubKey{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *client) GetAccountStatusByAccountPk(accountPk string) (*RespGetAccountStatusByAccountPk, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/account/getAccountStatusByAccountPk?account_pk=%s", accountPk))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetAccountStatusByAccountPk{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *client) GetTxByHash(txHash string) (*RespGetTxByHash, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/tx/getTxByHash?tx_hash=%s", txHash))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	txResp := &RespGetTxByHash{}
+	if err := json.Unmarshal(body, &txResp); err != nil {
+		return nil, err
+	}
+	return txResp, nil
+}
+
+func (c *client) GetMempoolTxs(offset, limit uint32) (total uint32, txs []*Tx, err error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/tx/getMempoolTxs?offset=%d&limit=%d", offset, limit))
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, nil, fmt.Errorf(string(body))
+	}
+	txsResp := &RespGetMempoolTxs{}
+	if err := json.Unmarshal(body, &txsResp); err != nil {
+		return 0, nil, err
+	}
+	return txsResp.Total, txsResp.MempoolTxs, nil
+}
+func (c *client) GetMempoolStatusTxsPending() (total uint32, txs []*Tx, err error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/tx/getMempoolTxsPending?offset=%d&limit=%d", 0, 0))
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, nil, fmt.Errorf(string(body))
+	}
+	txsResp := &RespGetMempoolTxs{}
+	if err := json.Unmarshal(body, &txsResp); err != nil {
+		return 0, nil, err
+	}
+	return txsResp.Total, txsResp.MempoolTxs, nil
+}
+func (c *client) GetmempoolTxsByAccountName(accountName string) (total uint32, txs []*Tx, err error) {
+	resp, err := http.Get(c.zkbasURL + "/api/v1/tx/getmempoolTxsByAccountName?account_name=" + accountName)
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, nil, fmt.Errorf(string(body))
+	}
+	txsResp := &RespGetmempoolTxsByAccountName{}
+	if err := json.Unmarshal(body, &txsResp); err != nil {
+		return 0, nil, err
+	}
+	return txsResp.Total, txsResp.Txs, nil
+}
+
+func (c *client) GetAccountInfoByAccountName(accountName string) (*AccountInfo, error) {
+	resp, err := http.Get(c.zkbasURL + "/api/v1/account/getAccountInfoByAccountName?account_name=" + accountName)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	account := &AccountInfo{}
+	if err := json.Unmarshal(body, &account); err != nil {
+		return nil, err
+	}
+	return account, nil
+}
+
+func (c *client) GetNextNonce(accountIdx int64) (int64, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/tx/getNextNonce?account_index=%d", accountIdx))
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf(string(body))
+	}
+	result := &RespGetNextNonce{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, err
+	}
+	return result.Nonce, nil
+}
+
+func (c *client) GetTxsListByBlockHeight(blockHeight uint32) ([]*Tx, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/tx/getTxsListByBlockHeight?block_height=%d&limit=%d&offset=%d", blockHeight, 0, 0))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetTxsListByBlockHeight{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result.Txs, nil
+}
+
+func (c *client) GetMaxOfferId(accountIndex uint32) (uint64, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/nft/getMaxOfferId?account_index=%d", accountIndex))
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf(string(body))
+	}
+	result := &RespGetMaxOfferId{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, err
+	}
+	return result.OfferId, nil
+}
+
+func (c *client) GetBlockByBlockHeight(blockHeight int64) (*Block, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/block/getBlockByBlockHeight?block_height=%d", blockHeight))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	res := &RespGetBlockByBlockHeight{}
+	if err := json.Unmarshal(body, &res); err != nil {
+		return nil, err
+	}
+	return res.Block, nil
+}
+
+func (c *client) GetBlocks(offset, limit int64) (uint32, []*Block, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/block/getBlocks?limit=%d&offset=%d", offset, limit))
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, nil, fmt.Errorf(string(body))
+	}
+	res := &RespGetBlocks{}
+	if err := json.Unmarshal(body, &res); err != nil {
+		return 0, nil, err
+	}
+	return res.Total, res.Blocks, nil
+}
+
+func (c *client) GetCurrentBlockHeight() (int64, error) {
+	resp, err := http.Get(c.zkbasURL +
+		fmt.Sprintf("/api/v1/block/getCurrentBlockHeight"))
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf(string(body))
+	}
+	result := &RespCurrentBlockHeight{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, err
+	}
+	return result.Height, nil
+}
+
+func (c *client) SendCreateCollectionTx(txInfo string) (int64, error) {
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/tx/sendCreateCollectionTx",
+		url.Values{"tx_info": {txInfo}})
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf(string(body))
+	}
+	res := &RespSendCreateCollectionTx{}
+	if err := json.Unmarshal(body, &res); err != nil {
+		return 0, err
+	}
+	return res.CollectionId, nil
+}
+
+func (c *client) SendMintNftTx(txInfo string) (string, error) {
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/tx/sendMintNftTx",
+		url.Values{"tx_info": {txInfo}})
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf(string(body))
+	}
+	res := &RespSendMintNftTx{}
+	if err := json.Unmarshal(body, &res); err != nil {
+		return "", err
+	}
+	return res.TxId, nil
+}
+
+func (c *client) SignAndSendMintNftTx(tx *MintNftTxInfo) (string, error) {
+	if c.keyManager == nil {
+		return "", fmt.Errorf("key manager is nil")
+	}
+
+	txInfo, err := ConstructMintNftTx(c.keyManager, tx)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/tx/sendMintNftTx",
+		url.Values{"tx_info": {txInfo}})
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf(string(body))
+	}
+	res := &RespSendMintNftTx{}
+	if err := json.Unmarshal(body, &res); err != nil {
+		return "", err
+	}
+	return res.TxId, nil
+}
+
+func (c *client) SignAndSendCreateCollectionTx(tx *CreateCollectionTxInfo) (int64, error) {
+	if c.keyManager == nil {
+		return 0, fmt.Errorf("key manager is nil")
+	}
+
+	txInfo, err := ConstructCreateCollectionTx(c.keyManager, tx)
+	if err != nil {
+		return 0, err
+	}
+
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/tx/sendCreateCollectionTx",
+		url.Values{"tx_info": {txInfo}})
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf(string(body))
+	}
+	res := &RespSendCreateCollectionTx{}
+	if err := json.Unmarshal(body, &res); err != nil {
+		return 0, err
+	}
+	return res.CollectionId, nil
+}
+
+func (c *client) SendCancelOfferTx(txInfo string) (string, error) {
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/tx/sendCancelOfferTx",
+		url.Values{"tx_info": {txInfo}})
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf(string(body))
+	}
+	res := &RespSendCancelOfferTx{}
+	if err := json.Unmarshal(body, &res); err != nil {
+		return "", err
+	}
+	return res.TxId, nil
+}
+
+func (c *client) SignAndSendCancelOfferTx(tx *CancelOfferTxInfo) (string, error) {
+	if c.keyManager == nil {
+		return "", fmt.Errorf("key manager is nil")
+	}
+
+	txInfo, err := ConstructCancelOfferTx(c.keyManager, tx)
+	if err != nil {
+		return "", err
+	}
+
+	return c.SendCancelOfferTx(txInfo)
+}
+
+func (c *client) SendAtomicMatchTx(txInfo string) (string, error) {
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/tx/sendAtomicMatchTx",
+		url.Values{"tx_info": {txInfo}})
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf(string(body))
+	}
+	res := &RespSendAtomicMatchTx{}
+	if err := json.Unmarshal(body, &res); err != nil {
+		return "", err
+	}
+	return res.TxId, nil
+}
+
+func (c *client) SignAndSendAtomicMatchTx(tx *AtomicMatchTxInfo) (string, error) {
+	if c.keyManager == nil {
+		return "", fmt.Errorf("key manager is nil")
+	}
+
+	txInfo, err := ConstructAtomicMatchTx(c.keyManager, tx)
+	if err != nil {
+		return "", err
+	}
+
+	return c.SendAtomicMatchTx(txInfo)
+}
+
+func (c *client) SendTransferNftTx(txInfo string) (string, error) {
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/tx/sendTransferNftTx",
+		url.Values{"tx_info": {txInfo}})
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf(string(body))
+	}
+	res := &RespSendTransferNftTx{}
+	if err := json.Unmarshal(body, &res); err != nil {
+		return "", err
+	}
+	return res.TxId, nil
+}
+
+func (c *client) SignAndSendTransferNftTx(tx *TransferNftTxInfo) (string, error) {
+	if c.keyManager == nil {
+		return "", fmt.Errorf("key manager is nil")
+	}
+
+	txInfo, err := ConstructTransferNftTx(c.keyManager, tx)
+	if err != nil {
+		return "", err
+	}
+
+	return c.SendTransferNftTx(txInfo)
+}
+
+func (c *client) SendWithdrawNftTx(txInfo string) (string, error) {
+	resp, err := http.PostForm(c.zkbasURL+"/api/v1/tx/sendWithdrawNftTx",
+		url.Values{"tx_info": {txInfo}})
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf(string(body))
+	}
+	res := &RespSendWithdrawNftTx{}
+	if err := json.Unmarshal(body, &res); err != nil {
+		return "", err
+	}
+	return res.TxId, nil
+}
+
+func (c *client) SignAndSendWithdrawNftTx(tx *WithdrawNftTxInfo) (string, error) {
+	if c.keyManager == nil {
+		return "", fmt.Errorf("key manager is nil")
+	}
+
+	txInfo, err := ConstructWithdrawNftTx(c.keyManager, tx)
+	if err != nil {
+		return "", err
+	}
+
+	return c.SendWithdrawNftTx(txInfo)
+}
