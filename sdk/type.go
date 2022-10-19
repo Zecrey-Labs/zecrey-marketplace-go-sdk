@@ -507,7 +507,7 @@ type ReqCreateAsset struct {
 }
 
 type RespCreateAsset struct {
-	Asset Asset `json:"asset"`
+	Asset NftInfo `json:"asset"`
 }
 
 type ReqSearchAsset struct {
