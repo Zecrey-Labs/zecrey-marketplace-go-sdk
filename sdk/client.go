@@ -53,26 +53,26 @@ func (c *client) CreateAccount(accountPk string, offset, limit uint32) (total ui
 	}
 	return result.Total, result.Txs, nil
 }
-func (c *client) CreateAccountWithPrivatekey(accountPk string, offset, limit uint32) (total uint32, txs []*Tx, err error) {
+func (c *client) CreateAccountWithPrivatekey(accountPk string, offset, limit uint32) (*AccountInfo, error) {
 	resp, err := http.Get(c.legendURL +
 		fmt.Sprintf("/api/v1/tx/getTxsByPubKey?account_pk=%s&offset=%d&limit=%d",
 			accountPk, offset, limit))
 	if err != nil {
-		return 0, nil, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return 0, nil, err
+		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return 0, nil, fmt.Errorf(string(body))
+		return nil, fmt.Errorf(string(body))
 	}
-	result := &RespGetTxsByPubKey{}
+	result := &AccountInfo{}
 	if err := json.Unmarshal(body, &result); err != nil {
-		return 0, nil, err
+		return nil, err
 	}
-	return result.Total, result.Txs, nil
+	return result, nil
 }
 func (c *client) GetAccountByAccountName(accountPk string, offset, limit uint32) (total uint32, txs []*Tx, err error) {
 	resp, err := http.Get(c.legendURL +
