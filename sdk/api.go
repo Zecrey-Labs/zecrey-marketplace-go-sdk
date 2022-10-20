@@ -23,7 +23,7 @@ type ZecreyLegendSDK interface {
 
 	MintNft(
 		accountName string,
-		CollectionId int64, l2NftCollectionId int64,
+		CollectionId int64,
 		NftUrl string, Name string,
 		Description string, Media string,
 		Properties string, Levels string, Stats string,
@@ -37,7 +37,7 @@ type ZecreyLegendSDK interface {
 
 	SellNft(accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error)
 	BuyNft(accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error)
-	AcceptOffer(accountName string, offerId int64, isSell bool, assetId int64, AssetAmount *big.Int) (*RespAcceptOffer, error)
+	AcceptOffer(accountName string, offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error)
 }
 
 func NewZecreyNftMarketSDK(legendUrl, nftmarketUrl string, keyManager KeyManager) ZecreyLegendSDK {

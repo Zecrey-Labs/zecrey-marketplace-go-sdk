@@ -810,3 +810,45 @@ type ReqGetOfferById struct {
 type RespGetOfferById struct {
 	OfferId Offer `json:"offer"`
 }
+type ReqGetPrepareCreateCollectionTxInfo struct {
+	AccountName string `form:"account_name"`
+}
+
+type ReqGetPrepareMintNftTxInfo struct {
+	AccountName  string `form:"account_name"`
+	CollectionId int64  `form:"collection_id"`
+	Name         string `form:"name"`
+	ContentHash  string `form:"content_hash"`
+}
+
+type ReqGetPrepareTransferNftTxInfo struct {
+	AccountName   string `form:"account_name"`
+	ToAccountName string `form:"to_account_name"`
+	NftIndex      int64  `form:"nft_index"`
+}
+
+type ReqGetPrepareAtomicMatchWithTx struct {
+	AccountName string `form:"account_name"`
+	IsSell      bool   `form:"is_sell"`
+	OfferId     int64  `form:"offer_id"`
+	MoneyId     int64  `form:"money_id"`
+	MoneyAmount string `form:"money_amount"`
+}
+
+type ReqGetPrepareWithdrawNftTxInfo struct {
+	AccountName string `form:"account_name"`
+	NftIndex    int64  `form:"nft_index"`
+}
+
+type ReqGetPrepareOfferTxInfo struct {
+	AccountName string `form:"account_name"`
+	NftIndex    int64  `form:"nft_index"`
+	MoneyId     int64  `form:"money_id"`
+	MoneyAmount string `form:"money_amount"`
+	IsSell      bool   `form:"is_sell"`
+}
+
+type RespetPreparetxInfo struct {
+	TxType    int64  `json:"tx_type"`
+	Transtion string `json:"transtion"`
+}

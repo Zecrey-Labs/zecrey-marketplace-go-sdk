@@ -102,25 +102,36 @@ func (c *client) CreateCollection(
 	accountName string, ShortName string, CategoryId string, CollectionUrl string,
 	ExternalLink string, TwitterLink string, InstagramLink string, TelegramLink string, DiscordLink string, LogoImage string,
 	FeaturedImage string, BannerImage string, CreatorEarningRate string, PaymentAssetIds string) (*RespCreateCollection, error) {
-	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
-	if err != nil {
-		return nil, err
-	}
-	nonce, err := c.GetNextNonce(int64(accountInfo.Index))
-	if err != nil {
-		return nil, err
-	}
-	tx := PrepareCreateCollectionTxInfo(c.keyManager, int64(accountInfo.Index), nonce)
 
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareCreateCollectionTxInfo?account_name=%s", accountName))
+	if err != nil {
+		return nil, err
+	}
+	body, err := ioutil.ReadAll(respPrepareTx.Body)
+	if err != nil {
+		return nil, err
+	}
+	if respPrepareTx.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+
+	resultPrepare := &RespetPreparetxInfo{}
+	if err := json.Unmarshal(body, &resultPrepare); err != nil {
+		return nil, err
+	}
+	tx, err := PrepareCreateCollectionTxInfo(c.keyManager, resultPrepare.Transtion)
+	if err != nil {
+		return nil, err
+	}
 	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/collection/createCollection",
 		url.Values{"short_name": {ShortName},
 			"category_id":          {CategoryId},
 			"collection_url":       {CollectionUrl},
 			"external_link":        {ExternalLink},
 			"twitter_link":         {TwitterLink},
-			"instagram_link":       {InstagramLink},
-			"telegram_link":        {TelegramLink},
-			"discord_link":         {DiscordLink},
+			"instagram_link":       {TelegramLink},
+			"discord_link":         {InstagramLink},
+			"telegram_link":        {DiscordLink},
 			"logo_image":           {LogoImage},
 			"featured_image":       {FeaturedImage},
 			"banner_image":         {BannerImage},
@@ -131,7 +142,7 @@ func (c *client) CreateCollection(
 		return nil, err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +191,6 @@ func (c *client) GetCollectionById(collectionId int64) (*RespGetCollectionByColl
 func (c *client) UpdateCollection(
 	Id string,
 	AccountName string,
-
 	Name string,
 	CollectionUrl string,
 	Description string,
@@ -269,21 +279,34 @@ func (c *client) GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetAccou
 
 func (c *client) MintNft(
 	accountName string,
-	CollectionId int64, l2NftCollectionId int64,
+	CollectionId int64,
 	NftUrl string, Name string,
 	Description string, Media string,
 	Properties string, Levels string, Stats string,
 ) (*RespCreateAsset, error) {
-	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
-	if err != nil {
-		return nil, err
-	}
-	nonce, err := c.GetNextNonce(int64(accountInfo.Index))
-	if err != nil {
-		return nil, err
-	}
+
 	ContentHash, err := calculateContentHash(accountName, CollectionId, Name, Properties, Levels, Stats)
-	tx := PrepareMintNftTxInfo(c.keyManager, accountName, int64(accountInfo.Index), nonce, l2NftCollectionId, ContentHash)
+
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", accountName, CollectionId, Name, ContentHash))
+	if err != nil {
+		return nil, err
+	}
+	body, err := ioutil.ReadAll(respPrepareTx.Body)
+	if err != nil {
+		return nil, err
+	}
+	if respPrepareTx.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	resultPrepare := &RespetPreparetxInfo{}
+	if err := json.Unmarshal(body, &resultPrepare); err != nil {
+		return nil, err
+	}
+	tx, err := PrepareMintNftTxInfo(c.keyManager, resultPrepare.Transtion)
+	if err != nil {
+		return nil, err
+	}
+
 	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/asset/createAsset",
 		url.Values{
 			"collection_id": {fmt.Sprintf("%d", CollectionId)},
@@ -299,7 +322,7 @@ func (c *client) MintNft(
 	)
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -348,20 +371,23 @@ func (c *client) TransferNft(
 	AssetId int64,
 	accountName string,
 	toAccountName string) (*ResqSendTransferNft, error) {
-	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareTransferNftTxInfo?account_name=%s&to_account_name=%s&nft_id=%d", accountName, toAccountName, AssetId))
 	if err != nil {
 		return nil, err
 	}
-	toAccountInfo, err := c.GetAccountInfoByAccountName(toAccountName)
+	body, err := ioutil.ReadAll(respPrepareTx.Body)
 	if err != nil {
 		return nil, err
 	}
-	nonce, err := c.GetNextNonce(int64(accountInfo.Index))
-	if err != nil {
+	if respPrepareTx.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+
+	resultPrepare := &RespetPreparetxInfo{}
+	if err := json.Unmarshal(body, &resultPrepare); err != nil {
 		return nil, err
 	}
-	nftInfo, err := c.GetNftByNftId(AssetId)
-	txInfo := PrepareTransferNftTxInfo(c.keyManager, int64(accountInfo.Index), nonce, nftInfo.Asset.NftIndex, toAccountName, int64(toAccountInfo.Index))
+	txInfo, err := PrepareTransferNftTxInfo(c.keyManager, resultPrepare.Transtion)
 
 	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/asset/sendTransferNft",
 		url.Values{
@@ -374,7 +400,7 @@ func (c *client) TransferNft(
 		return nil, err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -388,23 +414,23 @@ func (c *client) TransferNft(
 	return result, nil
 }
 func (c *client) WithdrawNft(accountName string, AssetId int64) (*ResqSendWithdrawNft, error) {
-	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareWithdrawNftTxInfo?account_name=%s&nft_id=%d", accountName, AssetId))
 	if err != nil {
+		return nil, err
+	}
+	body, err := ioutil.ReadAll(respPrepareTx.Body)
+	if err != nil {
+		return nil, err
+	}
+	if respPrepareTx.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	resultPrepare := &RespetPreparetxInfo{}
+	if err := json.Unmarshal(body, &resultPrepare); err != nil {
 		return nil, err
 	}
 
-	nonce, err := c.GetNextNonce(int64(accountInfo.Index))
-	if err != nil {
-		return nil, err
-	}
-	nftInfo, err := c.GetNftByNftId(AssetId)
-	if err != nil {
-		return nil, err
-	}
-	toAddress := "0x0000000000000000000000000000000000001000"
-	nftcontentHash := ""
-
-	txInfo := PrepareWithdrawNftTxInfo(c.keyManager, accountName, int64(accountInfo.Index), nonce, nftInfo.Asset.NftIndex, toAddress, nftcontentHash)
+	txInfo, err := PrepareWithdrawNftTxInfo(c.keyManager, resultPrepare.Transtion)
 	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/asset/sendWithdrawNft",
 		url.Values{
 			"asset_id":    {fmt.Sprintf("%d", AssetId)},
@@ -416,7 +442,7 @@ func (c *client) WithdrawNft(accountName string, AssetId int64) (*ResqSendWithdr
 		return nil, err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -430,34 +456,49 @@ func (c *client) WithdrawNft(accountName string, AssetId int64) (*ResqSendWithdr
 	return result, nil
 }
 func (c *client) SellNft(accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error) {
-	nftInfo, err := c.GetNftByNftId(AssetId)
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=true", accountName, AssetId, moneyType, AssetAmount))
 	if err != nil {
 		return nil, err
 	}
-	l2OfferId, err := c.GetNextOfferId(accountName)
+	body, err := ioutil.ReadAll(respPrepareTx.Body)
 	if err != nil {
 		return nil, err
 	}
-	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
-	if err != nil {
+	if respPrepareTx.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	resultPrepare := &RespetPreparetxInfo{}
+	if err := json.Unmarshal(body, &resultPrepare); err != nil {
 		return nil, err
 	}
 
-	tx := PrepareOfferTxInfo(c.keyManager, int64(accountInfo.Index), nftInfo.Asset.NftIndex, l2OfferId.Id, true, moneyType, AssetAmount)
+	tx, err := PrepareOfferTxInfo(c.keyManager, resultPrepare.Transtion, true)
+	if err != nil {
+		return nil, err
+	}
 	return c.Offer(accountName, tx)
 }
 func (c *client) BuyNft(accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error) {
-	nftInfo, err := c.GetNftByNftId(AssetId)
-	l2OfferId, err := c.GetNextOfferId(accountName)
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=false", accountName, AssetId, moneyType, AssetAmount))
 	if err != nil {
 		return nil, err
 	}
-	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
+	body, err := ioutil.ReadAll(respPrepareTx.Body)
 	if err != nil {
+		return nil, err
+	}
+	if respPrepareTx.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	resultPrepare := &RespetPreparetxInfo{}
+	if err := json.Unmarshal(body, &resultPrepare); err != nil {
 		return nil, err
 	}
 
-	tx := PrepareOfferTxInfo(c.keyManager, int64(accountInfo.Index), nftInfo.Asset.NftIndex, l2OfferId.Id, false, moneyType, AssetAmount)
+	tx, err := PrepareOfferTxInfo(c.keyManager, resultPrepare.Transtion, false)
+	if err != nil {
+		return nil, err
+	}
 	return c.Offer(accountName, tx)
 }
 func (c *client) Offer(accountName string, tx string) (*RespListOffer, error) {
@@ -525,37 +566,27 @@ func (c *client) GetOfferById(OfferId int64) (*RespGetOfferByOfferId, error) {
 	return result, nil
 }
 
-func (c *client) AcceptOffer(accountName string, offerId int64, isSell bool, assetId int64, AssetAmount *big.Int) (*RespAcceptOffer, error) {
-	buyer, err := c.GetAccountInfoByAccountName(accountName)
+func (c *client) AcceptOffer(accountName string, offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error) {
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareAtomicMatchWithTx?account_name=%s&offer_id=%d&money_id=%d&money_amount=%s&is_sell=%v", accountName, offerId, 0, AssetAmount.String(), isSell))
 	if err != nil {
+		return nil, err
+	}
+	body, err := ioutil.ReadAll(respPrepareTx.Body)
+	if err != nil {
+		return nil, err
+	}
+	if respPrepareTx.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	resultPrepare := &RespetPreparetxInfo{}
+	if err := json.Unmarshal(body, &resultPrepare); err != nil {
 		return nil, err
 	}
 
-	nextOfferId, err := c.GetNextOfferId(accountName)
+	txInfo, err := PrepareAtomicMatchWithTx(c.keyManager, resultPrepare.Transtion, isSell, AssetAmount)
 	if err != nil {
 		return nil, err
 	}
-
-	myNonce, err := c.GetNextNonce(int64(buyer.Index))
-	if err != nil {
-		return nil, err
-	}
-	//get sellerOfferTx
-	OfferInfo, err := c.GetOfferById(offerId)
-	if err != nil {
-		return nil, err
-	}
-	OfferTx, err := ParseOfferTxInfo(OfferInfo.Offer.Signature)
-	if err != nil {
-		return nil, err
-	}
-	nftInfo, err := c.GetNftByNftId(OfferInfo.Offer.AssetId)
-	if err != nil {
-		return nil, err
-	}
-
-	txInfo := PrepareAtomicMatchWithTx(c.keyManager, nftInfo.Asset.NftIndex, int64(buyer.Index), nextOfferId.Id, myNonce, OfferTx, isSell, assetId, AssetAmount)
-
 	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/offer/acceptOffer",
 		url.Values{
 			"id":          {fmt.Sprintf("%d", offerId)},
@@ -567,7 +598,7 @@ func (c *client) AcceptOffer(accountName string, offerId int64, isSell bool, ass
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -582,69 +613,104 @@ func (c *client) AcceptOffer(accountName string, offerId int64, isSell bool, ass
 }
 
 // ================ nft tool ===
-func PrepareCreateCollectionTxInfo(key KeyManager, accountIndex, accountNonce int64) string {
-	publicKey := hex.EncodeToString(key.Public().Bytes())
-	fmt.Println("=== PrepareCreateCollectionTxInfo ===  Pubkey: ", publicKey)
-	expiredAt := time.Now().Add(time.Hour * 24 * 2).UnixMilli()
-	txInfo := &CreateCollectionTxInfo{
-		AccountIndex:      accountIndex,
-		Name:              fmt.Sprintf("Nft Collection - %d", accountNonce),
-		Introduction:      "Great Nft!",
-		GasAccountIndex:   1,
-		GasFeeAssetId:     0,
-		GasFeeAssetAmount: big.NewInt(5000),
-		ExpiredAt:         expiredAt,
-		Nonce:             accountNonce,
-		Sig:               nil,
+func PrepareCreateCollectionTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
+	txInfo := &CreateCollectionTxInfo{}
+	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
+	if err != nil {
+		return "", err
 	}
 	tx, err := ConstructCreateCollectionTx(key, txInfo) //sign tx message
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	//fmt.Println("=== pk ===", hex.EncodeToString(pk.Bytes()))
-	//fmt.Println("=== AccountName ===", accountInfoMap[txInfo.AccountIndex].AccountName)
-	parsed, err := ParseCreateCollectionTxInfo(tx)
-	if err != nil {
-		panic(err)
-	}
-	err = VerifyCreateCollectionTxSig(publicKey, parsed)
-	if err != nil {
-		panic(err)
-	}
-	return tx
+	return tx, nil
 }
-func PrepareMintNftTxInfo(key KeyManager, accountName string, accountIndex, accountNonce, nftCollectionId int64, contentHash string) string {
-
-	fmt.Println("pubkey ", hex.EncodeToString(key.Public().Bytes()))
-
-	nameHash, err := accountNameHash(accountName)
+func PrepareMintNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
+	txInfo := &MintNftTxInfo{}
+	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	fmt.Println("nameHash ", nameHash)
-
-	expiredAt := time.Now().Add(time.Hour * 24 * 2).UnixMilli()
-	txInfo := &MintNftTxInfo{
-		CreatorAccountIndex: accountIndex,
-		ToAccountIndex:      accountIndex,
-		ToAccountNameHash:   nameHash,
-		NftContentHash:      contentHash,
-		NftCollectionId:     nftCollectionId,
-		CreatorTreasuryRate: 0,
-		GasAccountIndex:     1,
-		GasFeeAssetId:       0,
-		GasFeeAssetAmount:   big.NewInt(100000000),
-		ExpiredAt:           expiredAt,
-		Nonce:               accountNonce,
-		Sig:                 nil,
-	}
-
 	tx, err := ConstructMintNftTx(key, txInfo)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	return tx
+	return tx, nil
 }
+
+func PrepareTransferNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
+	txInfo := &TransferNftTxInfo{}
+	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
+	if err != nil {
+		return "", err
+	}
+	tx, err := ConstructTransferNftTx(key, txInfo)
+	if err != nil {
+		return "", err
+	}
+	return tx, err
+}
+
+func PrepareAtomicMatchWithTx(key KeyManager, txInfoPrepare string, isSell bool, AssetAmount *big.Int) (string, error) {
+	txInfo := &AtomicMatchTxInfo{}
+	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
+	if err != nil {
+		return "", err
+	}
+	if !isSell {
+		signedTx, err := ConstructOfferTx(key, txInfo.BuyOffer)
+		if err != nil {
+			return "", err
+		}
+		signedOffer, _ := ParseOfferTxInfo(signedTx)
+		txInfo.BuyOffer = signedOffer
+		txInfo.BuyOffer.AssetAmount = AssetAmount
+	}
+	if isSell {
+		signedTx, err := ConstructOfferTx(key, txInfo.SellOffer)
+		if err != nil {
+			return "", err
+		}
+		signedOffer, _ := ParseOfferTxInfo(signedTx)
+		txInfo.SellOffer = signedOffer
+		txInfo.SellOffer.AssetAmount = AssetAmount
+	}
+
+	tx, err := ConstructAtomicMatchTx(key, txInfo)
+	if err != nil {
+		return "", err
+	}
+	return tx, err
+}
+func PrepareWithdrawNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
+	txInfo := &WithdrawNftTxInfo{}
+	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
+	if err != nil {
+		return "", err
+	}
+	tx, err := ConstructWithdrawNftTx(key, txInfo)
+	if err != nil {
+		return "", err
+	}
+	return tx, err
+}
+func PrepareOfferTxInfo(key KeyManager, txInfoPrepare string, isSell bool) (string, error) {
+	txInfo := &OfferTxInfo{}
+	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
+	if err != nil {
+		return "", err
+	}
+	txInfo.Type = 0
+	if isSell {
+		txInfo.Type = 1
+	}
+	tx, err := ConstructOfferTx(key, txInfo)
+	if err != nil {
+		return "", err
+	}
+	return tx, err
+}
+
 func accountNameHash(accountName string) (res string, err error) {
 	// TODO Keccak256
 	words := strings.Split(accountName, ".")
@@ -748,113 +814,6 @@ func calculateContentHash(accountName string, collectionId int64, name string, _
 	fmt.Println("==nft content ==", content)
 	return common.Bytes2Hex(bytes[:]), nil
 }
-func PrepareTransferNftTxInfo(key KeyManager, accountIndex, accountNonce, nftIndex int64, toAccountName string, toAccountIndex int64) string {
-
-	fmt.Println("pubkey ", hex.EncodeToString(key.Public().Bytes()))
-
-	nameHash, err := accountNameHash(toAccountName)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("nameHash ", nameHash)
-
-	expiredAt := time.Now().Add(time.Hour * 24 * 2).UnixMilli()
-	txInfo := &TransferNftTxInfo{
-		FromAccountIndex:  accountIndex,
-		ToAccountIndex:    toAccountIndex,
-		ToAccountNameHash: nameHash,
-		NftIndex:          nftIndex,
-		GasAccountIndex:   1,
-		GasFeeAssetId:     0,
-		GasFeeAssetAmount: big.NewInt(1000),
-		ExpiredAt:         expiredAt,
-		Nonce:             accountNonce,
-		CallData:          "",
-		CallDataHash:      nil,
-		Sig:               nil,
-	}
-	// compute hash
-	hFunc := mimc.NewMiMC()
-	hFunc.Write([]byte(txInfo.CallData))
-	callDataHash := hFunc.Sum(nil)
-	txInfo.CallDataHash = callDataHash
-
-	tx, err := ConstructTransferNftTx(key, txInfo)
-	if err != nil {
-		panic(err)
-	}
-	return tx
-}
-func PrepareWithdrawNftTxInfo(key KeyManager, accountName string, accountIndex, accountNonce, nftIndex int64, toAddress string, nftContentHash string) string {
-
-	fmt.Println("pubkey ", hex.EncodeToString(key.Public().Bytes()))
-
-	nameHash, err := accountNameHash(accountName)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("nameHash ", nameHash)
-
-	expiredAt := time.Now().Add(time.Hour * 24 * 2).UnixMilli()
-	txInfo := &WithdrawNftTxInfo{
-		AccountIndex:           accountIndex,
-		CreatorAccountIndex:    accountIndex,
-		CreatorAccountNameHash: common.Hex2Bytes(nameHash),
-		CreatorTreasuryRate:    0,
-		NftContentHash:         nil,
-		NftL1Address:           "",
-		NftL1TokenId:           nil,
-		CollectionId:           0,
-		ToAddress:              toAddress,
-		NftIndex:               nftIndex,
-		GasAccountIndex:        1,
-		GasFeeAssetId:          0,
-		GasFeeAssetAmount:      big.NewInt(5000),
-		ExpiredAt:              expiredAt,
-		Nonce:                  accountNonce,
-		Sig:                    nil,
-	}
-	hFunc := mimc.NewMiMC()
-	hFunc.Write([]byte(nftContentHash))
-	NftContentHash := hFunc.Sum(nil)
-	txInfo.NftContentHash = NftContentHash
-	fmt.Println("===txInfo===", common.Bytes2Hex(txInfo.NftContentHash))
-
-	tx, err := ConstructWithdrawNftTx(key, txInfo)
-	if err != nil {
-		panic(err)
-	}
-	return tx
-}
-func PrepareOfferTxInfo(key KeyManager, accountIndex, nftIndex, offerId int64, sell bool, assetId int64, AssetAmount *big.Int) string {
-
-	fmt.Println("pubkey ", hex.EncodeToString(key.Public().Bytes()))
-
-	listedAt := time.Now().UnixMilli()
-	expiredAt := time.Now().Add(time.Hour * 24 * 2).UnixMilli()
-	offerType := 0 // buy
-	if sell {
-		offerType = 1 // sell
-	}
-	txInfo := &OfferTxInfo{
-		Type:         int64(offerType),
-		OfferId:      offerId,
-		AccountIndex: accountIndex,
-		NftIndex:     nftIndex,
-		AssetId:      assetId, //payment asset id-> The reserved field information is useless
-		AssetAmount:  AssetAmount,
-		ListedAt:     listedAt,
-		ExpiredAt:    expiredAt,
-		TreasuryRate: 200,
-		Sig:          nil,
-	}
-
-	tx, err := ConstructOfferTx(key, txInfo)
-	if err != nil {
-		panic(err)
-	}
-	return tx
-}
 func SignMessage(key KeyManager, message string) string {
 	fmt.Println("message: ", message)
 	sig, err := key.Sign([]byte(message), mimc.NewMiMC())
@@ -866,66 +825,6 @@ func SignMessage(key KeyManager, message string) string {
 	fmt.Println("signed:", signed)
 
 	return signed
-}
-func PrepareAtomicMatchWithTx(key KeyManager, nftIndex, accountIndex, offerId, buyerNonce int64, offerTxReady *OfferTxInfo, isSell bool, assetId int64, AssetAmount *big.Int) string {
-
-	fmt.Println("buyer pubkey ", hex.EncodeToString(key.Public().Bytes()))
-
-	listedAt := time.Now().UnixMilli()
-	expiredAt := time.Now().Add(time.Hour * 24 * 2).UnixMilli()
-	signedOfferPre := &OfferTxInfo{
-		Type:         0,
-		OfferId:      offerId,
-		AccountIndex: accountIndex,
-		NftIndex:     nftIndex,
-		AssetId:      assetId, //The reserved field information is useless
-		AssetAmount:  AssetAmount,
-		ListedAt:     listedAt,
-		ExpiredAt:    expiredAt,
-		TreasuryRate: 200, //[1-10000]
-		Sig:          nil,
-	}
-
-	signedTx, err := ConstructOfferTx(key, signedOfferPre)
-	if err != nil {
-		panic(err)
-	}
-	signedOffer, _ := ParseOfferTxInfo(signedTx)
-
-	txInfo := &AtomicMatchTxInfo{
-		AccountIndex:    accountIndex,
-		BuyOffer:        signedOffer,
-		SellOffer:       offerTxReady,
-		GasAccountIndex: 1,
-		GasFeeAssetId:   0,
-		//CreatorAmount: big.NewInt(5000),
-		GasFeeAssetAmount: big.NewInt(5000),
-		TreasuryAmount:    big.NewInt(5000),
-		Nonce:             buyerNonce,
-		ExpiredAt:         expiredAt,
-		Sig:               nil,
-	}
-	if isSell {
-		txInfo = &AtomicMatchTxInfo{
-			AccountIndex:    accountIndex,
-			BuyOffer:        offerTxReady,
-			SellOffer:       signedOffer,
-			GasAccountIndex: 1,
-			GasFeeAssetId:   0,
-			//CreatorAmount: big.NewInt(5000),
-			GasFeeAssetAmount: big.NewInt(5000),
-			TreasuryAmount:    big.NewInt(5000),
-			Nonce:             buyerNonce,
-			ExpiredAt:         expiredAt,
-			Sig:               nil,
-		}
-	}
-
-	tx, err := ConstructAtomicMatchTx(key, txInfo)
-	if err != nil {
-		panic(err)
-	}
-	return tx
 }
 
 /* ================ legend ========================= */
