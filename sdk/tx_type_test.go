@@ -67,8 +67,9 @@ func TestParseCreateCollectionTxInfo(t *testing.T) {
 	BannerImage := "collection/e2rdcsgitkxonxqjcmkg"
 	CreatorEarningRate := "6666"
 	PaymentAssetIds := "[]"
-	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl)
-	ret, err := c.CreateCollection(accountName, accountSeed, ShortName, CategoryId, CollectionUrl,
+	keyManager, err := NewSeedKeyManager(accountSeed)
+	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl, keyManager)
+	ret, err := c.CreateCollection(accountName, ShortName, CategoryId, CollectionUrl,
 		ExternalLink, TwitterLink, InstagramLink, TelegramLink, DiscordLink, LogoImage,
 		FeaturedImage, BannerImage, CreatorEarningRate, PaymentAssetIds)
 	if err != nil {
@@ -85,7 +86,9 @@ func TestParseCreateCollectionTxInfo(t *testing.T) {
 }
 func TestGetCollectionById(t *testing.T) {
 	var collectionId int64 = 142
-	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl)
+	accountSeed := "28e1a376........."
+	keyManager, err := NewSeedKeyManager(accountSeed)
+	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl, keyManager)
 	ret2, err := c.GetCollectionById(collectionId)
 	if err != nil {
 		t.Fatal(err)
@@ -96,7 +99,9 @@ func TestGetCollectionById(t *testing.T) {
 
 func TestGetCollectionByAccountIndex(t *testing.T) {
 	var accountIndex int64 = 4
-	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl)
+	accountSeed := "28e1a376........."
+	keyManager, err := NewSeedKeyManager(accountSeed)
+	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl, keyManager)
 	ret2, err := c.GetCollectionsByAccountIndex(accountIndex)
 	if err != nil {
 		t.Fatal(err)
@@ -108,7 +113,6 @@ func TestGetCollectionByAccountIndex(t *testing.T) {
 func TestUpdateCollection(t *testing.T) {
 	Id := "142"
 	AccountName := "sher.zec"
-	privateKey := "28e1a376........."
 	Name := "zw-sdk--collection-update"
 	CollectionUrl := "-"
 	Description := "-"
@@ -123,9 +127,10 @@ func TestUpdateCollection(t *testing.T) {
 	BannerImage := "collection/e2rdcsgitkxonxqjcmkg"
 
 	var AccountIndex int64 = 2
-
-	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl)
-	ret, err := c.UpdateCollection(Id, AccountName, privateKey,
+	accountSeed := "28e1a376........."
+	keyManager, err := NewSeedKeyManager(accountSeed)
+	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl, keyManager)
+	ret, err := c.UpdateCollection(Id, AccountName,
 		Name, CollectionUrl, Description, CategoryId,
 		ExternalLink, TwitterLink, InstagramLink, TelegramLink,
 		DiscordLink, LogoImage, FeaturedImage, BannerImage)
@@ -145,7 +150,6 @@ func TestUpdateCollection(t *testing.T) {
 
 func TestMintNft(t *testing.T) {
 
-	privateKey := "28e1a376........."
 	accountName := "sher.zec"
 	var CollectionId int64 = 142
 	var l2NftCollectionId int64 = 0
@@ -178,8 +182,10 @@ func TestMintNft(t *testing.T) {
 	_PropertiesByte, err := json.Marshal(_Properties)
 	_LevelsByte, err := json.Marshal(_Levels)
 	_StatsByte, err := json.Marshal(_Stats)
-	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl)
-	ret, err := c.MintNft(privateKey, accountName,
+	accountSeed := "28e1a376........."
+	keyManager, err := NewSeedKeyManager(accountSeed)
+	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl, keyManager)
+	ret, err := c.MintNft(accountName,
 		CollectionId, l2NftCollectionId,
 		NftUrl, Name,
 		Description, Media,
@@ -199,7 +205,9 @@ func TestMintNft(t *testing.T) {
 }
 func TestGetNftByNftId(t *testing.T) {
 	var nftId int64 = 301
-	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl)
+	accountSeed := "28e1a376........."
+	keyManager, err := NewSeedKeyManager(accountSeed)
+	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl, keyManager)
 	ret2, err := c.GetNftByNftId(nftId)
 	if err != nil {
 		t.Fatal(err)
@@ -213,8 +221,9 @@ func TestTransferNft(t *testing.T) {
 	privateKey := "28e1a376........."
 	accountName := "sher.zec"
 	toAccountName := "gavin.zec"
-	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl)
-	ret2, err := c.TransferNft(AssetId, privateKey, accountName, toAccountName)
+	keyManager, err := NewSeedKeyManager(privateKey)
+	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl, keyManager)
+	ret2, err := c.TransferNft(AssetId, accountName, toAccountName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -226,8 +235,9 @@ func TestWithdrawNft(t *testing.T) {
 	var AssetId int64 = 301
 	privateKey := "17673b.........."
 	accountName := "gavin.zec"
-	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl)
-	ret2, err := c.WithdrawNft(privateKey, accountName, AssetId)
+	keyManager, err := NewSeedKeyManager(privateKey)
+	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl, keyManager)
+	ret2, err := c.WithdrawNft(accountName, AssetId)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -239,9 +249,10 @@ func TestSellOffer(t *testing.T) {
 	var AssetId int64 = 215
 	privateKey := "28e1a376........."
 	accountName := "sher.zec"
-	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl)
+	keyManager, err := NewSeedKeyManager(privateKey)
+	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl, keyManager)
 
-	ret2, err := c.SellNft(privateKey, accountName, AssetId, 0, big.NewInt(1000000))
+	ret2, err := c.SellNft(accountName, AssetId, 0, big.NewInt(1000000))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -253,9 +264,10 @@ func TestBuyOffer(t *testing.T) {
 	var AssetId int64 = 217
 	privateKey := "28e1a376........."
 	accountName := "sher.zec"
-	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl)
+	keyManager, err := NewSeedKeyManager(privateKey)
+	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl, keyManager)
 
-	ret2, err := c.BuyNft(privateKey, accountName, AssetId, 0, big.NewInt(1000000))
+	ret2, err := c.BuyNft(accountName, AssetId, 0, big.NewInt(1000000))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -267,8 +279,9 @@ func TestAcceptOffer(t *testing.T) {
 	var offerId int64 = 199
 	privateKey := "ee823a743f......"
 	accountName := "amber1.zec"
-	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl)
-	ret2, err := c.AcceptOffer(privateKey, accountName, offerId, true, 0, big.NewInt(1000000))
+	keyManager, err := NewSeedKeyManager(privateKey)
+	c := NewZecreyNftMarketSDK(legendUrl, nftMarketUrl, keyManager)
+	ret2, err := c.AcceptOffer(accountName, offerId, true, 0, big.NewInt(1000000))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -7,7 +7,7 @@ type ZecreyLegendSDK interface {
 	//nftmarket
 
 	CreateCollection(
-		accountName string, accountSeed string, ShortName string, CategoryId string, CollectionUrl string,
+		accountName string, ShortName string, CategoryId string, CollectionUrl string,
 		ExternalLink string, TwitterLink string, InstagramLink string, TelegramLink string, DiscordLink string, LogoImage string,
 		FeaturedImage string, BannerImage string, CreatorEarningRate string, PaymentAssetIds string) (*RespCreateCollection, error)
 	GetCollectionById(collectionId int64) (*RespGetCollectionByCollectionId, error)
@@ -15,14 +15,14 @@ type ZecreyLegendSDK interface {
 	GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetAccountCollections, error)
 
 	UpdateCollection(
-		Id string, AccountName string, privateKey string,
+		Id string, AccountName string,
 		Name string, CollectionUrl string, Description string, CategoryId string,
 		ExternalLink string, TwitterLink string, InstagramLink string, TelegramLink string,
 		DiscordLink string, LogoImage string, FeaturedImage string, BannerImage string,
 	) (*RespUpdateCollection, error)
 
 	MintNft(
-		privateKey string, accountName string,
+		accountName string,
 		CollectionId int64, l2NftCollectionId int64,
 		NftUrl string, Name string,
 		Description string, Media string,
@@ -31,18 +31,19 @@ type ZecreyLegendSDK interface {
 
 	GetNftByNftId(nftId int64) (*RespetAssetByAssetId, error)
 
-	TransferNft(AssetId int64, privateKey string, accountName string, toAccountName string) (*ResqSendTransferNft, error)
+	TransferNft(AssetId int64, accountName string, toAccountName string) (*ResqSendTransferNft, error)
 
-	WithdrawNft(privateKey string, accountName string, AssetId int64) (*ResqSendWithdrawNft, error)
+	WithdrawNft(accountName string, AssetId int64) (*ResqSendWithdrawNft, error)
 
-	SellNft(privateKey string, accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error)
-	BuyNft(privateKey string, accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error)
-	AcceptOffer(privateKey string, accountName string, offerId int64, isSell bool, assetId int64, AssetAmount *big.Int) (*RespAcceptOffer, error)
+	SellNft(accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error)
+	BuyNft(accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error)
+	AcceptOffer(accountName string, offerId int64, isSell bool, assetId int64, AssetAmount *big.Int) (*RespAcceptOffer, error)
 }
 
-func NewZecreyNftMarketSDK(legendUrl, nftmarketUrl string) ZecreyLegendSDK {
+func NewZecreyNftMarketSDK(legendUrl, nftmarketUrl string, keyManager KeyManager) ZecreyLegendSDK {
 	return &client{
 		nftMarketURL: nftmarketUrl,
 		legendURL:    legendUrl,
+		keyManager:   keyManager,
 	}
 }

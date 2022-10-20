@@ -99,7 +99,7 @@ func (c *client) GetAccountByAccountName(accountPk string, offset, limit uint32)
 /*=========================== collection =======================*/
 
 func (c *client) CreateCollection(
-	accountName string, privateKey string, ShortName string, CategoryId string, CollectionUrl string,
+	accountName string, ShortName string, CategoryId string, CollectionUrl string,
 	ExternalLink string, TwitterLink string, InstagramLink string, TelegramLink string, DiscordLink string, LogoImage string,
 	FeaturedImage string, BannerImage string, CreatorEarningRate string, PaymentAssetIds string) (*RespCreateCollection, error) {
 	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
@@ -110,7 +110,7 @@ func (c *client) CreateCollection(
 	if err != nil {
 		return nil, err
 	}
-	tx := PrepareCreateCollectionTxInfo(privateKey, int64(accountInfo.Index), nonce)
+	tx := PrepareCreateCollectionTxInfo(c.keyManager, int64(accountInfo.Index), nonce)
 
 	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/collection/createCollection",
 		url.Values{"short_name": {ShortName},
@@ -180,7 +180,7 @@ func (c *client) GetCollectionById(collectionId int64) (*RespGetCollectionByColl
 func (c *client) UpdateCollection(
 	Id string,
 	AccountName string,
-	privateKey string,
+
 	Name string,
 	CollectionUrl string,
 	Description string,
@@ -196,7 +196,7 @@ func (c *client) UpdateCollection(
 ) (*RespUpdateCollection, error) {
 	timestamp := time.Now().Unix()
 	message := fmt.Sprintf("%dupdate_collection", timestamp)
-	signature := SignMessage(privateKey, message)
+	signature := SignMessage(c.keyManager, message)
 	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/collection/updateCollection",
 		url.Values{
 			"id":             {Id},
@@ -268,7 +268,7 @@ func (c *client) GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetAccou
 /*=========================== nft =======================*/
 
 func (c *client) MintNft(
-	privateKey string, accountName string,
+	accountName string,
 	CollectionId int64, l2NftCollectionId int64,
 	NftUrl string, Name string,
 	Description string, Media string,
@@ -283,7 +283,7 @@ func (c *client) MintNft(
 		return nil, err
 	}
 	ContentHash, err := calculateContentHash(accountName, CollectionId, Name, Properties, Levels, Stats)
-	tx := PrepareMintNftTxInfo(privateKey, accountName, int64(accountInfo.Index), nonce, l2NftCollectionId, ContentHash)
+	tx := PrepareMintNftTxInfo(c.keyManager, accountName, int64(accountInfo.Index), nonce, l2NftCollectionId, ContentHash)
 	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/asset/createAsset",
 		url.Values{
 			"collection_id": {fmt.Sprintf("%d", CollectionId)},
@@ -346,7 +346,6 @@ func (c *client) GetNftByNftId(nftId int64) (*RespetAssetByAssetId, error) {
 
 func (c *client) TransferNft(
 	AssetId int64,
-	privateKey string,
 	accountName string,
 	toAccountName string) (*ResqSendTransferNft, error) {
 	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
@@ -362,7 +361,7 @@ func (c *client) TransferNft(
 		return nil, err
 	}
 	nftInfo, err := c.GetNftByNftId(AssetId)
-	txInfo := PrepareTransferNftTxInfo(privateKey, int64(accountInfo.Index), nonce, nftInfo.Asset.NftIndex, toAccountName, int64(toAccountInfo.Index))
+	txInfo := PrepareTransferNftTxInfo(c.keyManager, int64(accountInfo.Index), nonce, nftInfo.Asset.NftIndex, toAccountName, int64(toAccountInfo.Index))
 
 	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/asset/sendTransferNft",
 		url.Values{
@@ -388,7 +387,7 @@ func (c *client) TransferNft(
 	}
 	return result, nil
 }
-func (c *client) WithdrawNft(privateKey string, accountName string, AssetId int64) (*ResqSendWithdrawNft, error) {
+func (c *client) WithdrawNft(accountName string, AssetId int64) (*ResqSendWithdrawNft, error) {
 	accountInfo, err := c.GetAccountInfoByAccountName(accountName)
 	if err != nil {
 		return nil, err
@@ -405,7 +404,7 @@ func (c *client) WithdrawNft(privateKey string, accountName string, AssetId int6
 	toAddress := "0x0000000000000000000000000000000000001000"
 	nftcontentHash := ""
 
-	txInfo := PrepareWithdrawNftTxInfo(privateKey, accountName, int64(accountInfo.Index), nonce, nftInfo.Asset.NftIndex, toAddress, nftcontentHash)
+	txInfo := PrepareWithdrawNftTxInfo(c.keyManager, accountName, int64(accountInfo.Index), nonce, nftInfo.Asset.NftIndex, toAddress, nftcontentHash)
 	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/asset/sendWithdrawNft",
 		url.Values{
 			"asset_id":    {fmt.Sprintf("%d", AssetId)},
@@ -430,7 +429,7 @@ func (c *client) WithdrawNft(privateKey string, accountName string, AssetId int6
 	}
 	return result, nil
 }
-func (c *client) SellNft(privateKey string, accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error) {
+func (c *client) SellNft(accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error) {
 	nftInfo, err := c.GetNftByNftId(AssetId)
 	if err != nil {
 		return nil, err
@@ -444,10 +443,10 @@ func (c *client) SellNft(privateKey string, accountName string, AssetId int64, m
 		return nil, err
 	}
 
-	tx := PrepareOfferTxInfo(privateKey, int64(accountInfo.Index), nftInfo.Asset.NftIndex, l2OfferId.Id, true, moneyType, AssetAmount)
+	tx := PrepareOfferTxInfo(c.keyManager, int64(accountInfo.Index), nftInfo.Asset.NftIndex, l2OfferId.Id, true, moneyType, AssetAmount)
 	return c.Offer(accountName, tx)
 }
-func (c *client) BuyNft(privateKey string, accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error) {
+func (c *client) BuyNft(accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error) {
 	nftInfo, err := c.GetNftByNftId(AssetId)
 	l2OfferId, err := c.GetNextOfferId(accountName)
 	if err != nil {
@@ -458,7 +457,7 @@ func (c *client) BuyNft(privateKey string, accountName string, AssetId int64, mo
 		return nil, err
 	}
 
-	tx := PrepareOfferTxInfo(privateKey, int64(accountInfo.Index), nftInfo.Asset.NftIndex, l2OfferId.Id, false, moneyType, AssetAmount)
+	tx := PrepareOfferTxInfo(c.keyManager, int64(accountInfo.Index), nftInfo.Asset.NftIndex, l2OfferId.Id, false, moneyType, AssetAmount)
 	return c.Offer(accountName, tx)
 }
 func (c *client) Offer(accountName string, tx string) (*RespListOffer, error) {
@@ -526,7 +525,7 @@ func (c *client) GetOfferById(OfferId int64) (*RespGetOfferByOfferId, error) {
 	return result, nil
 }
 
-func (c *client) AcceptOffer(privateKey string, accountName string, offerId int64, isSell bool, assetId int64, AssetAmount *big.Int) (*RespAcceptOffer, error) {
+func (c *client) AcceptOffer(accountName string, offerId int64, isSell bool, assetId int64, AssetAmount *big.Int) (*RespAcceptOffer, error) {
 	buyer, err := c.GetAccountInfoByAccountName(accountName)
 	if err != nil {
 		return nil, err
@@ -555,7 +554,7 @@ func (c *client) AcceptOffer(privateKey string, accountName string, offerId int6
 		return nil, err
 	}
 
-	txInfo := PrepareAtomicMatchWithTx(privateKey, nftInfo.Asset.NftIndex, int64(buyer.Index), nextOfferId.Id, myNonce, OfferTx, isSell, assetId, AssetAmount)
+	txInfo := PrepareAtomicMatchWithTx(c.keyManager, nftInfo.Asset.NftIndex, int64(buyer.Index), nextOfferId.Id, myNonce, OfferTx, isSell, assetId, AssetAmount)
 
 	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/offer/acceptOffer",
 		url.Values{
@@ -583,12 +582,8 @@ func (c *client) AcceptOffer(privateKey string, accountName string, offerId int6
 }
 
 // ================ nft tool ===
-func PrepareCreateCollectionTxInfo(seed string, accountIndex, accountNonce int64) string {
-	key, err := curve.GenerateEddsaPrivateKey(seed)
-	if err != nil {
-		panic(err)
-	}
-	publicKey := hex.EncodeToString(key.PublicKey.Bytes())
+func PrepareCreateCollectionTxInfo(key KeyManager, accountIndex, accountNonce int64) string {
+	publicKey := hex.EncodeToString(key.Public().Bytes())
 	fmt.Println("=== PrepareCreateCollectionTxInfo ===  Pubkey: ", publicKey)
 	expiredAt := time.Now().Add(time.Hour * 24 * 2).UnixMilli()
 	txInfo := &CreateCollectionTxInfo{
@@ -618,12 +613,9 @@ func PrepareCreateCollectionTxInfo(seed string, accountIndex, accountNonce int64
 	}
 	return tx
 }
-func PrepareMintNftTxInfo(seed string, accountName string, accountIndex, accountNonce, nftCollectionId int64, contentHash string) string {
-	key, err := curve.GenerateEddsaPrivateKey(seed)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("pubkey ", hex.EncodeToString(key.PublicKey.Bytes()))
+func PrepareMintNftTxInfo(key KeyManager, accountName string, accountIndex, accountNonce, nftCollectionId int64, contentHash string) string {
+
+	fmt.Println("pubkey ", hex.EncodeToString(key.Public().Bytes()))
 
 	nameHash, err := accountNameHash(accountName)
 	if err != nil {
@@ -756,12 +748,9 @@ func calculateContentHash(accountName string, collectionId int64, name string, _
 	fmt.Println("==nft content ==", content)
 	return common.Bytes2Hex(bytes[:]), nil
 }
-func PrepareTransferNftTxInfo(seed string, accountIndex, accountNonce, nftIndex int64, toAccountName string, toAccountIndex int64) string {
-	key, err := curve.GenerateEddsaPrivateKey(seed)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("pubkey ", hex.EncodeToString(key.PublicKey.Bytes()))
+func PrepareTransferNftTxInfo(key KeyManager, accountIndex, accountNonce, nftIndex int64, toAccountName string, toAccountIndex int64) string {
+
+	fmt.Println("pubkey ", hex.EncodeToString(key.Public().Bytes()))
 
 	nameHash, err := accountNameHash(toAccountName)
 	if err != nil {
@@ -796,12 +785,9 @@ func PrepareTransferNftTxInfo(seed string, accountIndex, accountNonce, nftIndex 
 	}
 	return tx
 }
-func PrepareWithdrawNftTxInfo(seed string, accountName string, accountIndex, accountNonce, nftIndex int64, toAddress string, nftContentHash string) string {
-	key, err := curve.GenerateEddsaPrivateKey(seed)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("pubkey ", hex.EncodeToString(key.PublicKey.Bytes()))
+func PrepareWithdrawNftTxInfo(key KeyManager, accountName string, accountIndex, accountNonce, nftIndex int64, toAddress string, nftContentHash string) string {
+
+	fmt.Println("pubkey ", hex.EncodeToString(key.Public().Bytes()))
 
 	nameHash, err := accountNameHash(accountName)
 	if err != nil {
@@ -840,12 +826,9 @@ func PrepareWithdrawNftTxInfo(seed string, accountName string, accountIndex, acc
 	}
 	return tx
 }
-func PrepareOfferTxInfo(seed string, accountIndex, nftIndex, offerId int64, sell bool, assetId int64, AssetAmount *big.Int) string {
-	key, err := curve.GenerateEddsaPrivateKey(seed)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("pubkey ", hex.EncodeToString(key.PublicKey.Bytes()))
+func PrepareOfferTxInfo(key KeyManager, accountIndex, nftIndex, offerId int64, sell bool, assetId int64, AssetAmount *big.Int) string {
+
+	fmt.Println("pubkey ", hex.EncodeToString(key.Public().Bytes()))
 
 	listedAt := time.Now().UnixMilli()
 	expiredAt := time.Now().Add(time.Hour * 24 * 2).UnixMilli()
@@ -872,11 +855,7 @@ func PrepareOfferTxInfo(seed string, accountIndex, nftIndex, offerId int64, sell
 	}
 	return tx
 }
-func SignMessage(seed, message string) string {
-	key, err := curve.GenerateEddsaPrivateKey(seed)
-	if err != nil {
-		panic("failed to generate key pair, err: " + err.Error())
-	}
+func SignMessage(key KeyManager, message string) string {
 	fmt.Println("message: ", message)
 	sig, err := key.Sign([]byte(message), mimc.NewMiMC())
 	if err != nil {
@@ -888,12 +867,9 @@ func SignMessage(seed, message string) string {
 
 	return signed
 }
-func PrepareAtomicMatchWithTx(privateSeed string, nftIndex, accountIndex, offerId, buyerNonce int64, offerTxReady *OfferTxInfo, isSell bool, assetId int64, AssetAmount *big.Int) string {
-	privatekey, err := curve.GenerateEddsaPrivateKey(privateSeed)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("buyer pubkey ", hex.EncodeToString(privatekey.PublicKey.Bytes()))
+func PrepareAtomicMatchWithTx(key KeyManager, nftIndex, accountIndex, offerId, buyerNonce int64, offerTxReady *OfferTxInfo, isSell bool, assetId int64, AssetAmount *big.Int) string {
+
+	fmt.Println("buyer pubkey ", hex.EncodeToString(key.Public().Bytes()))
 
 	listedAt := time.Now().UnixMilli()
 	expiredAt := time.Now().Add(time.Hour * 24 * 2).UnixMilli()
@@ -910,7 +886,7 @@ func PrepareAtomicMatchWithTx(privateSeed string, nftIndex, accountIndex, offerI
 		Sig:          nil,
 	}
 
-	signedTx, err := ConstructOfferTx(privatekey, signedOfferPre)
+	signedTx, err := ConstructOfferTx(key, signedOfferPre)
 	if err != nil {
 		panic(err)
 	}
@@ -945,7 +921,7 @@ func PrepareAtomicMatchWithTx(privateSeed string, nftIndex, accountIndex, offerI
 		}
 	}
 
-	tx, err := ConstructAtomicMatchTx(privatekey, txInfo)
+	tx, err := ConstructAtomicMatchTx(key, txInfo)
 	if err != nil {
 		panic(err)
 	}
