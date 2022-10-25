@@ -24,7 +24,9 @@ func NewSeedKeyManager(seed string) (KeyManager, error) {
 
 	return &SeedKeyManager{privateKey: key}, nil
 }
-
+func NewNilSeedKeyManager() (KeyManager, error) {
+	return &SeedKeyManager{}, nil
+}
 func (key *SeedKeyManager) Sign(message []byte, hFunc hash.Hash) ([]byte, error) {
 	return key.privateKey.Sign(message, hFunc)
 }

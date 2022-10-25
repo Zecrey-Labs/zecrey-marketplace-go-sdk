@@ -852,3 +852,13 @@ type RespetPreparetxInfo struct {
 	TxType    int64  `json:"tx_type"`
 	Transtion string `json:"transtion"`
 }
+
+type ReqApplyRegisterHost struct {
+	AccountName string `form:"account_name"`
+	L2Pk        string `form:"l2_pk"`
+	OwnerAddr   string `form:"owner_addr"`
+}
+
+type RespApplyRegisterHost struct {
+	Ok bool `json:"ok"`
+}

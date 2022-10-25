@@ -1,10 +1,18 @@
 package sdk
 
-import "math/big"
+import (
+	"fmt"
+	"github.com/zecrey-labs/zecrey-eth-rpc/_rpc"
+	"math/big"
+)
 
 type ZecreyLegendSDK interface {
 
 	//nftmarket
+	CreateL1Account() (l1Addr, privateKeyStr, l2pk, seed string, err error)
+	RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, ZecreyLegendContract, ZnsPriceOracle string) (txHash string, err error)
+	GetAccountByAccountName(accountName, ZecreyLegendContract string) (address string, err error)
+	ApplyRegisterHost(accountName string, l2Pk string, OwnerAddr string) (*RespApplyRegisterHost, error)
 
 	CreateCollection(
 		accountName string, ShortName string, CategoryId string, CollectionUrl string,
@@ -40,10 +48,15 @@ type ZecreyLegendSDK interface {
 	AcceptOffer(accountName string, offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error)
 }
 
-func NewZecreyNftMarketSDK(legendUrl, nftmarketUrl string, keyManager KeyManager) ZecreyLegendSDK {
+func NewZecreyNftMarketSDK(rpcUrl, legendUrl, nftmarketUrl string, keyManager KeyManager) ZecreyLegendSDK {
+	connEth, err := _rpc.NewClient(rpcUrl)
+	if err != nil {
+		panic(fmt.Sprintf("wrong rpc url:%s", rpcUrl))
+	}
 	return &client{
-		nftMarketURL: nftmarketUrl,
-		legendURL:    legendUrl,
-		keyManager:   keyManager,
+		nftMarketURL:   nftmarketUrl,
+		legendURL:      legendUrl,
+		providerClient: connEth,
+		keyManager:     keyManager,
 	}
 }

@@ -2,28 +2,47 @@ package sdk
 
 import (
 	"bytes"
-	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	curve "github.com/zecrey-labs/zecrey-crypto/ecc/ztwistededwards/tebn254"
-	"sort"
-
+	"context"
+	"crypto/ecdsa"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
+	ethchain "github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/log"
+	curve "github.com/zecrey-labs/zecrey-crypto/ecc/ztwistededwards/tebn254"
+	"github.com/zecrey-labs/zecrey-crypto/util/ecdsaHelper"
+	"github.com/zecrey-labs/zecrey-crypto/util/eddsaHelper"
+	"github.com/zecrey-labs/zecrey-eth-rpc/_rpc"
+	zecreyLegendRpc "github.com/zecrey-labs/zecrey-eth-rpc/zecrey/core/zecrey-legend"
+	zecreyLegendUtil "github.com/zecrey-labs/zecrey-legend/common/util"
+	"github.com/zeromicro/go-zero/core/logx"
 	"io/ioutil"
 	"math/big"
 	"net/http"
 	"net/url"
+	"os"
+	"sort"
 	"strings"
 	"time"
 )
 
+const (
+	DefaultGasLimit = 5000000
+	NameSuffix      = ".zec"
+)
+
 type client struct {
-	nftMarketURL string
-	legendURL    string
-	keyManager   KeyManager
+	nftMarketURL   string
+	legendURL      string
+	providerClient *_rpc.ProviderClient
+	keyManager     KeyManager
 }
 
 func (c *client) SetKeyManager(keyManager KeyManager) {
@@ -32,31 +51,91 @@ func (c *client) SetKeyManager(keyManager KeyManager) {
 
 /*=========================== account =======================*/
 
-func (c *client) CreateAccount(accountPk string, offset, limit uint32) (total uint32, txs []*Tx, err error) {
-	resp, err := http.Get(c.legendURL +
-		fmt.Sprintf("/api/v1/tx/getTxsByPubKey?account_pk=%s&offset=%d&limit=%d",
-			accountPk, offset, limit))
+func (c *client) CreateL1Account() (l1Addr, privateKeyStr, l2pk, seed string, err error) {
+	privateKey, err := crypto.GenerateKey()
 	if err != nil {
-		return 0, nil, err
+		logx.Errorf("[] GenerateKey err: %s", err)
+		return "", "", "", "", err
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	privateKeyStr = hex.EncodeToString(crypto.FromECDSA(privateKey))
+	l1Addr, err = ecdsaHelper.GenerateL1Address(privateKey)
+	fmt.Println("l1Addr", l1Addr)
 	if err != nil {
-		return 0, nil, err
+		logx.Errorf("[] GenerateL1Address err: %s", err)
+		return "", "", "", "", err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return 0, nil, fmt.Errorf(string(body))
+	seed, err = eddsaHelper.GetEddsaSeed(privateKey)
+	if err != nil {
+		logx.Errorf("[] GetEddsaSeed err: %s", err)
+		return "", "", "", "", err
 	}
-	result := &RespGetTxsByPubKey{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return 0, nil, err
-	}
-	return result.Total, result.Txs, nil
+	fmt.Println("seed", seed)
+	l2pk = eddsaHelper.GetEddsaPublicKey(seed[2:])
+	fmt.Println("pk", l2pk)
+	return
 }
-func (c *client) CreateAccountWithPrivatekey(accountPk string, offset, limit uint32) (*AccountInfo, error) {
-	resp, err := http.Get(c.legendURL +
-		fmt.Sprintf("/api/v1/tx/getTxsByPubKey?account_pk=%s&offset=%d&limit=%d",
-			accountPk, offset, limit))
+
+func (c *client) RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, ZecreyLegendContract, ZnsPriceOracle string) (txHash string, err error) {
+	var chainId *big.Int
+	chainId, err = c.providerClient.ChainID(context.Background())
+	if err != nil {
+		return "", err
+	}
+	authCli, err := _rpc.NewAuthClient(c.providerClient, privateKey, chainId)
+	if err != nil {
+		return "", err
+	}
+	px, py, err := zecreyLegendUtil.PubKeyStrToPxAndPy(l2pk)
+	if err != nil {
+		return "", err
+	}
+
+	gasPrice, err := c.providerClient.SuggestGasPrice(context.Background())
+	if err != nil {
+		return "", err
+	}
+	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
+	if err != nil {
+		return "", err
+	}
+	priceOracleInstance, err := zecreyLegendRpc.LoadStablePriceOracleInstance(c.providerClient, ZnsPriceOracle)
+	if err != nil {
+		return "", err
+	}
+	txHash, err = zecreyLegendRpc.RegisterZNS(c.providerClient, authCli,
+		zecreyInstance, priceOracleInstance,
+		gasPrice, DefaultGasLimit, accountName,
+		common.HexToAddress(l1Addr), px, py)
+	return txHash, err
+}
+
+func (c *client) GetAccountByAccountName(accountName, ZecreyLegendContract string) (address string, err error) {
+	res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
+	if err != nil {
+		logx.Error(err)
+		return "", err
+	}
+	resBytes := zecreyLegendUtil.SetFixed32Bytes(res)
+	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
+	if err != nil {
+		return "", err
+	}
+	// fetch by accountNameHash
+	addr, err := zecreyInstance.GetAddressByAccountNameHash(zecreyLegendRpc.EmptyCallOpts(), resBytes)
+	if err != nil {
+		logx.Error(err)
+		return "", err
+	}
+	return addr.String(), nil
+}
+
+func (c *client) ApplyRegisterHost(
+	accountName string, l2Pk string, OwnerAddr string) (*RespApplyRegisterHost, error) {
+	resp, err := http.PostForm(c.legendURL+"/api/v1/register/applyRegisterHost",
+		url.Values{
+			"account_name": {accountName},
+			"l2_pk":        {l2Pk},
+			"owner_addr":   {OwnerAddr}})
 	if err != nil {
 		return nil, err
 	}
@@ -68,32 +147,11 @@ func (c *client) CreateAccountWithPrivatekey(accountPk string, offset, limit uin
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	result := &AccountInfo{}
+	result := &RespApplyRegisterHost{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
 	return result, nil
-}
-func (c *client) GetAccountByAccountName(accountPk string, offset, limit uint32) (total uint32, txs []*Tx, err error) {
-	resp, err := http.Get(c.legendURL +
-		fmt.Sprintf("/api/v1/tx/getTxsByPubKey?account_pk=%s&offset=%d&limit=%d",
-			accountPk, offset, limit))
-	if err != nil {
-		return 0, nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return 0, nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return 0, nil, fmt.Errorf(string(body))
-	}
-	result := &RespGetTxsByPubKey{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return 0, nil, err
-	}
-	return result.Total, result.Txs, nil
 }
 
 /*=========================== collection =======================*/
@@ -823,8 +881,117 @@ func SignMessage(key KeyManager, message string) string {
 
 	signed := hex.EncodeToString(sig[:])
 	fmt.Println("signed:", signed)
-
 	return signed
+}
+func PackInput(abi *abi.ABI, abiMethod string, params ...interface{}) []byte {
+	input, err := abi.Pack(abiMethod, params...)
+	if err != nil {
+		log.Error(abiMethod, " error", err)
+	}
+	return input
+}
+func sendContractTransaction(client *ethclient.Client, from, toAddress common.Address, value *big.Int, privateKey *ecdsa.PrivateKey, input []byte) common.Hash {
+	// Ensure a valid value field and resolve the account nonce
+	logger := log.New("func", "sendContractTransaction")
+	nonce, err := client.PendingNonceAt(context.Background(), from)
+	if err != nil {
+		logger.Error("PendingNonceAt", "error", err)
+	}
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	//gasPrice = big.NewInt(1000 000 000 000)
+	if err != nil {
+		log.Error("SuggestGasPrice", "error", err)
+	}
+	gasLimit := uint64(DefaultGasLimit) // in units
+
+	//If the contract surely has code (or code is not needed), estimate the transaction
+
+	msg := ethchain.CallMsg{From: from, To: &toAddress, GasPrice: gasPrice, Value: value, Data: input, GasFeeCap: big.NewInt(3000000000000)}
+	gasLimit, err = client.EstimateGas(context.Background(), msg)
+	if err != nil {
+		logger.Error("Contract exec failed", "error", err)
+	}
+	if gasLimit < 1 {
+		//gasLimit = 866328
+		gasLimit = 2100000
+	}
+	gasLimit = uint64(DefaultGasLimit)
+
+	// Create the transaction, sign it and schedule it for execution
+	tx := types.NewTransaction(nonce, toAddress, value, gasLimit, gasPrice, input)
+
+	chainID, _ := client.ChainID(context.Background())
+	logger.Info("TxInfo", "TX data nonce ", nonce, " gasLimit ", gasLimit, " gasPrice ", gasPrice, " chainID ", chainID)
+	signer := types.LatestSignerForChainID(chainID)
+	signedTx, err := types.SignTx(tx, signer, privateKey)
+	if err != nil {
+		log.Error("SignTx", "error", err)
+	}
+
+	err = client.SendTransaction(context.Background(), signedTx)
+	if err != nil {
+		log.Error("SendTransaction", "error", err)
+	}
+	return signedTx.Hash()
+}
+
+func getResult(conn *ethclient.Client, txHash common.Hash, contract bool) {
+	logger := log.New("func", "getResult")
+	logger.Info("Please waiting ", " txHash ", txHash.String())
+	i := 0
+	for {
+		time.Sleep(time.Millisecond * 200)
+		i++
+		_, isPending, err := conn.TransactionByHash(context.Background(), txHash)
+		if err != nil {
+			logger.Info("TransactionByHash", "error", err)
+		}
+		if !isPending {
+			break
+		}
+		if i > 20 {
+			break
+		}
+	}
+
+	queryTx(conn, txHash, contract, false)
+}
+func queryTx(conn *ethclient.Client, txHash common.Hash, contract bool, pending bool) {
+	logger := log.New("func", "queryTx")
+	if pending {
+		_, isPending, err := conn.TransactionByHash(context.Background(), txHash)
+		if err != nil {
+			logger.Error("TransactionByHash", "error", err)
+		}
+		if isPending {
+			println("In tx_pool no validator  process this, please query later")
+			os.Exit(0)
+		}
+	}
+
+	receipt, err := conn.TransactionReceipt(context.Background(), txHash)
+	if err != nil {
+		for {
+			time.Sleep(time.Millisecond * 200)
+			receipt, err = conn.TransactionReceipt(context.Background(), txHash)
+			if err == nil {
+				break
+			}
+		}
+		logger.Error("TransactionReceipt", "error", err)
+	}
+
+	if receipt.Status == types.ReceiptStatusSuccessful {
+		//block, err := conn.BlockByHash(context.Background(), receipt.BlockHash)
+		//if err != nil {
+		//	logger.Error("BlockByHash", err)
+		//}
+		//logger.Info("Transaction Success", " block Number", receipt.BlockNumber.Uint64(), " block txs", len(block.Transactions()), "blockhash", block.Hash().Hex())
+		logger.Info("Transaction Success", "block Number", receipt.BlockNumber.Uint64())
+	} else if receipt.Status == types.ReceiptStatusFailed {
+		//isContinueError = false
+		logger.Info("Transaction Failed ", "Block Number", receipt.BlockNumber.Uint64())
+	}
 }
 
 /* ================ legend ========================= */
