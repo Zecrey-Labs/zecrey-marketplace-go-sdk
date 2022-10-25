@@ -3,26 +3,10 @@ package sdk
 import (
 	"bytes"
 	"context"
-	"crypto/ecdsa"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
-	ethchain "github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/log"
-	curve "github.com/zecrey-labs/zecrey-crypto/ecc/ztwistededwards/tebn254"
-	"github.com/zecrey-labs/zecrey-crypto/util/ecdsaHelper"
-	"github.com/zecrey-labs/zecrey-crypto/util/eddsaHelper"
-	"github.com/zecrey-labs/zecrey-eth-rpc/_rpc"
-	zecreyLegendRpc "github.com/zecrey-labs/zecrey-eth-rpc/zecrey/core/zecrey-legend"
-	zecreyLegendUtil "github.com/zecrey-labs/zecrey-legend/common/util"
-	"github.com/zeromicro/go-zero/core/logx"
 	"io/ioutil"
 	"math/big"
 	"net/http"
@@ -31,6 +15,22 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/log"
+
+	curve "github.com/zecrey-labs/zecrey-crypto/ecc/ztwistededwards/tebn254"
+	"github.com/zecrey-labs/zecrey-crypto/util/ecdsaHelper"
+	"github.com/zecrey-labs/zecrey-crypto/util/eddsaHelper"
+	"github.com/zecrey-labs/zecrey-eth-rpc/_rpc"
+	zecreyLegendRpc "github.com/zecrey-labs/zecrey-eth-rpc/zecrey/core/zecrey-legend"
+	zecreyLegendUtil "github.com/zecrey-labs/zecrey-legend/common/util"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 const (
@@ -59,7 +59,6 @@ func (c *client) CreateL1Account() (l1Addr, privateKeyStr, l2pk, seed string, er
 	}
 	privateKeyStr = hex.EncodeToString(crypto.FromECDSA(privateKey))
 	l1Addr, err = ecdsaHelper.GenerateL1Address(privateKey)
-	fmt.Println("l1Addr", l1Addr)
 	if err != nil {
 		logx.Errorf("[] GenerateL1Address err: %s", err)
 		return "", "", "", "", err
@@ -69,9 +68,7 @@ func (c *client) CreateL1Account() (l1Addr, privateKeyStr, l2pk, seed string, er
 		logx.Errorf("[] GetEddsaSeed err: %s", err)
 		return "", "", "", "", err
 	}
-	fmt.Println("seed", seed)
 	l2pk = eddsaHelper.GetEddsaPublicKey(seed[2:])
-	fmt.Println("pk", l2pk)
 	return
 }
 
@@ -213,8 +210,6 @@ func (c *client) CreateCollection(
 	}
 	return result, nil
 }
-
-// api/v1/action/actionGetCollectionById
 
 func (c *client) GetCollectionById(collectionId int64) (*RespGetCollectionByCollectionId, error) {
 	request_query := fmt.Sprintf("query MyQuery {\n  actionGetCollectionById(collection_id: %d) {\n    collection {\n      account_name\n      banner_thumb\n    }\n  }\n}\n", collectionId)
@@ -422,7 +417,6 @@ func (c *client) GetNftByNftId(nftId int64) (*RespetAssetByAssetId, error) {
 		return nil, err
 	}
 	return result, nil
-
 }
 
 func (c *client) TransferNft(
@@ -453,7 +447,6 @@ func (c *client) TransferNft(
 			"transaction": {txInfo},
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -495,7 +488,6 @@ func (c *client) WithdrawNft(accountName string, AssetId int64) (*ResqSendWithdr
 			"transaction": {txInfo},
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -552,7 +544,6 @@ func (c *client) BuyNft(accountName string, AssetId int64, moneyType int64, Asse
 	if err := json.Unmarshal(body, &resultPrepare); err != nil {
 		return nil, err
 	}
-
 	tx, err := PrepareOfferTxInfo(c.keyManager, resultPrepare.Transtion, false)
 	if err != nil {
 		return nil, err
@@ -603,6 +594,7 @@ func (c *client) GetNextOfferId(AccountName string) (*RespGetNextOfferId, error)
 	}
 	return result, nil
 }
+
 func (c *client) GetOfferById(OfferId int64) (*RespGetOfferByOfferId, error) {
 	resp, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/offer/getOfferByOfferId?offer_id=%d", OfferId))
 
@@ -654,7 +646,6 @@ func (c *client) AcceptOffer(accountName string, offerId int64, isSell bool, Ass
 	if err != nil {
 		return nil, err
 	}
-
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -683,6 +674,7 @@ func PrepareCreateCollectionTxInfo(key KeyManager, txInfoPrepare string) (string
 	}
 	return tx, nil
 }
+
 func PrepareMintNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
 	txInfo := &MintNftTxInfo{}
 	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
@@ -740,6 +732,7 @@ func PrepareAtomicMatchWithTx(key KeyManager, txInfoPrepare string, isSell bool,
 	}
 	return tx, err
 }
+
 func PrepareWithdrawNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
 	txInfo := &WithdrawNftTxInfo{}
 	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
@@ -752,6 +745,7 @@ func PrepareWithdrawNftTxInfo(key KeyManager, txInfoPrepare string) (string, err
 	}
 	return tx, err
 }
+
 func PrepareOfferTxInfo(key KeyManager, txInfoPrepare string, isSell bool) (string, error) {
 	txInfo := &OfferTxInfo{}
 	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
@@ -792,10 +786,12 @@ func accountNameHash(accountName string) (res string, err error) {
 	res = common.Bytes2Hex(subNodeBytes)
 	return res, nil
 }
+
 func keccakHash(value []byte) []byte {
 	hashVal := crypto.Keccak256Hash(value)
 	return hashVal[:]
 }
+
 func calculateContentHash(accountName string, collectionId int64, name string, _properties string, _levels string, _stats string) (string, error) {
 
 	var (
@@ -872,6 +868,7 @@ func calculateContentHash(accountName string, collectionId int64, name string, _
 	fmt.Println("==nft content ==", content)
 	return common.Bytes2Hex(bytes[:]), nil
 }
+
 func SignMessage(key KeyManager, message string) string {
 	fmt.Println("message: ", message)
 	sig, err := key.Sign([]byte(message), mimc.NewMiMC())
@@ -882,57 +879,6 @@ func SignMessage(key KeyManager, message string) string {
 	signed := hex.EncodeToString(sig[:])
 	fmt.Println("signed:", signed)
 	return signed
-}
-func PackInput(abi *abi.ABI, abiMethod string, params ...interface{}) []byte {
-	input, err := abi.Pack(abiMethod, params...)
-	if err != nil {
-		log.Error(abiMethod, " error", err)
-	}
-	return input
-}
-func sendContractTransaction(client *ethclient.Client, from, toAddress common.Address, value *big.Int, privateKey *ecdsa.PrivateKey, input []byte) common.Hash {
-	// Ensure a valid value field and resolve the account nonce
-	logger := log.New("func", "sendContractTransaction")
-	nonce, err := client.PendingNonceAt(context.Background(), from)
-	if err != nil {
-		logger.Error("PendingNonceAt", "error", err)
-	}
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	//gasPrice = big.NewInt(1000 000 000 000)
-	if err != nil {
-		log.Error("SuggestGasPrice", "error", err)
-	}
-	gasLimit := uint64(DefaultGasLimit) // in units
-
-	//If the contract surely has code (or code is not needed), estimate the transaction
-
-	msg := ethchain.CallMsg{From: from, To: &toAddress, GasPrice: gasPrice, Value: value, Data: input, GasFeeCap: big.NewInt(3000000000000)}
-	gasLimit, err = client.EstimateGas(context.Background(), msg)
-	if err != nil {
-		logger.Error("Contract exec failed", "error", err)
-	}
-	if gasLimit < 1 {
-		//gasLimit = 866328
-		gasLimit = 2100000
-	}
-	gasLimit = uint64(DefaultGasLimit)
-
-	// Create the transaction, sign it and schedule it for execution
-	tx := types.NewTransaction(nonce, toAddress, value, gasLimit, gasPrice, input)
-
-	chainID, _ := client.ChainID(context.Background())
-	logger.Info("TxInfo", "TX data nonce ", nonce, " gasLimit ", gasLimit, " gasPrice ", gasPrice, " chainID ", chainID)
-	signer := types.LatestSignerForChainID(chainID)
-	signedTx, err := types.SignTx(tx, signer, privateKey)
-	if err != nil {
-		log.Error("SignTx", "error", err)
-	}
-
-	err = client.SendTransaction(context.Background(), signedTx)
-	if err != nil {
-		log.Error("SendTransaction", "error", err)
-	}
-	return signedTx.Hash()
 }
 
 func getResult(conn *ethclient.Client, txHash common.Hash, contract bool) {
