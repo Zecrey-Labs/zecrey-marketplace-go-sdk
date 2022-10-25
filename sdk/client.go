@@ -54,18 +54,18 @@ func (c *client) SetKeyManager(keyManager KeyManager) {
 func (c *client) CreateL1Account() (l1Addr, privateKeyStr, l2pk, seed string, err error) {
 	privateKey, err := crypto.GenerateKey()
 	if err != nil {
-		logx.Errorf("[] GenerateKey err: %s", err)
+		logx.Errorf("[CreateL1Account] GenerateKey err: %s", err)
 		return "", "", "", "", err
 	}
 	privateKeyStr = hex.EncodeToString(crypto.FromECDSA(privateKey))
 	l1Addr, err = ecdsaHelper.GenerateL1Address(privateKey)
 	if err != nil {
-		logx.Errorf("[] GenerateL1Address err: %s", err)
+		logx.Errorf("[CreateL1Account] GenerateL1Address err: %s", err)
 		return "", "", "", "", err
 	}
 	seed, err = eddsaHelper.GetEddsaSeed(privateKey)
 	if err != nil {
-		logx.Errorf("[] GetEddsaSeed err: %s", err)
+		logx.Errorf("[CreateL1Account] GetEddsaSeed err: %s", err)
 		return "", "", "", "", err
 	}
 	l2pk = eddsaHelper.GetEddsaPublicKey(seed[2:])

@@ -311,7 +311,7 @@ func TestCreateL1Account(t *testing.T) {
 	//l2pk: 06278b99871f1d64fcc83bd27713cbf743d957c510a245d6bfb0eae888e35452274a2b4c8c7b7424f25d7d187661225111753197248fa045fd872aa662fdcb24
 }
 
-func TestCreateAccount(t *testing.T) {
+func TestRegisterAccountWithPrivateKey(t *testing.T) {
 	accountName := "zhangwei"
 	l1Addr := "0xD207262DEA01aE806fA2dCaEdd489Bd2f5FABcFE"
 	l2pk := "06278b99871f1d64fcc83bd27713cbf743d957c510a245d6bfb0eae888e35452274a2b4c8c7b7424f25d7d187661225111753197248fa045fd872aa662fdcb24"
@@ -325,7 +325,7 @@ func TestCreateAccount(t *testing.T) {
 	fmt.Println("txHash:", txHash)
 }
 
-func TestGetAccount(t *testing.T) {
+func TestGetAccountByAccountName(t *testing.T) {
 	accountName := "zhangwei"
 	seed := "0x6a1a320d14790f2d9aa9a37769f4833d583a3f7f974fd452a3990aeb0e7a6052"
 	keyManager, err := NewSeedKeyManager(seed)
