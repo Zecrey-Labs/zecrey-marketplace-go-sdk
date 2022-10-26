@@ -427,3 +427,22 @@ type RespGetLayer2BasicInfo struct {
 	DauToday                   int64    `json:"dau_today"`
 	ContractAddresses          []string `json:"contract_addresses"`
 }
+
+type RespGetAccountByAccountName struct {
+	Account NftAccountInfo `json:"account"`
+}
+
+type NftAccountInfo struct {
+	Id            int64  `json:"id"`
+	AccountName   string `json:"account_name"`
+	Bio           string `json:"bio"`
+	Email         string `json:"email"`
+	ExternalLink  string `json:"external_link"`
+	TwitterLink   string `json:"twitter_link"`
+	InstagramLink string `json:"instagram_link"`
+	ProfileImage  string `json:"profile_image"`
+	ProfileThumb  string `json:"profile_thumb"`
+	BannerImage   string `json:"banner_image"`
+	BannerThumb   string `json:"banner_thumb"`
+	CreatedAt     int64  `json:"created_at"`
+}

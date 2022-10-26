@@ -27,8 +27,7 @@ func TestParseCreateCollectionTxInfo(t *testing.T) {
 	CreatorEarningRate := "6666"
 	PaymentAssetIds := "[]"
 
-	keyManager, err := NewSeedKeyManager(seed)
-	c := NewZecreyNftMarketSDK(keyManager)
+	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret, err := c.CreateCollection(accountName, ShortName, CategoryId, CreatorEarningRate,
 		model.WithCollectionUrl(CollectionUrl),
 		model.WithExternalLink(ExternalLink),
@@ -57,8 +56,8 @@ func TestParseCreateCollectionTxInfo(t *testing.T) {
 func TestGetCollectionById(t *testing.T) {
 	var collectionId int64 = 54
 	seed := "28e1a3762f....."
-	keyManager, err := NewSeedKeyManager(seed)
-	c := NewZecreyNftMarketSDK(keyManager)
+	accountName := "xxx"
+	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.GetCollectionById(collectionId)
 	if err != nil {
 		t.Fatal(err)
@@ -70,8 +69,8 @@ func TestGetCollectionById(t *testing.T) {
 func TestGetCollectionByAccountIndex(t *testing.T) {
 	var accountIndex int64 = 2
 	seed := "28e1a3762f....."
-	keyManager, err := NewSeedKeyManager(seed)
-	c := NewZecreyNftMarketSDK(keyManager)
+	accountName := "xxx"
+	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.GetCollectionsByAccountIndex(accountIndex)
 	if err != nil {
 		t.Fatal(err)
@@ -97,8 +96,7 @@ func TestUpdateCollection(t *testing.T) {
 
 	var AccountIndex int64 = 2
 	seed := "28e1a3762f....."
-	keyManager, err := NewSeedKeyManager(seed)
-	c := NewZecreyNftMarketSDK(keyManager)
+	c := NewZecreyNftMarketSDK(AccountName, seed)
 	ret, err := c.UpdateCollection(Id, AccountName, Name,
 		model.WithCollectionUrl(CollectionUrl),
 		model.WithExternalLink(ExternalLink),
@@ -159,8 +157,7 @@ func TestMintNft(t *testing.T) {
 	_StatsByte, err := json.Marshal(_Stats)
 	seed := "28e1a3762f....."
 
-	keyManager, err := NewSeedKeyManager(seed)
-	c := NewZecreyNftMarketSDK(keyManager)
+	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret, err := c.MintNft(accountName,
 		CollectionId,
 		NftUrl, Name,
@@ -183,8 +180,8 @@ func TestMintNft(t *testing.T) {
 func TestGetNftByNftId(t *testing.T) {
 	var nftId int64 = 140
 	seed := "28e1a3762f....."
-	keyManager, err := NewSeedKeyManager(seed)
-	c := NewZecreyNftMarketSDK(keyManager)
+	accountName := "xxx"
+	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.GetNftByNftId(nftId)
 	if err != nil {
 		t.Fatal(err)
@@ -198,8 +195,8 @@ func TestTransferNft(t *testing.T) {
 	seed := "28e1a3762f....."
 	accountName := "sher.zec"
 	toAccountName := "gavin.zec"
-	keyManager, err := NewSeedKeyManager(seed)
-	c := NewZecreyNftMarketSDK(keyManager)
+
+	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.TransferNft(AssetId, accountName, toAccountName)
 	if err != nil {
 		t.Fatal(err)
@@ -212,8 +209,8 @@ func TestWithdrawNft(t *testing.T) {
 	var AssetId int64 = 140
 	seed := "17673b9a9....."
 	accountName := "gavin.zec"
-	keyManager, err := NewSeedKeyManager(seed)
-	c := NewZecreyNftMarketSDK(keyManager)
+
+	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.WithdrawNft(accountName, AssetId)
 	if err != nil {
 		t.Fatal(err)
@@ -226,8 +223,8 @@ func TestSellOffer(t *testing.T) {
 	var AssetId int64 = 139
 	seed := "28e1a3762f....."
 	accountName := "sher.zec"
-	keyManager, err := NewSeedKeyManager(seed)
-	c := NewZecreyNftMarketSDK(keyManager)
+
+	c := NewZecreyNftMarketSDK(accountName, seed)
 
 	ret2, err := c.SellNft(accountName, AssetId, 0, big.NewInt(1000000))
 	if err != nil {
@@ -241,8 +238,8 @@ func TestBuyOffer(t *testing.T) {
 	var AssetId int64 = 139
 	seed := "17673b9a9....."
 	accountName := "gavin.zec"
-	keyManager, err := NewSeedKeyManager(seed)
-	c := NewZecreyNftMarketSDK(keyManager)
+
+	c := NewZecreyNftMarketSDK(accountName, seed)
 
 	ret2, err := c.BuyNft(accountName, AssetId, 0, big.NewInt(1000000))
 	if err != nil {
@@ -256,8 +253,8 @@ func TestAcceptOffer(t *testing.T) {
 	var offerId int64 = 7
 	seed := "17673b9a9....."
 	accountName := "gavin.zec"
-	keyManager, err := NewSeedKeyManager(seed)
-	c := NewZecreyNftMarketSDK(keyManager)
+
+	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.AcceptOffer(accountName, offerId, false, big.NewInt(1000000))
 	if err != nil {
 		t.Fatal(err)
@@ -267,8 +264,7 @@ func TestAcceptOffer(t *testing.T) {
 }
 
 func TestCreateL1Account(t *testing.T) {
-	keyManager, err := NewNilSeedKeyManager()
-	c := NewZecreyNftMarketSDK(keyManager)
+	c := &client{}
 	l1Addr, privateKeyStr, l2pk, seed, err := c.CreateL1Account()
 	if err != nil {
 		t.Fatal(err)
@@ -290,8 +286,7 @@ func TestRegisterAccountWithPrivateKey(t *testing.T) {
 	seed := "0x6a1a320d14790f2d9aa9a37769f4833d583a3f7f974fd452a3990aeb0e7a6052"
 	l2pk := "06278b99871f1d64fcc83bd27713cbf743d957c510a245d6bfb0eae888e35452274a2b4c8c7b7424f25d7d187661225111753197248fa045fd872aa662fdcb24"
 	privateKey := "1a061a8e74cee1ce2e2ddd29f5afea99ecfbaf1998b6d349a8c09a368e637b8e"
-	keyManager, err := NewNilSeedKeyManager()
-	c := NewZecreyNftMarketSDK(keyManager)
+	c := NewZecreyNftMarketSDK(accountName, seed)
 	txHash, err := c.RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, seed)
 	if err != nil {
 		t.Fatal(err)
@@ -302,8 +297,8 @@ func TestRegisterAccountWithPrivateKey(t *testing.T) {
 func TestGetAccountByAccountName(t *testing.T) {
 	accountName := "zhangwei"
 	seed := "0x6a1a320d14790f2d9aa9a37769f4833d583a3f7f974fd452a3990aeb0e7a6052"
-	keyManager, err := NewSeedKeyManager(seed)
-	c := NewZecreyNftMarketSDK(keyManager)
+
+	c := NewZecreyNftMarketSDK(accountName, seed)
 	address, err := c.GetAccountByAccountName(accountName)
 	if err != nil {
 		t.Fatal(err)
@@ -316,11 +311,7 @@ func TestApplyRegisterHost(t *testing.T) {
 	l2pk := "06278b99871f1d64fcc83bd27713cbf743d957c510a245d6bfb0eae888e35452274a2b4c8c7b7424f25d7d187661225111753197248fa045fd872aa662fdcb24"
 	accountName := "zhangwei"
 	seed := "0x6a1a320d14790f2d9aa9a37769f4833d583a3f7f974fd452a3990aeb0e7a6052"
-	keyManager, err := NewSeedKeyManager(seed)
-	if err != nil {
-		t.Fatal(err)
-	}
-	c := NewZecreyNftMarketSDK(keyManager)
+	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret, err := c.ApplyRegisterHost(accountName, l2pk, l1Addr)
 	if err != nil {
 		t.Fatal(err)

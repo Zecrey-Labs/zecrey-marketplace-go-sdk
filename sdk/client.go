@@ -46,6 +46,7 @@ const (
 )
 
 type client struct {
+	accountName    string
 	nftMarketURL   string
 	legendURL      string
 	providerClient *_rpc.ProviderClient
@@ -82,11 +83,7 @@ func (c *client) RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privat
 		if err != nil {
 			return nil, err
 		}
-		keyManager, err := NewSeedKeyManager(seed)
-		if err != nil {
-			return nil, err
-		}
-		return NewZecreyNftMarketSDK(keyManager), nil
+		return NewZecreyNftMarketSDK(accountName, seed), nil
 	}
 	var chainId *big.Int
 	chainId, err := c.providerClient.ChainID(context.Background())
@@ -128,12 +125,7 @@ func (c *client) RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privat
 	if err != nil {
 		return nil, err
 	}
-	keyManager, err := NewSeedKeyManager(seed)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewZecreyNftMarketSDK(keyManager), nil
+	return NewZecreyNftMarketSDK(accountName, seed), nil
 }
 
 func (c *client) GetAccountIsRegistered(accountName string) (bool, error) {
@@ -169,34 +161,25 @@ func BytesToAddress(b []byte) common.Address {
 	a.SetBytes(b)
 	return a
 }
-func (c *client) GetAccountByAccountName(accountName string) (address string, err error) {
-	//res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
-	//if err != nil {
-	//	logx.Error(err)
-	//	return "", err
-	//}
-	////get base contract address
-	//resp, err := c.GetLayer2BasicInfo()
-	//if err != nil {
-	//	return "", err
-	//}
-	//ZecreyLegendContract = resp.ContractAddresses[0]
-	//ZnsPriceOracle = resp.ContractAddresses[1]
-	//
-	//resBytes := zecreyLegendUtil.SetFixed32Bytes(res)
-	//zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
-	//if err != nil {
-	//	return "", err
-	//}
-	//// fetch by accountNameHash
-	//addr, err := zecreyInstance.GetAddressByAccountNameHash(zecreyLegendRpc.EmptyCallOpts(), resBytes)
-	//if err != nil {
-	//	logx.Error(err)
-	//	return "", err
-	//}
-	//return addr.String(), nil
 
-	return "", err
+func (c *client) GetAccountByAccountName(accountName string) (*RespGetAccountByAccountName, error) {
+	resp, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/account/getAccountByAccountName?account_name=%s", accountName))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetAccountByAccountName{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func (c *client) ApplyRegisterHost(
@@ -225,14 +208,14 @@ func (c *client) ApplyRegisterHost(
 }
 
 func (c *client) CreateCollection(
-	accountName string, ShortName string, CategoryId string, CreatorEarningRate string,
+	ShortName string, CategoryId string, CreatorEarningRate string,
 	ops ...model.CollectionOption) (*RespCreateCollection, error) {
 	cp := &model.CollectionParams{}
 	for _, do := range ops {
 		do.F(cp)
 	}
 
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareCreateCollectionTxInfo?account_name=%s", accountName))
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareCreateCollectionTxInfo?account_name=%s", c.accountName))
 	if err != nil {
 		return nil, err
 	}
@@ -316,7 +299,7 @@ func (c *client) GetCollectionById(collectionId int64) (*RespGetCollectionByColl
 	return result, nil
 }
 
-func (c *client) UpdateCollection(Id string, AccountName string, Name string,
+func (c *client) UpdateCollection(Id string, Name string,
 	ops ...model.CollectionOption) (*RespUpdateCollection, error) {
 	cp := &model.CollectionParams{}
 	for _, do := range ops {
@@ -329,7 +312,7 @@ func (c *client) UpdateCollection(Id string, AccountName string, Name string,
 	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/collection/updateCollection",
 		url.Values{
 			"id":             {Id},
-			"account_name":   {AccountName},
+			"account_name":   {c.accountName},
 			"name":           {Name},
 			"collection_url": {cp.CollectionUrl},
 			"description":    {cp.Description},
@@ -395,16 +378,15 @@ func (c *client) GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetAccou
 }
 
 func (c *client) MintNft(
-	accountName string,
 	CollectionId int64,
 	NftUrl string, Name string,
 	Description string, Media string,
 	Properties string, Levels string, Stats string,
 ) (*RespCreateAsset, error) {
 
-	ContentHash, err := calculateContentHash(accountName, CollectionId, Name, Properties, Levels, Stats)
+	ContentHash, err := calculateContentHash(c.accountName, CollectionId, Name, Properties, Levels, Stats)
 
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", accountName, CollectionId, Name, ContentHash))
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionId, Name, ContentHash))
 	if err != nil {
 		return nil, err
 	}
@@ -486,9 +468,8 @@ func (c *client) GetNftByNftId(nftId int64) (*RespetAssetByAssetId, error) {
 
 func (c *client) TransferNft(
 	AssetId int64,
-	accountName string,
 	toAccountName string) (*ResqSendTransferNft, error) {
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareTransferNftTxInfo?account_name=%s&to_account_name=%s&nft_id=%d", accountName, toAccountName, AssetId))
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareTransferNftTxInfo?account_name=%s&to_account_name=%s&nft_id=%d", c.accountName, toAccountName, AssetId))
 	if err != nil {
 		return nil, err
 	}
@@ -530,8 +511,8 @@ func (c *client) TransferNft(
 	return result, nil
 }
 
-func (c *client) WithdrawNft(accountName string, AssetId int64) (*ResqSendWithdrawNft, error) {
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareWithdrawNftTxInfo?account_name=%s&nft_id=%d", accountName, AssetId))
+func (c *client) WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error) {
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareWithdrawNftTxInfo?account_name=%s&nft_id=%d", c.accountName, AssetId))
 	if err != nil {
 		return nil, err
 	}
@@ -572,8 +553,8 @@ func (c *client) WithdrawNft(accountName string, AssetId int64) (*ResqSendWithdr
 	return result, nil
 }
 
-func (c *client) SellNft(accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error) {
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=true", accountName, AssetId, moneyType, AssetAmount))
+func (c *client) SellNft(AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error) {
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=true", c.accountName, AssetId, moneyType, AssetAmount))
 	if err != nil {
 		return nil, err
 	}
@@ -593,11 +574,11 @@ func (c *client) SellNft(accountName string, AssetId int64, moneyType int64, Ass
 	if err != nil {
 		return nil, err
 	}
-	return c.Offer(accountName, tx)
+	return c.Offer(c.accountName, tx)
 }
 
-func (c *client) BuyNft(accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error) {
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=false", accountName, AssetId, moneyType, AssetAmount))
+func (c *client) BuyNft(AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error) {
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=false", c.accountName, AssetId, moneyType, AssetAmount))
 	if err != nil {
 		return nil, err
 	}
@@ -616,7 +597,7 @@ func (c *client) BuyNft(accountName string, AssetId int64, moneyType int64, Asse
 	if err != nil {
 		return nil, err
 	}
-	return c.Offer(accountName, tx)
+	return c.Offer(c.accountName, tx)
 }
 
 func (c *client) Offer(accountName string, tx string) (*RespListOffer, error) {
@@ -685,8 +666,8 @@ func (c *client) GetOfferById(OfferId int64) (*RespGetOfferByOfferId, error) {
 	return result, nil
 }
 
-func (c *client) AcceptOffer(accountName string, offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error) {
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareAtomicMatchWithTx?account_name=%s&offer_id=%d&money_id=%d&money_amount=%s&is_sell=%v", accountName, offerId, 0, AssetAmount.String(), isSell))
+func (c *client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error) {
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareAtomicMatchWithTx?account_name=%s&offer_id=%d&money_id=%d&money_amount=%s&is_sell=%v", c.accountName, offerId, 0, AssetAmount.String(), isSell))
 	if err != nil {
 		return nil, err
 	}

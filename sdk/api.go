@@ -12,22 +12,21 @@ type ZecreyNftMarketSDK interface {
 
 	RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, seed string) (ZecreyNftMarketSDK, error)
 
-	GetAccountByAccountName(accountName string) (address string, err error)
+	GetAccountByAccountName(accountName string) (*RespGetAccountByAccountName, error)
 
 	ApplyRegisterHost(accountName string, l2Pk string, OwnerAddr string) (*RespApplyRegisterHost, error)
 
-	CreateCollection(accountName string, ShortName string, CategoryId string, CreatorEarningRate string,
+	CreateCollection(ShortName string, CategoryId string, CreatorEarningRate string,
 		ops ...model.CollectionOption) (*RespCreateCollection, error)
 
 	GetCollectionById(collectionId int64) (*RespGetCollectionByCollectionId, error)
 
 	GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetAccountCollections, error)
 
-	UpdateCollection(Id string, AccountName string, Name string,
+	UpdateCollection(Id string, Name string,
 		ops ...model.CollectionOption) (*RespUpdateCollection, error)
 
 	MintNft(
-		accountName string,
 		CollectionId int64,
 		NftUrl string, Name string,
 		Description string, Media string,
@@ -36,23 +35,28 @@ type ZecreyNftMarketSDK interface {
 
 	GetNftByNftId(nftId int64) (*RespetAssetByAssetId, error)
 
-	TransferNft(AssetId int64, accountName string, toAccountName string) (*ResqSendTransferNft, error)
+	TransferNft(AssetId int64, toAccountName string) (*ResqSendTransferNft, error)
 
-	WithdrawNft(accountName string, AssetId int64) (*ResqSendWithdrawNft, error)
+	WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error)
 
-	SellNft(accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error)
+	SellNft(AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error)
 
-	BuyNft(accountName string, AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error)
+	BuyNft(AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error)
 
-	AcceptOffer(accountName string, offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error)
+	AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error)
 }
 
-func NewZecreyNftMarketSDK(keyManager KeyManager) ZecreyNftMarketSDK {
+func NewZecreyNftMarketSDK(accountName, seed string) ZecreyNftMarketSDK {
+	keyManager, err := NewSeedKeyManager(seed)
+	if err != nil {
+		panic(fmt.Sprintf("wrong seed:%s", seed))
+	}
 	connEth, err := _rpc.NewClient(chainRpcUrl)
 	if err != nil {
 		panic(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
 	}
 	return &client{
+		accountName:    accountName,
 		nftMarketURL:   nftMarketUrl,
 		legendURL:      legendUrl,
 		providerClient: connEth,
