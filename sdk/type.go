@@ -416,3 +416,14 @@ type RespetPreparetxInfo struct {
 type RespApplyRegisterHost struct {
 	Ok bool `json:"ok"`
 }
+
+type RespGetLayer2BasicInfo struct {
+	BlockCommitted             int64    `json:"block_committed"`
+	BlockVerified              int64    `json:"block_verified"`
+	TotalTransactions          int64    `json:"total_transactions"`
+	TransactionsCountYesterday int64    `json:"transactions_count_yesterday"`
+	TransactionsCountToday     int64    `json:"transactions_count_today"`
+	DauYesterday               int64    `json:"dau_yesterday"`
+	DauToday                   int64    `json:"dau_today"`
+	ContractAddresses          []string `json:"contract_addresses"`
+}

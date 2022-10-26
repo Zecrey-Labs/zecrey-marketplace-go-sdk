@@ -10,9 +10,9 @@ import (
 type ZecreyNftMarketSDK interface {
 	CreateL1Account() (l1Addr, privateKeyStr, l2pk, seed string, err error)
 
-	RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, ZecreyLegendContract, ZnsPriceOracle string) (txHash string, err error)
+	RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, seed string) (ZecreyNftMarketSDK, error)
 
-	GetAccountByAccountName(accountName, ZecreyLegendContract string) (address string, err error)
+	GetAccountByAccountName(accountName string) (address string, err error)
 
 	ApplyRegisterHost(accountName string, l2Pk string, OwnerAddr string) (*RespApplyRegisterHost, error)
 
@@ -47,10 +47,10 @@ type ZecreyNftMarketSDK interface {
 	AcceptOffer(accountName string, offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error)
 }
 
-func NewZecreyNftMarketSDK(rpcUrl, legendUrl, nftMarketUrl string, keyManager KeyManager) ZecreyNftMarketSDK {
-	connEth, err := _rpc.NewClient(rpcUrl)
+func NewZecreyNftMarketSDK(keyManager KeyManager) ZecreyNftMarketSDK {
+	connEth, err := _rpc.NewClient(chainRpcUrl)
 	if err != nil {
-		panic(fmt.Sprintf("wrong rpc url:%s", rpcUrl))
+		panic(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
 	}
 	return &client{
 		nftMarketURL:   nftMarketUrl,

@@ -28,7 +28,19 @@ import (
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
 )
 
+var (
+	ZecreyLegendContract = "0x5761494e2C0B890dE64aa009AFE9596A5Fbf47A7"
+	ZnsPriceOracle       = "0x736922e13c7df2D99D9A244f86815b663DcAAE03"
+)
+
 const (
+	nftMarketUrl = "http://34.111.87.92/"
+	legendUrl    = "https://dev-legend-app.zecrey.com"
+	//nftMarketUrl = "http://localhost:9999"
+	//nftMarketUrl = "https://test-legend-nft.zecrey.com"
+	//legendUrl    = "https://test-legend-app.zecrey.com"
+	chainRpcUrl = "https://data-seed-prebsc-1-s1.binance.org:8545"
+
 	DefaultGasLimit = 5000000
 	NameSuffix      = ".zec"
 )
@@ -65,46 +77,69 @@ func (c *client) CreateL1Account() (l1Addr, privateKeyStr, l2pk, seed string, er
 	return
 }
 
-func (c *client) RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, ZecreyLegendContract, ZnsPriceOracle string) (txHash string, err error) {
+func (c *client) RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, seed string) (ZecreyNftMarketSDK, error) {
 	var chainId *big.Int
-	chainId, err = c.providerClient.ChainID(context.Background())
+	chainId, err := c.providerClient.ChainID(context.Background())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	authCli, err := _rpc.NewAuthClient(c.providerClient, privateKey, chainId)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	px, py, err := zecreyLegendUtil.PubKeyStrToPxAndPy(l2pk)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
+	//get base contract address
+	resp, err := c.GetLayer2BasicInfo()
+	if err != nil {
+		return nil, err
+	}
+	ZecreyLegendContract = resp.ContractAddresses[0]
+	ZnsPriceOracle = resp.ContractAddresses[1]
 
 	gasPrice, err := c.providerClient.SuggestGasPrice(context.Background())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	priceOracleInstance, err := zecreyLegendRpc.LoadStablePriceOracleInstance(c.providerClient, ZnsPriceOracle)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	txHash, err = zecreyLegendRpc.RegisterZNS(c.providerClient, authCli,
+	_, err = zecreyLegendRpc.RegisterZNS(c.providerClient, authCli,
 		zecreyInstance, priceOracleInstance,
 		gasPrice, DefaultGasLimit, accountName,
 		common.HexToAddress(l1Addr), px, py)
-	return txHash, err
+	if err != nil {
+		return nil, err
+	}
+	keyManager, err := NewSeedKeyManager(seed)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewZecreyNftMarketSDK(keyManager), nil
 }
 
-func (c *client) GetAccountByAccountName(accountName, ZecreyLegendContract string) (address string, err error) {
+func (c *client) GetAccountByAccountName(accountName string) (address string, err error) {
 	res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
 	if err != nil {
 		logx.Error(err)
 		return "", err
 	}
+	//get base contract address
+	resp, err := c.GetLayer2BasicInfo()
+	if err != nil {
+		return "", err
+	}
+	ZecreyLegendContract = resp.ContractAddresses[0]
+	ZnsPriceOracle = resp.ContractAddresses[1]
+
 	resBytes := zecreyLegendUtil.SetFixed32Bytes(res)
 	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
 	if err != nil {
@@ -644,6 +679,26 @@ func (c *client) AcceptOffer(accountName string, offerId int64, isSell bool, Ass
 		return nil, fmt.Errorf(string(body))
 	}
 	result := &RespAcceptOffer{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *client) GetLayer2BasicInfo() (*RespGetLayer2BasicInfo, error) {
+	resp, err := http.Get(c.legendURL + "/api/v1/info/getLayer2BasicInfo")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetLayer2BasicInfo{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
