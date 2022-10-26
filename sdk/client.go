@@ -78,6 +78,16 @@ func (c *client) CreateL1Account() (l1Addr, privateKeyStr, l2pk, seed string, er
 }
 
 func (c *client) RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, seed string) (ZecreyNftMarketSDK, error) {
+	if ok, err := c.GetAccountIsRegistered(accountName); ok {
+		if err != nil {
+			return nil, err
+		}
+		keyManager, err := NewSeedKeyManager(seed)
+		if err != nil {
+			return nil, err
+		}
+		return NewZecreyNftMarketSDK(keyManager), nil
+	}
 	var chainId *big.Int
 	chainId, err := c.providerClient.ChainID(context.Background())
 	if err != nil {
@@ -126,16 +136,16 @@ func (c *client) RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privat
 	return NewZecreyNftMarketSDK(keyManager), nil
 }
 
-func (c *client) GetAccountByAccountName(accountName string) (address string, err error) {
+func (c *client) GetAccountIsRegistered(accountName string) (bool, error) {
 	res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
 	if err != nil {
 		logx.Error(err)
-		return "", err
+		return false, err
 	}
 	//get base contract address
 	resp, err := c.GetLayer2BasicInfo()
 	if err != nil {
-		return "", err
+		return false, err
 	}
 	ZecreyLegendContract = resp.ContractAddresses[0]
 	ZnsPriceOracle = resp.ContractAddresses[1]
@@ -143,15 +153,50 @@ func (c *client) GetAccountByAccountName(accountName string) (address string, er
 	resBytes := zecreyLegendUtil.SetFixed32Bytes(res)
 	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
 	if err != nil {
-		return "", err
+		return false, err
 	}
 	// fetch by accountNameHash
 	addr, err := zecreyInstance.GetAddressByAccountNameHash(zecreyLegendRpc.EmptyCallOpts(), resBytes)
 	if err != nil {
 		logx.Error(err)
-		return "", err
+		return false, err
 	}
-	return addr.String(), nil
+	return bytes.Equal(addr.Bytes(), BytesToAddress([]byte{}).Bytes()), nil
+}
+
+func BytesToAddress(b []byte) common.Address {
+	var a common.Address
+	a.SetBytes(b)
+	return a
+}
+func (c *client) GetAccountByAccountName(accountName string) (address string, err error) {
+	//res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
+	//if err != nil {
+	//	logx.Error(err)
+	//	return "", err
+	//}
+	////get base contract address
+	//resp, err := c.GetLayer2BasicInfo()
+	//if err != nil {
+	//	return "", err
+	//}
+	//ZecreyLegendContract = resp.ContractAddresses[0]
+	//ZnsPriceOracle = resp.ContractAddresses[1]
+	//
+	//resBytes := zecreyLegendUtil.SetFixed32Bytes(res)
+	//zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
+	//if err != nil {
+	//	return "", err
+	//}
+	//// fetch by accountNameHash
+	//addr, err := zecreyInstance.GetAddressByAccountNameHash(zecreyLegendRpc.EmptyCallOpts(), resBytes)
+	//if err != nil {
+	//	logx.Error(err)
+	//	return "", err
+	//}
+	//return addr.String(), nil
+
+	return "", err
 }
 
 func (c *client) ApplyRegisterHost(
