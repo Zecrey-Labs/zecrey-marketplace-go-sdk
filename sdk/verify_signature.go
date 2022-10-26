@@ -1,32 +1,11 @@
 package sdk
 
 import (
-	"encoding/hex"
-	"errors"
-	"fmt"
-
-	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
 	"github.com/zecrey-labs/zecrey-crypto/wasm/zecrey-legend/legendTxTypes"
 )
 
 type PublicKey = eddsa.PublicKey
-
-func parsePk(pkStr string) (pk *PublicKey, err error) {
-	pkBytes, err := hex.DecodeString(pkStr)
-	if err != nil {
-		return nil, err
-	}
-	pk = new(PublicKey)
-	size, err := pk.SetBytes(pkBytes)
-	if err != nil {
-		return nil, err
-	}
-	if size != 32 {
-		return nil, errors.New("invalid public key")
-	}
-	return pk, nil
-}
 
 func ConvertTransferNftTxInfo(tx *TransferNftTxInfo) *legendTxTypes.TransferNftTxInfo {
 	return &legendTxTypes.TransferNftTxInfo{
@@ -43,28 +22,6 @@ func ConvertTransferNftTxInfo(tx *TransferNftTxInfo) *legendTxTypes.TransferNftT
 		Nonce:             tx.Nonce,
 		Sig:               tx.Sig,
 	}
-}
-
-func VerifyTransferNftTxSig(pubKey string, tx *TransferNftTxInfo) error {
-	convertedTx := ConvertTransferNftTxInfo(tx)
-	message, err := legendTxTypes.ComputeTransferNftMsgHash(convertedTx, mimc.NewMiMC())
-	if err != nil {
-		return err
-	}
-
-	pk, err := parsePk(pubKey)
-	if err != nil {
-		return err
-	}
-	hFunc := mimc.NewMiMC()
-	valid, err := pk.Verify(convertedTx.Sig, message, hFunc)
-	if err != nil {
-		return err
-	}
-	if !valid {
-		return fmt.Errorf("invalid signature")
-	}
-	return nil
 }
 
 func ConvertWithdrawNftTxInfo(tx *WithdrawNftTxInfo) *legendTxTypes.WithdrawNftTxInfo {
@@ -88,28 +45,6 @@ func ConvertWithdrawNftTxInfo(tx *WithdrawNftTxInfo) *legendTxTypes.WithdrawNftT
 	}
 }
 
-func VerifyWithdrawNftTxSig(pubKey string, tx *WithdrawNftTxInfo) error {
-	convertedTx := ConvertWithdrawNftTxInfo(tx)
-	message, err := legendTxTypes.ComputeWithdrawNftMsgHash(convertedTx, mimc.NewMiMC())
-	if err != nil {
-		return err
-	}
-
-	pk, err := parsePk(pubKey)
-	if err != nil {
-		return err
-	}
-	hFunc := mimc.NewMiMC()
-	valid, err := pk.Verify(convertedTx.Sig, message, hFunc)
-	if err != nil {
-		return err
-	}
-	if !valid {
-		return fmt.Errorf("invalid signature")
-	}
-	return nil
-}
-
 func ConvertOfferTxInfo(tx *OfferTxInfo) *legendTxTypes.OfferTxInfo {
 	return &legendTxTypes.OfferTxInfo{
 		Type:         tx.Type,
@@ -123,28 +58,6 @@ func ConvertOfferTxInfo(tx *OfferTxInfo) *legendTxTypes.OfferTxInfo {
 		TreasuryRate: tx.TreasuryRate,
 		Sig:          tx.Sig,
 	}
-}
-
-func VerifyOfferTxSig(pubKey string, tx *OfferTxInfo) error {
-	convertedTx := ConvertOfferTxInfo(tx)
-	message, err := legendTxTypes.ComputeOfferMsgHash(convertedTx, mimc.NewMiMC())
-	if err != nil {
-		return err
-	}
-
-	pk, err := parsePk(pubKey)
-	if err != nil {
-		return err
-	}
-	hFunc := mimc.NewMiMC()
-	valid, err := pk.Verify(convertedTx.Sig, message, hFunc)
-	if err != nil {
-		return err
-	}
-	if !valid {
-		return fmt.Errorf("invalid signature")
-	}
-	return nil
 }
 
 func ConvertMintNftTxInfo(tx *MintNftTxInfo) *legendTxTypes.MintNftTxInfo {
@@ -165,28 +78,6 @@ func ConvertMintNftTxInfo(tx *MintNftTxInfo) *legendTxTypes.MintNftTxInfo {
 	}
 }
 
-func VerifyMintNftTxSig(pubKey string, tx *MintNftTxInfo) error {
-	convertedTx := ConvertMintNftTxInfo(tx)
-	message, err := legendTxTypes.ComputeMintNftMsgHash(convertedTx, mimc.NewMiMC())
-	if err != nil {
-		return err
-	}
-
-	pk, err := parsePk(pubKey)
-	if err != nil {
-		return err
-	}
-	hFunc := mimc.NewMiMC()
-	valid, err := pk.Verify(convertedTx.Sig, message, hFunc)
-	if err != nil {
-		return err
-	}
-	if !valid {
-		return fmt.Errorf("invalid signature")
-	}
-	return nil
-}
-
 func ConvertCreateCollectionTxInfo(tx *CreateCollectionTxInfo) *legendTxTypes.CreateCollectionTxInfo {
 	return &legendTxTypes.CreateCollectionTxInfo{
 		AccountIndex:      tx.AccountIndex,
@@ -200,27 +91,6 @@ func ConvertCreateCollectionTxInfo(tx *CreateCollectionTxInfo) *legendTxTypes.Cr
 		Nonce:             tx.Nonce,
 		Sig:               tx.Sig,
 	}
-}
-func VerifyCreateCollectionTxSig(pubKey string, tx *CreateCollectionTxInfo) error {
-	convertedTx := ConvertCreateCollectionTxInfo(tx)
-	message, err := legendTxTypes.ComputeCreateCollectionMsgHash(convertedTx, mimc.NewMiMC())
-	if err != nil {
-		return err
-	}
-
-	pk, err := parsePk(pubKey)
-	if err != nil {
-		return err
-	}
-	hFunc := mimc.NewMiMC()
-	valid, err := pk.Verify(convertedTx.Sig, message, hFunc)
-	if err != nil {
-		return err
-	}
-	if !valid {
-		return fmt.Errorf("invalid signature")
-	}
-	return nil
 }
 
 func ConvertAtomicMatchTxInfo(tx *AtomicMatchTxInfo) *legendTxTypes.AtomicMatchTxInfo {
@@ -257,156 +127,6 @@ func ConvertAtomicMatchTxInfo(tx *AtomicMatchTxInfo) *legendTxTypes.AtomicMatchT
 		TreasuryAmount:    tx.TreasuryAmount,
 		Nonce:             tx.Nonce,
 		ExpiredAt:         tx.ExpiredAt,
-		Sig:               tx.Sig,
-	}
-}
-func VerifyAtomicMatchTxSig(pubKey string, tx *AtomicMatchTxInfo) error {
-	convertedTx := ConvertAtomicMatchTxInfo(tx)
-	message, err := legendTxTypes.ComputeAtomicMatchMsgHash(convertedTx, mimc.NewMiMC())
-	if err != nil {
-		return err
-	}
-
-	pk, err := parsePk(pubKey)
-	if err != nil {
-		return err
-	}
-	hFunc := mimc.NewMiMC()
-	valid, err := pk.Verify(convertedTx.Sig, message, hFunc)
-	if err != nil {
-		return err
-	}
-	if !valid {
-		return fmt.Errorf("invalid signature")
-	}
-	return nil
-}
-
-func ConvertCancelOfferTxInfo(tx *CancelOfferTxInfo) *legendTxTypes.CancelOfferTxInfo {
-	return &legendTxTypes.CancelOfferTxInfo{
-		AccountIndex:      tx.AccountIndex,
-		OfferId:           tx.OfferId,
-		GasAccountIndex:   tx.GasAccountIndex,
-		GasFeeAssetId:     tx.GasFeeAssetId,
-		GasFeeAssetAmount: tx.GasFeeAssetAmount,
-		ExpiredAt:         tx.ExpiredAt,
-		Nonce:             tx.Nonce,
-		Sig:               tx.Sig,
-	}
-}
-
-func VerifyCancelOfferTxSig(pubKey string, tx *CancelOfferTxInfo) error {
-	convertedTx := ConvertCancelOfferTxInfo(tx)
-	message, err := legendTxTypes.ComputeCancelOfferMsgHash(convertedTx, mimc.NewMiMC())
-	if err != nil {
-		return err
-	}
-
-	pk, err := parsePk(pubKey)
-	if err != nil {
-		return err
-	}
-	hFunc := mimc.NewMiMC()
-	valid, err := pk.Verify(convertedTx.Sig, message, hFunc)
-	if err != nil {
-		return err
-	}
-	if !valid {
-		return fmt.Errorf("invalid signature")
-	}
-	return nil
-}
-
-func ConvertTransferTxInfo(tx *TransferTxInfo) *legendTxTypes.TransferTxInfo {
-	return &legendTxTypes.TransferTxInfo{
-		FromAccountIndex:  tx.FromAccountIndex,
-		ToAccountIndex:    tx.ToAccountIndex,
-		ToAccountNameHash: tx.ToAccountNameHash,
-		AssetId:           tx.AssetId,
-		AssetAmount:       tx.AssetAmount,
-		GasAccountIndex:   tx.GasAccountIndex,
-		GasFeeAssetId:     tx.GasFeeAssetId,
-		GasFeeAssetAmount: tx.GasFeeAssetAmount,
-		Memo:              tx.Memo,
-		CallData:          tx.CallData,
-		CallDataHash:      tx.CallDataHash,
-		ExpiredAt:         tx.ExpiredAt,
-		Nonce:             tx.Nonce,
-		Sig:               tx.Sig,
-	}
-}
-
-func ConvertWithdrawTxInfo(tx *WithdrawTxInfo) *legendTxTypes.WithdrawTxInfo {
-	return &legendTxTypes.WithdrawTxInfo{
-		FromAccountIndex:  tx.FromAccountIndex,
-		AssetId:           tx.AssetId,
-		AssetAmount:       tx.AssetAmount,
-		GasAccountIndex:   tx.GasAccountIndex,
-		GasFeeAssetId:     tx.GasFeeAssetId,
-		GasFeeAssetAmount: tx.GasFeeAssetAmount,
-		ToAddress:         tx.ToAddress,
-		ExpiredAt:         tx.ExpiredAt,
-		Nonce:             tx.Nonce,
-		Sig:               tx.Sig,
-	}
-}
-
-func ConvertRemoveLiquidityTxInfo(tx *RemoveLiquidityTxInfo) *legendTxTypes.RemoveLiquidityTxInfo {
-	return &legendTxTypes.RemoveLiquidityTxInfo{
-		FromAccountIndex:  tx.FromAccountIndex,
-		PairIndex:         tx.PairIndex,
-		AssetAId:          tx.AssetAId,
-		AssetAMinAmount:   tx.AssetAMinAmount,
-		AssetBId:          tx.AssetBId,
-		AssetBMinAmount:   tx.AssetBMinAmount,
-		LpAmount:          tx.LpAmount,
-		AssetAAmountDelta: tx.AssetAAmountDelta,
-		AssetBAmountDelta: tx.AssetBAmountDelta,
-		KLast:             tx.KLast,
-		TreasuryAmount:    tx.TreasuryAmount,
-		GasAccountIndex:   tx.GasAccountIndex,
-		GasFeeAssetId:     tx.GasFeeAssetId,
-		GasFeeAssetAmount: tx.GasFeeAssetAmount,
-		ExpiredAt:         tx.ExpiredAt,
-		Nonce:             tx.Nonce,
-		Sig:               tx.Sig,
-	}
-}
-
-func ConvertAddLiquidityTxInfo(tx *AddLiquidityTxInfo) *legendTxTypes.AddLiquidityTxInfo {
-	return &legendTxTypes.AddLiquidityTxInfo{
-		FromAccountIndex:  tx.FromAccountIndex,
-		PairIndex:         tx.PairIndex,
-		AssetAId:          tx.AssetAId,
-		AssetAAmount:      tx.AssetAAmount,
-		AssetBId:          tx.AssetBId,
-		AssetBAmount:      tx.AssetBAmount,
-		LpAmount:          tx.LpAmount,
-		KLast:             tx.KLast,
-		TreasuryAmount:    tx.TreasuryAmount,
-		GasAccountIndex:   tx.GasAccountIndex,
-		GasFeeAssetId:     tx.GasFeeAssetId,
-		GasFeeAssetAmount: tx.GasFeeAssetAmount,
-		ExpiredAt:         tx.ExpiredAt,
-		Nonce:             tx.Nonce,
-		Sig:               tx.Sig,
-	}
-}
-
-func ConvertSwapTxInfo(tx *SwapTxInfo) *legendTxTypes.SwapTxInfo {
-	return &legendTxTypes.SwapTxInfo{
-		FromAccountIndex:  tx.FromAccountIndex,
-		PairIndex:         tx.PairIndex,
-		AssetAId:          tx.AssetAId,
-		AssetAAmount:      tx.AssetAAmount,
-		AssetBId:          tx.AssetBId,
-		AssetBMinAmount:   tx.AssetBMinAmount,
-		AssetBAmountDelta: tx.AssetBAmountDelta,
-		GasAccountIndex:   tx.GasAccountIndex,
-		GasFeeAssetId:     tx.GasFeeAssetId,
-		GasFeeAssetAmount: tx.GasFeeAssetAmount,
-		ExpiredAt:         tx.ExpiredAt,
-		Nonce:             tx.Nonce,
 		Sig:               tx.Sig,
 	}
 }
