@@ -28,7 +28,7 @@ func TestParseCreateCollectionTxInfo(t *testing.T) {
 	PaymentAssetIds := "[]"
 
 	c := NewZecreyNftMarketSDK(accountName, seed)
-	ret, err := c.CreateCollection(accountName, ShortName, CategoryId, CreatorEarningRate,
+	ret, err := c.CreateCollection(ShortName, CategoryId, CreatorEarningRate,
 		model.WithCollectionUrl(CollectionUrl),
 		model.WithExternalLink(ExternalLink),
 		model.WithTwitterLink(TwitterLink),
@@ -97,7 +97,7 @@ func TestUpdateCollection(t *testing.T) {
 	var AccountIndex int64 = 2
 	seed := "28e1a3762f....."
 	c := NewZecreyNftMarketSDK(AccountName, seed)
-	ret, err := c.UpdateCollection(Id, AccountName, Name,
+	ret, err := c.UpdateCollection(Id, Name,
 		model.WithCollectionUrl(CollectionUrl),
 		model.WithExternalLink(ExternalLink),
 		model.WithTwitterLink(TwitterLink),
@@ -158,7 +158,7 @@ func TestMintNft(t *testing.T) {
 	seed := "28e1a3762f....."
 
 	c := NewZecreyNftMarketSDK(accountName, seed)
-	ret, err := c.MintNft(accountName,
+	ret, err := c.MintNft(
 		CollectionId,
 		NftUrl, Name,
 		Description, Media,
@@ -197,7 +197,7 @@ func TestTransferNft(t *testing.T) {
 	toAccountName := "gavin.zec"
 
 	c := NewZecreyNftMarketSDK(accountName, seed)
-	ret2, err := c.TransferNft(AssetId, accountName, toAccountName)
+	ret2, err := c.TransferNft(AssetId, toAccountName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -211,7 +211,7 @@ func TestWithdrawNft(t *testing.T) {
 	accountName := "gavin.zec"
 
 	c := NewZecreyNftMarketSDK(accountName, seed)
-	ret2, err := c.WithdrawNft(accountName, AssetId)
+	ret2, err := c.WithdrawNft(AssetId)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -226,7 +226,7 @@ func TestSellOffer(t *testing.T) {
 
 	c := NewZecreyNftMarketSDK(accountName, seed)
 
-	ret2, err := c.SellNft(accountName, AssetId, 0, big.NewInt(1000000))
+	ret2, err := c.SellNft(AssetId, 0, big.NewInt(1000000))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -241,7 +241,7 @@ func TestBuyOffer(t *testing.T) {
 
 	c := NewZecreyNftMarketSDK(accountName, seed)
 
-	ret2, err := c.BuyNft(accountName, AssetId, 0, big.NewInt(1000000))
+	ret2, err := c.BuyNft(AssetId, 0, big.NewInt(1000000))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -255,7 +255,7 @@ func TestAcceptOffer(t *testing.T) {
 	accountName := "gavin.zec"
 
 	c := NewZecreyNftMarketSDK(accountName, seed)
-	ret2, err := c.AcceptOffer(accountName, offerId, false, big.NewInt(1000000))
+	ret2, err := c.AcceptOffer(offerId, false, big.NewInt(1000000))
 	if err != nil {
 		t.Fatal(err)
 	}
