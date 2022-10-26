@@ -3,6 +3,7 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
 	"math/big"
 	"testing"
 	"time"
@@ -33,14 +34,24 @@ func TestParseCreateCollectionTxInfo(t *testing.T) {
 	LogoImage := "collection/cbenqstwzx5uy9oedjrb"
 	FeaturedImage := "collection/cbenqstwzx5uy9oedjrb"
 	BannerImage := "collection/cbenqstwzx5uy9oedjrb"
+	Description := "Description information"
 	CreatorEarningRate := "6666"
 	PaymentAssetIds := "[]"
 
 	keyManager, err := NewSeedKeyManager(seed)
 	c := NewZecreyNftMarketSDK(chainRpcUrl, legendUrl, nftMarketUrl, keyManager)
-	ret, err := c.CreateCollection(accountName, ShortName, CategoryId, CollectionUrl,
-		ExternalLink, TwitterLink, InstagramLink, TelegramLink, DiscordLink, LogoImage,
-		FeaturedImage, BannerImage, CreatorEarningRate, PaymentAssetIds)
+	ret, err := c.CreateCollection(accountName, ShortName, CategoryId, CreatorEarningRate,
+		model.WithCollectionUrl(CollectionUrl),
+		model.WithExternalLink(ExternalLink),
+		model.WithTwitterLink(TwitterLink),
+		model.WithInstagramLink(InstagramLink),
+		model.WithTelegramLink(TelegramLink),
+		model.WithDiscordLink(DiscordLink),
+		model.WithLogoImage(LogoImage),
+		model.WithFeaturedImage(FeaturedImage),
+		model.WithBannerImage(BannerImage),
+		model.WithDescription(Description),
+		model.WithPaymentAssetIds(PaymentAssetIds))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,7 +97,6 @@ func TestUpdateCollection(t *testing.T) {
 	Name := "zw-sdk--collection-update"
 	CollectionUrl := "-"
 	Description := "-"
-	CategoryId := "1"
 	ExternalLink := "-"
 	TwitterLink := "-"
 	InstagramLink := "-"
@@ -100,10 +110,17 @@ func TestUpdateCollection(t *testing.T) {
 	seed := "28e1a3762f....."
 	keyManager, err := NewSeedKeyManager(seed)
 	c := NewZecreyNftMarketSDK(chainRpcUrl, legendUrl, nftMarketUrl, keyManager)
-	ret, err := c.UpdateCollection(Id, AccountName,
-		Name, CollectionUrl, Description, CategoryId,
-		ExternalLink, TwitterLink, InstagramLink, TelegramLink,
-		DiscordLink, LogoImage, FeaturedImage, BannerImage)
+	ret, err := c.UpdateCollection(Id, AccountName, Name,
+		model.WithCollectionUrl(CollectionUrl),
+		model.WithExternalLink(ExternalLink),
+		model.WithTwitterLink(TwitterLink),
+		model.WithInstagramLink(InstagramLink),
+		model.WithTelegramLink(TelegramLink),
+		model.WithDiscordLink(DiscordLink),
+		model.WithLogoImage(LogoImage),
+		model.WithFeaturedImage(FeaturedImage),
+		model.WithBannerImage(BannerImage),
+		model.WithDescription(Description))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -2,11 +2,12 @@ package sdk
 
 import (
 	"fmt"
+	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
 	"github.com/zecrey-labs/zecrey-eth-rpc/_rpc"
 	"math/big"
 )
 
-type ZecreyLegendSDK interface {
+type ZecreyNftMarketSDK interface {
 	CreateL1Account() (l1Addr, privateKeyStr, l2pk, seed string, err error)
 
 	RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, ZecreyLegendContract, ZnsPriceOracle string) (txHash string, err error)
@@ -15,21 +16,15 @@ type ZecreyLegendSDK interface {
 
 	ApplyRegisterHost(accountName string, l2Pk string, OwnerAddr string) (*RespApplyRegisterHost, error)
 
-	CreateCollection(
-		accountName string, ShortName string, CategoryId string, CollectionUrl string,
-		ExternalLink string, TwitterLink string, InstagramLink string, TelegramLink string, DiscordLink string, LogoImage string,
-		FeaturedImage string, BannerImage string, CreatorEarningRate string, PaymentAssetIds string) (*RespCreateCollection, error)
+	CreateCollection(accountName string, ShortName string, CategoryId string, CreatorEarningRate string,
+		ops ...model.CollectionOption) (*RespCreateCollection, error)
 
 	GetCollectionById(collectionId int64) (*RespGetCollectionByCollectionId, error)
 
 	GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetAccountCollections, error)
 
-	UpdateCollection(
-		Id string, AccountName string,
-		Name string, CollectionUrl string, Description string, CategoryId string,
-		ExternalLink string, TwitterLink string, InstagramLink string, TelegramLink string,
-		DiscordLink string, LogoImage string, FeaturedImage string, BannerImage string,
-	) (*RespUpdateCollection, error)
+	UpdateCollection(Id string, AccountName string, Name string,
+		ops ...model.CollectionOption) (*RespUpdateCollection, error)
 
 	MintNft(
 		accountName string,
@@ -52,7 +47,7 @@ type ZecreyLegendSDK interface {
 	AcceptOffer(accountName string, offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error)
 }
 
-func NewZecreyNftMarketSDK(rpcUrl, legendUrl, nftMarketUrl string, keyManager KeyManager) ZecreyLegendSDK {
+func NewZecreyNftMarketSDK(rpcUrl, legendUrl, nftMarketUrl string, keyManager KeyManager) ZecreyNftMarketSDK {
 	connEth, err := _rpc.NewClient(rpcUrl)
 	if err != nil {
 		panic(fmt.Sprintf("wrong rpc url:%s", rpcUrl))

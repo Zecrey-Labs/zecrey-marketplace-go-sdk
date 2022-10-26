@@ -16,6 +16,7 @@ import (
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+
 	"github.com/zecrey-labs/zecrey-crypto/util/ecdsaHelper"
 	"github.com/zecrey-labs/zecrey-crypto/util/eddsaHelper"
 	"github.com/zecrey-labs/zecrey-eth-rpc/_rpc"
@@ -23,6 +24,8 @@ import (
 	zecreyLegendUtil "github.com/zecrey-labs/zecrey-legend/common/util"
 
 	"github.com/zeromicro/go-zero/core/logx"
+
+	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
 )
 
 const (
@@ -142,9 +145,12 @@ func (c *client) ApplyRegisterHost(
 }
 
 func (c *client) CreateCollection(
-	accountName string, ShortName string, CategoryId string, CollectionUrl string,
-	ExternalLink string, TwitterLink string, InstagramLink string, TelegramLink string, DiscordLink string, LogoImage string,
-	FeaturedImage string, BannerImage string, CreatorEarningRate string, PaymentAssetIds string) (*RespCreateCollection, error) {
+	accountName string, ShortName string, CategoryId string, CreatorEarningRate string,
+	ops ...model.CollectionOption) (*RespCreateCollection, error) {
+	cp := &model.CollectionParams{}
+	for _, do := range ops {
+		do.F(cp)
+	}
 
 	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareCreateCollectionTxInfo?account_name=%s", accountName))
 	if err != nil {
@@ -162,24 +168,24 @@ func (c *client) CreateCollection(
 	if err := json.Unmarshal(body, &resultPrepare); err != nil {
 		return nil, err
 	}
-	tx, err := PrepareCreateCollectionTxInfo(c.keyManager, resultPrepare.Transtion)
+	tx, err := PrepareCreateCollectionTxInfo(c.keyManager, resultPrepare.Transtion, cp.Description)
 	if err != nil {
 		return nil, err
 	}
 	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/collection/createCollection",
 		url.Values{"short_name": {ShortName},
 			"category_id":          {CategoryId},
-			"collection_url":       {CollectionUrl},
-			"external_link":        {ExternalLink},
-			"twitter_link":         {TwitterLink},
-			"instagram_link":       {TelegramLink},
-			"discord_link":         {InstagramLink},
-			"telegram_link":        {DiscordLink},
-			"logo_image":           {LogoImage},
-			"featured_image":       {FeaturedImage},
-			"banner_image":         {BannerImage},
+			"collection_url":       {cp.CollectionUrl},
+			"external_link":        {cp.ExternalLink},
+			"twitter_link":         {cp.TwitterLink},
+			"instagram_link":       {cp.TelegramLink},
+			"discord_link":         {cp.InstagramLink},
+			"telegram_link":        {cp.DiscordLink},
+			"logo_image":           {cp.LogoImage},
+			"featured_image":       {cp.FeaturedImage},
+			"banner_image":         {cp.BannerImage},
 			"creator_earning_rate": {CreatorEarningRate},
-			"payment_asset_ids":    {PaymentAssetIds},
+			"payment_asset_ids":    {cp.PaymentAssetIds},
 			"transaction":          {tx}})
 	if err != nil {
 		return nil, err
@@ -230,22 +236,13 @@ func (c *client) GetCollectionById(collectionId int64) (*RespGetCollectionByColl
 	return result, nil
 }
 
-func (c *client) UpdateCollection(
-	Id string,
-	AccountName string,
-	Name string,
-	CollectionUrl string,
-	Description string,
-	CategoryId string,
-	ExternalLink string,
-	TwitterLink string,
-	InstagramLink string,
-	TelegramLink string,
-	DiscordLink string,
-	LogoImage string,
-	FeaturedImage string,
-	BannerImage string,
-) (*RespUpdateCollection, error) {
+func (c *client) UpdateCollection(Id string, AccountName string, Name string,
+	ops ...model.CollectionOption) (*RespUpdateCollection, error) {
+	cp := &model.CollectionParams{}
+	for _, do := range ops {
+		do.F(cp)
+	}
+	CategoryId := "1"
 	timestamp := time.Now().Unix()
 	message := fmt.Sprintf("%dupdate_collection", timestamp)
 	signature := SignMessage(c.keyManager, message)
@@ -254,17 +251,17 @@ func (c *client) UpdateCollection(
 			"id":             {Id},
 			"account_name":   {AccountName},
 			"name":           {Name},
-			"collection_url": {CollectionUrl},
-			"description":    {Description},
+			"collection_url": {cp.CollectionUrl},
+			"description":    {cp.Description},
 			"category_id":    {CategoryId},
-			"external_link":  {ExternalLink},
-			"twitter_link":   {TwitterLink},
-			"instagram_link": {InstagramLink},
-			"telegram_link":  {TelegramLink},
-			"discord_link":   {DiscordLink},
-			"logo_image":     {LogoImage},
-			"featured_image": {FeaturedImage},
-			"banner_image":   {BannerImage},
+			"external_link":  {cp.ExternalLink},
+			"twitter_link":   {cp.TwitterLink},
+			"instagram_link": {cp.InstagramLink},
+			"telegram_link":  {cp.TelegramLink},
+			"discord_link":   {cp.DiscordLink},
+			"logo_image":     {cp.LogoImage},
+			"featured_image": {cp.FeaturedImage},
+			"banner_image":   {cp.BannerImage},
 			"timestamp":      {fmt.Sprintf("%d", timestamp)},
 			"signature":      {signature}},
 	)
@@ -653,12 +650,14 @@ func (c *client) AcceptOffer(accountName string, offerId int64, isSell bool, Ass
 	return result, nil
 }
 
-func PrepareCreateCollectionTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
+func PrepareCreateCollectionTxInfo(key KeyManager, txInfoPrepare, Description string) (string, error) {
 	txInfo := &CreateCollectionTxInfo{}
 	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
 	if err != nil {
 		return "", err
 	}
+	//reset
+	txInfo.Introduction = Description
 	tx, err := ConstructCreateCollectionTx(key, txInfo) //sign tx message
 	if err != nil {
 		return "", err
