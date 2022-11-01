@@ -3,15 +3,12 @@ package sdk
 import (
 	"fmt"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
+	"github.com/zecrey-labs/zecrey-crypto/util/eddsaHelper"
 	"github.com/zecrey-labs/zecrey-eth-rpc/_rpc"
 	"math/big"
 )
 
 type ZecreyNftMarketSDK interface {
-	CreateL1Account() (l1Addr, privateKeyStr, l2pk, seed string, err error)
-
-	RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, seed string) (ZecreyNftMarketSDK, error)
-
 	GetAccountByAccountName(accountName string) (*RespGetAccountByAccountName, error)
 
 	ApplyRegisterHost(accountName string, l2Pk string, OwnerAddr string) (*RespApplyRegisterHost, error)
@@ -39,24 +36,30 @@ type ZecreyNftMarketSDK interface {
 
 	WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error)
 
-	SellNft(AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error)
+	CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error)
 
-	BuyNft(AssetId int64, moneyType int64, AssetAmount *big.Int) (*RespListOffer, error)
+	CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error)
 
 	AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error)
+
+	GetMyInfo() (accountName string, l2pk string, seed string)
 }
 
+//NewZecreyNftMarketSDK public
 func NewZecreyNftMarketSDK(accountName, seed string) ZecreyNftMarketSDK {
 	keyManager, err := NewSeedKeyManager(seed)
 	if err != nil {
 		panic(fmt.Sprintf("wrong seed:%s", seed))
 	}
+	l2pk := eddsaHelper.GetEddsaPublicKey(seed[2:])
 	connEth, err := _rpc.NewClient(chainRpcUrl)
 	if err != nil {
 		panic(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
 	}
 	return &client{
-		accountName:    accountName,
+		accountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
+		seed:           seed,
+		l2pk:           l2pk,
 		nftMarketURL:   nftMarketUrl,
 		legendURL:      legendUrl,
 		providerClient: connEth,

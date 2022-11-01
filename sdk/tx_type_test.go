@@ -226,12 +226,12 @@ func TestSellOffer(t *testing.T) {
 
 	c := NewZecreyNftMarketSDK(accountName, seed)
 
-	ret2, err := c.SellNft(AssetId, 0, big.NewInt(1000000))
+	ret2, err := c.CreateSellOffer(AssetId, 0, big.NewInt(1000000))
 	if err != nil {
 		t.Fatal(err)
 	}
 	data, err := json.Marshal(ret2)
-	fmt.Println("SellNft:", string(data))
+	fmt.Println("CreateSellOffer:", string(data))
 }
 
 func TestBuyOffer(t *testing.T) {
@@ -241,12 +241,12 @@ func TestBuyOffer(t *testing.T) {
 
 	c := NewZecreyNftMarketSDK(accountName, seed)
 
-	ret2, err := c.BuyNft(AssetId, 0, big.NewInt(1000000))
+	ret2, err := c.CreateBuyOffer(AssetId, 0, big.NewInt(1000000))
 	if err != nil {
 		t.Fatal(err)
 	}
 	data, err := json.Marshal(ret2)
-	fmt.Println("BuyNft:", string(data))
+	fmt.Println("CreateBuyOffer:", string(data))
 }
 
 func TestAcceptOffer(t *testing.T) {
@@ -264,8 +264,7 @@ func TestAcceptOffer(t *testing.T) {
 }
 
 func TestCreateL1Account(t *testing.T) {
-	c := &client{}
-	l1Addr, privateKeyStr, l2pk, seed, err := c.CreateL1Account()
+	l1Addr, privateKeyStr, l2pk, seed, err := CreateL1Account()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -279,25 +278,36 @@ func TestCreateL1Account(t *testing.T) {
 	//privateKeyStr: 1a061a8e74cee1ce2e2ddd29f5afea99ecfbaf1998b6d349a8c09a368e637b8e
 	//l2pk: 06278b99871f1d64fcc83bd27713cbf743d957c510a245d6bfb0eae888e35452274a2b4c8c7b7424f25d7d187661225111753197248fa045fd872aa662fdcb24
 }
-
-func TestRegisterAccountWithPrivateKey(t *testing.T) {
-	accountName := "zhangwei"
-	l1Addr := "0xD207262DEA01aE806fA2dCaEdd489Bd2f5FABcFE"
-	seed := "0x6a1a320d14790f2d9aa9a37769f4833d583a3f7f974fd452a3990aeb0e7a6052"
-	l2pk := "06278b99871f1d64fcc83bd27713cbf743d957c510a245d6bfb0eae888e35452274a2b4c8c7b7424f25d7d187661225111753197248fa045fd872aa662fdcb24"
-	privateKey := "1a061a8e74cee1ce2e2ddd29f5afea99ecfbaf1998b6d349a8c09a368e637b8e"
-	c := NewZecreyNftMarketSDK(accountName, seed)
-	txHash, err := c.RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, seed)
+func TestGetSeedAndL2Pk(t *testing.T) {
+	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
+	l2pk, seed, err := GetSeedAndL2Pk(privateKey)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println("txHash:", txHash)
+	fmt.Println("seed:", seed)
+	fmt.Println("l2pk:", l2pk)
+	fmt.Println("err:", err)
+	//l1Addr: 0xD207262DEA01aE806fA2dCaEdd489Bd2f5FABcFE
+	//seed: 0x6a1a320d14790f2d9aa9a37769f4833d583a3f7f974fd452a3990aeb0e7a6052
+	//privateKeyStr: 1a061a8e74cee1ce2e2ddd29f5afea99ecfbaf1998b6d349a8c09a368e637b8e
+	//l2pk: 22fc6f5d74c8639245462a0af6b5c931bd209c04034b28421a60336635ab85950a3163e68ec29319ca200fac009408369b0a1f75200a118aded920cd240e1358
+}
+func TestRegisterAccountWithPrivateKey(t *testing.T) {
+	accountName := "zhangwei1"
+	l1Addr := "0x805e286D05388911cCdB10E3c7b9713415607c72"
+	seed := "0x7ea589236ac7e6034a40ad31f27a6ea1bbaeb7746ba5e8d3408a3abb480a8688"
+	l2pk := "22fc6f5d74c8639245462a0af6b5c931bd209c04034b28421a60336635ab85950a3163e68ec29319ca200fac009408369b0a1f75200a118aded920cd240e1358"
+	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
+	registerAccountRet, err := RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, seed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println("registerAccountRet:", registerAccountRet)
 }
 
 func TestGetAccountByAccountName(t *testing.T) {
-	accountName := "zhangwei"
-	seed := "0x6a1a320d14790f2d9aa9a37769f4833d583a3f7f974fd452a3990aeb0e7a6052"
-
+	accountName := "zhangwei1"
+	seed := "0x7ea589236ac7e6034a40ad31f27a6ea1bbaeb7746ba5e8d3408a3abb480a8688"
 	c := NewZecreyNftMarketSDK(accountName, seed)
 	address, err := c.GetAccountByAccountName(accountName)
 	if err != nil {
@@ -307,10 +317,10 @@ func TestGetAccountByAccountName(t *testing.T) {
 }
 
 func TestApplyRegisterHost(t *testing.T) {
-	l1Addr := "0xD207262DEA01aE806fA2dCaEdd489Bd2f5FABcFE"
-	l2pk := "06278b99871f1d64fcc83bd27713cbf743d957c510a245d6bfb0eae888e35452274a2b4c8c7b7424f25d7d187661225111753197248fa045fd872aa662fdcb24"
-	accountName := "zhangwei"
-	seed := "0x6a1a320d14790f2d9aa9a37769f4833d583a3f7f974fd452a3990aeb0e7a6052"
+	l1Addr := "0x805e286D05388911cCdB10E3c7b9713415607c72"
+	l2pk := "22fc6f5d74c8639245462a0af6b5c931bd209c04034b28421a60336635ab85950a3163e68ec29319ca200fac009408369b0a1f75200a118aded920cd240e1358"
+	accountName := "zhangwei1"
+	seed := "0x7ea589236ac7e6034a40ad31f27a6ea1bbaeb7746ba5e8d3408a3abb480a8688"
 	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret, err := c.ApplyRegisterHost(accountName, l2pk, l1Addr)
 	if err != nil {
