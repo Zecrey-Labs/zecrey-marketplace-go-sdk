@@ -11,14 +11,30 @@ import (
 type ZecreyNftMarketSDK interface {
 	GetAccountByAccountName(accountName string) (*RespGetAccountByAccountName, error)
 
-	ApplyRegisterHost(accountName string, l2Pk string, OwnerAddr string) (*RespApplyRegisterHost, error)
-
-	CreateCollection(ShortName string, CategoryId string, CreatorEarningRate string,
-		ops ...model.CollectionOption) (*RespCreateCollection, error)
+	GetCategories() (*RespGetCollectionCategories, error)
 
 	GetCollectionById(collectionId int64) (*RespGetCollectionByCollectionId, error)
 
 	GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetAccountCollections, error)
+
+	GetAccountNFTs(AccountIndex int64) (*RespGetAccountAssets, error)
+
+	GetAccountOffers(AccountIndex int64) (*RespGetAccountOffers, error)
+
+	GetNftOffers(nftId int64) (*RespGetAssetOffers, error)
+
+	GetNftById(nftId int64) (*RespetAssetByAssetId, error)
+
+	GetOfferById(OfferId int64) (*RespGetOfferByOfferId, error)
+
+	GetMyInfo() (accountName string, l2pk string, seed string)
+
+	ApplyRegisterHost(accountName string, l2Pk string, OwnerAddr string) (*RespApplyRegisterHost, error)
+
+	UploadMedia(filePath string) (*RespMediaUpload, error)
+
+	CreateCollection(ShortName string, CategoryId string, CreatorEarningRate string,
+		ops ...model.CollectionOption) (*RespCreateCollection, error)
 
 	UpdateCollection(Id string, Name string,
 		ops ...model.CollectionOption) (*RespUpdateCollection, error)
@@ -30,8 +46,6 @@ type ZecreyNftMarketSDK interface {
 		Properties string, Levels string, Stats string,
 	) (*RespCreateAsset, error)
 
-	GetNftByNftId(nftId int64) (*RespetAssetByAssetId, error)
-
 	TransferNft(AssetId int64, toAccountName string) (*ResqSendTransferNft, error)
 
 	WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error)
@@ -41,8 +55,6 @@ type ZecreyNftMarketSDK interface {
 	CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error)
 
 	AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error)
-
-	GetMyInfo() (accountName string, l2pk string, seed string)
 }
 
 //NewZecreyNftMarketSDK public

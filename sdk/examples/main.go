@@ -159,7 +159,7 @@ func main() {
 	log.Info("accept Offer", retAccept)
 
 	//5.1 check nft
-	retGetNftByNftId, err := _sdkA.GetNftByNftId(retAccept.Offer.AssetId)
+	retGetNftByNftId, err := _sdkA.GetNftById(retAccept.Offer.AssetId)
 	if err != nil {
 		panic(err)
 	}

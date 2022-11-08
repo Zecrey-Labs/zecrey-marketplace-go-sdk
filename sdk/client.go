@@ -7,10 +7,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/zecrey-labs/zecrey-crypto/util/ecdsaHelper"
+	"io"
 	"io/ioutil"
 	"math/big"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
 	"sort"
 	"time"
 
@@ -34,11 +37,15 @@ var (
 )
 
 const (
-	nftMarketUrl = "http://34.111.87.92/"
-	legendUrl    = "https://dev-legend-app.zecrey.com"
 	//nftMarketUrl = "http://localhost:9999"
 	//nftMarketUrl = "https://test-legend-nft.zecrey.com"
+	//nftMarketUrl = "https://dev-legend-nft.zecrey.com"
+	nftMarketUrl = "https://qa-legend-nft.zecrey.com"
+
+	legendUrl = "https://qa-legend-app.zecrey.com"
+	//legendUrl    = "https://dev-legend-app.zecrey.com"
 	//legendUrl    = "https://test-legend-app.zecrey.com"
+
 	chainRpcUrl = "https://data-seed-prebsc-1-s1.binance.org:8545"
 
 	DefaultGasLimit = 5000000
@@ -138,6 +145,26 @@ func (c *client) GetAccountByAccountName(accountName string) (*RespGetAccountByA
 	return result, nil
 }
 
+func (c *client) GetCategories() (*RespGetCollectionCategories, error) {
+	resp, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/collection/getCollectionCategories"))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetCollectionCategories{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func (c *client) ApplyRegisterHost(
 	accountName string, l2Pk string, OwnerAddr string) (*RespApplyRegisterHost, error) {
 	resp, err := http.PostForm(c.legendURL+"/api/v1/register/applyRegisterHost",
@@ -222,8 +249,39 @@ func (c *client) CreateCollection(ShortName string, CategoryId string, CreatorEa
 	return result, nil
 }
 
-func (c *client) UploadMedia() {
+func (c *client) UploadMedia(filePath string) (*RespMediaUpload, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		panic(err)
+	}
 
+	buf := new(bytes.Buffer)
+	writer := multipart.NewWriter(buf)
+	formFile, err := writer.CreateFormFile("image", "image.jpg")
+	defer file.Close()
+	_, err = io.Copy(formFile, file)
+
+	req := ReqMediaUpload{
+		image: formFile,
+	}
+	statusJSON, _ := json.Marshal(req)
+	resp, err := http.Post(c.nftMarketURL+"/api/v1/asset/media", "application/json", bytes.NewReader(statusJSON))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespMediaUpload{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func (c *client) GetCollectionById(collectionId int64) (*RespGetCollectionByCollectionId, error) {
@@ -331,6 +389,103 @@ func (c *client) GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetAccou
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
+	//get collections status = 1
+	return result, nil
+}
+
+func (c *client) GetAccountNFTs(AccountIndex int64) (*RespGetAccountAssets, error) {
+	request_query := fmt.Sprintf("query MyQuery {\n  actionGetAccountAssets(account_index: %d) {\n    confirmedAssetIdList\n    pendingAssets {\n      account_name\n      audio_thumb\n      collection_id\n      content_hash\n      creator_earning_rate\n      created_at\n      description\n      expired_at\n      id\n      image_thumb\n      levels\n      media\n      name\n      nft_index\n      properties\n      stats\n      status\n      video_thumb\n    }\n  }\n}", AccountIndex)
+	input := InputAssetActionBody{AccountIndex: AccountIndex}
+	action := ActionBody{Name: "actionGetAccountAssets"}
+	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
+	req := ReqGetAccountAssets{
+		Input:            input,
+		Action:           action,
+		SessionVariables: SessionVariables,
+		RequestQuery:     request_query,
+	}
+	statusJSON, _ := json.Marshal(req)
+	resp, err := http.Post(c.nftMarketURL+"/api/v1/action/actionGetAccountAssets", "application/json", bytes.NewReader(statusJSON))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetAccountAssets{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	//get collections status = 1
+	return result, nil
+}
+
+func (c *client) GetAccountOffers(AccountIndex int64) (*RespGetAccountOffers, error) {
+	request_query := fmt.Sprintf("query MyQuery {\n  actionGetAccountOffers(account_index: %d) {\n    confirmedOfferIdList\n    pendingOffers {\n      account_name\n      asset_id\n      created_at\n      direction\n      expired_at\n      id\n      payment_asset_amount\n      payment_asset_id\n      signature\n      status\n    }\n  }\n}", AccountIndex)
+	input := InputGetAccountOffersActionBody{AccountIndex: AccountIndex}
+	action := ActionBody{Name: "actionGetAccountOffers"}
+	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
+	req := ReqGetAccountOffers{
+		Input:            input,
+		Action:           action,
+		SessionVariables: SessionVariables,
+		RequestQuery:     request_query,
+	}
+	statusJSON, _ := json.Marshal(req)
+	resp, err := http.Post(c.nftMarketURL+"/api/v1/action/actionGetAccountOffers", "application/json", bytes.NewReader(statusJSON))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetAccountOffers{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	//get collections status = 1
+	return result, nil
+}
+
+func (c *client) GetNftOffers(NftId int64) (*RespGetAssetOffers, error) {
+	request_query := fmt.Sprintf("query MyQuery {\n  actionGetAssetOffers(asset_id: %d) {\n    confirmedOfferIdList\n    pendingOffers {\n      account_name\n      asset_id\n      created_at\n      direction\n      expired_at\n      id\n      payment_asset_amount\n      payment_asset_id\n      signature\n      status\n    }\n  }\n}", NftId)
+	input := InputGetAssetOffersActionBody{AssetId: NftId}
+	action := ActionBody{Name: "actionGetAssetOffers"}
+	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
+	req := ReqGetAssetOffers{
+		Input:            input,
+		Action:           action,
+		SessionVariables: SessionVariables,
+		RequestQuery:     request_query,
+	}
+	statusJSON, _ := json.Marshal(req)
+	resp, err := http.Post(c.nftMarketURL+"/api/v1/action/actionGetAssetOffers", "application/json", bytes.NewReader(statusJSON))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetAssetOffers{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	//get collections status = 1
 	return result, nil
 }
 
@@ -387,7 +542,7 @@ func (c *client) MintNft(CollectionId int64, NftUrl string, Name string, Descrip
 	return result, nil
 }
 
-func (c *client) GetNftByNftId(nftId int64) (*RespetAssetByAssetId, error) {
+func (c *client) GetNftById(nftId int64) (*RespetAssetByAssetId, error) {
 	request_query := fmt.Sprintf("query MyQuery {\n  actionGetAssetByAssetId(asset_id: %d) {\n    asset {\n      account_name\n      audio_thumb\n      collection_id\n      content_hash\n      created_at\n      creator_earning_rate\n      description\n      expired_at\n      id\n      image_thumb\n      levels\n      media\n      name\n      nft_index\n      properties\n      stats\n      status\n      video_thumb\n    }\n  }\n}\n", nftId)
 	input := InputGetAssetByIdActionBody{AssetId: nftId}
 	action := ActionBody{Name: "actionGetAssetByAssetId"}

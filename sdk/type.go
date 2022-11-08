@@ -1,5 +1,7 @@
 package sdk
 
+import "io"
+
 type Asset struct {
 	Id         uint32
 	BalanceEnc string
@@ -261,7 +263,12 @@ type RespListOffer struct {
 type InputAssetActionBody struct {
 	AccountIndex int64 `json:"account_index"`
 }
-
+type ReqGetAccountAssets struct {
+	Input            InputAssetActionBody `json:"input"`
+	Action           ActionBody           `json:"action,optional"`
+	SessionVariables SessionVariablesBody `json:"session_variables,optional"`
+	RequestQuery     string               `json:"request_query"`
+}
 type RespGetAccountAssets struct {
 	ConfirmedAssetIdList []int64  `json:"confirmedAssetIdList"`
 	PendingAssets        []*Asset `json:"pendingAssets"`
@@ -445,4 +452,11 @@ type NftAccountInfo struct {
 	BannerImage   string `json:"banner_image"`
 	BannerThumb   string `json:"banner_thumb"`
 	CreatedAt     int64  `json:"created_at"`
+}
+type ReqMediaUpload struct {
+	image io.Writer `form:"image"`
+}
+
+type RespGetCollectionCategories struct {
+	Categories []*Categorie `json:"categories"`
 }
