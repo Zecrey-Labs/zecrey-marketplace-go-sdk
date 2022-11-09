@@ -20,11 +20,11 @@ func TestParseCreateCollectionTxInfo(t *testing.T) {
 	InstagramLink := "-"
 	TelegramLink := "-"
 	DiscordLink := "-"
-	LogoImage := "collection/cbenqstwzx5uy9oedjrb"
-	FeaturedImage := "collection/cbenqstwzx5uy9oedjrb"
-	BannerImage := "collection/cbenqstwzx5uy9oedjrb"
+	LogoImage := "collection/dekkg5j1ptccq9ttliui"
+	FeaturedImage := "collection/dekkg5j1ptccq9ttliui"
+	BannerImage := "collection/dekkg5j1ptccq9ttliui"
 	Description := "Description information"
-	CreatorEarningRate := "6666"
+	CreatorEarningRate := "1000"
 	PaymentAssetIds := "[]"
 
 	c := NewZecreyNftMarketSDK(accountName, seed)
@@ -45,6 +45,7 @@ func TestParseCreateCollectionTxInfo(t *testing.T) {
 	}
 	data, err := json.Marshal(ret)
 	fmt.Println("CreateCollection:", string(data))
+
 	ret2, err := c.GetCollectionById(ret.Collection.Id)
 	if err != nil {
 		t.Fatal(err)
@@ -56,7 +57,7 @@ func TestParseCreateCollectionTxInfo(t *testing.T) {
 func TestGetCollectionById(t *testing.T) {
 	var collectionId int64 = 209
 	seed := "28e1a37......"
-	accountName := "xxx.zec"
+	accountName := "xxx"
 	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.GetCollectionById(collectionId)
 	if err != nil {
@@ -68,7 +69,7 @@ func TestGetCollectionById(t *testing.T) {
 
 func TestGetCollectionsByAccountIndex(t *testing.T) {
 	var accountIndex int64 = 4
-	accountName := "xxx.zec"
+	accountName := "xxx"
 	seed := "ee823...."
 	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.GetCollectionsByAccountIndex(accountIndex)
@@ -80,7 +81,7 @@ func TestGetCollectionsByAccountIndex(t *testing.T) {
 
 func TestGetAccountNFTs(t *testing.T) {
 	var accountIndex int64 = 4
-	accountName := "amber1.zec"
+	accountName := "amber1"
 	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
 	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.GetAccountNFTs(accountIndex)
@@ -90,9 +91,10 @@ func TestGetAccountNFTs(t *testing.T) {
 	fmt.Println("GetAccountNFTsConfirmedList:", ret2.ConfirmedAssetIdList)
 	fmt.Println("GetAccountNFTsPendingAssets:", ret2.PendingAssets)
 }
+
 func TestGetAccountOffers(t *testing.T) {
 	var accountIndex int64 = 4
-	accountName := "xxx.zec"
+	accountName := "xxx"
 	seed := "ee823a...."
 	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.GetAccountOffers(accountIndex)
@@ -105,7 +107,7 @@ func TestGetAccountOffers(t *testing.T) {
 
 func TestGetNftOffers(t *testing.T) {
 	var nftId int64 = 7
-	accountName := "amber1.zec"
+	accountName := "amber1"
 	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
 	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.GetNftOffers(nftId)
@@ -118,7 +120,7 @@ func TestGetNftOffers(t *testing.T) {
 
 func TestUpdateCollection(t *testing.T) {
 	Id := "54"
-	AccountName := "sher.zec"
+	AccountName := "sher"
 	Name := "zw-sdk--collection-update"
 	CollectionUrl := "-"
 	Description := "-"
@@ -160,13 +162,15 @@ func TestUpdateCollection(t *testing.T) {
 }
 
 func TestMintNft(t *testing.T) {
+	var CollectionId int64 = 15
+	accountName := "sher"
+	seed := "28e1a3762ff99...."
+	c := NewZecreyNftMarketSDK(accountName, seed)
 
-	accountName := "sher.zec"
-	var CollectionId int64 = 54
 	NftUrl := "-"
 	Name := "-"
 	Description := "nft-sdk-Description"
-	Media := "collection/cbenqstwzx5uy9oedjrb"
+	Media := "collection/dekkg5j1ptccq9ttliui"
 	key := fmt.Sprintf("zw:%s:%d", accountName, 2)
 	value := "red1"
 	assetProperty := Propertie{
@@ -192,9 +196,7 @@ func TestMintNft(t *testing.T) {
 	_PropertiesByte, err := json.Marshal(_Properties)
 	_LevelsByte, err := json.Marshal(_Levels)
 	_StatsByte, err := json.Marshal(_Stats)
-	seed := "28e1a3762f....."
 
-	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret, err := c.MintNft(
 		CollectionId,
 		NftUrl, Name,
@@ -216,7 +218,7 @@ func TestMintNft(t *testing.T) {
 
 func TestGetNftByNftId(t *testing.T) {
 	var nftId int64 = 9
-	accountName := "xxx.zec"
+	accountName := "xxx"
 	seed := "ee823a7....."
 	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.GetNftById(nftId)
@@ -226,9 +228,10 @@ func TestGetNftByNftId(t *testing.T) {
 	data, err := json.Marshal(ret2)
 	fmt.Println("GetNftById:", string(data))
 }
+
 func TestGetOfferById(t *testing.T) {
 	var OfferId int64 = 5
-	accountName := "xxx.zec"
+	accountName := "xxx"
 	seed := "ee823a7...."
 	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.GetOfferById(OfferId)
@@ -238,14 +241,15 @@ func TestGetOfferById(t *testing.T) {
 	data, err := json.Marshal(ret2)
 	fmt.Println("Offer:", string(data))
 }
+
 func TestTransferNft(t *testing.T) {
-	var AssetId int64 = 140
-	seed := "28e1a3762f....."
-	accountName := "sher.zec"
-	toAccountName := "gavin.zec"
+	var nftId int64 = 6
+	accountName := "sher"
+	seed := "28e1a37........."
+	toAccountName := "gavin"
 
 	c := NewZecreyNftMarketSDK(accountName, seed)
-	ret2, err := c.TransferNft(AssetId, toAccountName)
+	ret2, err := c.TransferNft(nftId, toAccountName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -254,9 +258,9 @@ func TestTransferNft(t *testing.T) {
 }
 
 func TestWithdrawNft(t *testing.T) {
-	var AssetId int64 = 140
-	seed := "17673b9a9....."
-	accountName := "gavin.zec"
+	var AssetId int64 = 6
+	seed := "17673b9a9fd.........."
+	accountName := "gavin"
 
 	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.WithdrawNft(AssetId)
@@ -268,12 +272,11 @@ func TestWithdrawNft(t *testing.T) {
 }
 
 func TestSellOffer(t *testing.T) {
-	var AssetId int64 = 139
-	seed := "28e1a3762f....."
-	accountName := "sher.zec"
+	var AssetId int64 = 11
+	accountName := "sher"
+	seed := "28e1a3762ff9.........."
 
 	c := NewZecreyNftMarketSDK(accountName, seed)
-
 	ret2, err := c.CreateSellOffer(AssetId, 0, big.NewInt(1000000))
 	if err != nil {
 		t.Fatal(err)
@@ -283,9 +286,9 @@ func TestSellOffer(t *testing.T) {
 }
 
 func TestBuyOffer(t *testing.T) {
-	var AssetId int64 = 139
-	seed := "17673b9a9....."
-	accountName := "gavin.zec"
+	var AssetId int64 = 9
+	accountName := "sher"
+	seed := "28e1a3762ff99...."
 
 	c := NewZecreyNftMarketSDK(accountName, seed)
 
@@ -296,12 +299,23 @@ func TestBuyOffer(t *testing.T) {
 	data, err := json.Marshal(ret2)
 	fmt.Println("CreateBuyOffer:", string(data))
 }
+func TestCancelOffer(t *testing.T) {
+	var OfferId int64 = 9
+	accountName := "sher"
+	seed := "28e1a3762ff99...."
+	c := NewZecreyNftMarketSDK(accountName, seed)
+	ret2, err := c.CancelOffer(OfferId)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := json.Marshal(ret2)
+	fmt.Println("CancelOffer:", string(data))
+}
 
 func TestAcceptOffer(t *testing.T) {
-	var offerId int64 = 7
-	seed := "17673b9a9....."
-	accountName := "gavin.zec"
-
+	var offerId int64 = 21
+	seed := "28e1a3762ff99...."
+	accountName := "gavin"
 	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret2, err := c.AcceptOffer(offerId, false, big.NewInt(1000000))
 	if err != nil {
@@ -343,20 +357,31 @@ func TestGetSeedAndL2Pk(t *testing.T) {
 }
 
 func TestRegisterAccountWithPrivateKey(t *testing.T) {
-	accountName := "zhangwei1"
+	accountName := "zhangwei1111"
 	l1Addr := "0x805e286D05388911cCdB10E3c7b9713415607c72"
-	seed := "0x7ea589236ac7e6034a40ad31f27a6ea1bbaeb7746ba5e8d3408a3abb480a8688"
-	l2pk := "22fc6f5d74c8639245462a0af6b5c931bd209c04034b28421a60336635ab85950a3163e68ec29319ca200fac009408369b0a1f75200a118aded920cd240e1358"
+	//seed := "0x7ea589236ac7e6034a40ad31f27a6ea1bbaeb7746ba5e8d3408a3abb480a8688"
+	//l2pk := "22fc6f5d74c8639245462a0af6b5c931bd209c04034b28421a60336635ab85950a3163e68ec29319ca200fac009408369b0a1f75200a118aded920cd240e1358"
 	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
-	registerAccountRet, err := RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, seed)
+	client, err := RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println("registerAccountRet:", registerAccountRet)
+	accountName, l2pk, seed := client.GetMyInfo()
+	fmt.Println(fmt.Sprintf("registerAccountRet:\naccountName=%s\nl2pk=%s\nseed=%s", accountName, l2pk, seed))
+}
+
+func TestGetAccountIsRegistered(t *testing.T) {
+	accountName := "6633332"
+	ret2, err := GetAccountIsRegistered(accountName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := json.Marshal(ret2)
+	fmt.Println("GetAccountIsRegistered:", string(data))
 }
 
 func TestGetAccountByAccountName(t *testing.T) {
-	accountName := "xxx.zec"
+	accountName := "xxx"
 	seed := "ee823a........."
 	c := NewZecreyNftMarketSDK(accountName, seed)
 	accountInfo, err := c.GetAccountByAccountName(accountName)
@@ -370,10 +395,10 @@ func TestGetAccountByAccountName(t *testing.T) {
 func TestApplyRegisterHost(t *testing.T) {
 	l1Addr := "0x805e286D05388911cCdB10E3c7b9713415607c72"
 	l2pk := "22fc6f5d74c8639245462a0af6b5c931bd209c04034b28421a60336635ab85950a3163e68ec29319ca200fac009408369b0a1f75200a118aded920cd240e1358"
-	accountName := "zhangwei1"
+	accountName := "6633332"
 	seed := "0x7ea589236ac7e6034a40ad31f27a6ea1bbaeb7746ba5e8d3408a3abb480a8688"
 	c := NewZecreyNftMarketSDK(accountName, seed)
-	ret, err := c.ApplyRegisterHost(accountName, l2pk, l1Addr)
+	ret, err := c.ApplyRegisterHost(fmt.Sprintf("%s", accountName), l2pk, l1Addr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -381,7 +406,7 @@ func TestApplyRegisterHost(t *testing.T) {
 }
 
 func TestUploadMeida(t *testing.T) {
-	accountName := "xxx.zec"
+	accountName := "xxx"
 	seed := "0x7ea5892......."
 	filePath := "/Users/xxx/Downloads/xxx.jpg"
 	c := NewZecreyNftMarketSDK(accountName, seed)
@@ -393,7 +418,7 @@ func TestUploadMeida(t *testing.T) {
 }
 
 func TestGetCategories(t *testing.T) {
-	accountName := "xxx.zec"
+	accountName := "xxx"
 	seed := "ee823a7........."
 	c := NewZecreyNftMarketSDK(accountName, seed)
 	ret, err := c.GetCategories()

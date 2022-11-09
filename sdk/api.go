@@ -54,6 +54,8 @@ type ZecreyNftMarketSDK interface {
 
 	CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error)
 
+	CancelOffer(offerId int64) (*RespCancelOffer, error)
+
 	AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error)
 }
 

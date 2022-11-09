@@ -66,7 +66,8 @@ func (c *client) SetKeyManager(keyManager KeyManager) {
 	c.keyManager = keyManager
 }
 
-func (c *client) GetAccountIsRegistered(accountName string) (bool, error) {
+func GetAccountIsRegistered(accountName string) (bool, error) {
+	c := newZecreyNftMarketSDK(accountName, "undefined")
 	res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
 	if err != nil {
 		logx.Error(err)
@@ -91,7 +92,7 @@ func (c *client) GetAccountIsRegistered(accountName string) (bool, error) {
 		logx.Error(err)
 		return false, err
 	}
-	return bytes.Equal(addr.Bytes(), BytesToAddress([]byte{}).Bytes()), nil
+	return !bytes.Equal(addr.Bytes(), BytesToAddress([]byte{}).Bytes()), nil
 }
 
 func (c *client) GetAccountL1Address(accountName string) (common.Address, error) {
@@ -576,7 +577,7 @@ func (c *client) GetNftById(nftId int64) (*RespetAssetByAssetId, error) {
 func (c *client) TransferNft(
 	AssetId int64,
 	toAccountName string) (*ResqSendTransferNft, error) {
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareTransferNftTxInfo?account_name=%s&to_account_name=%s&nft_id=%d", c.accountName, toAccountName, AssetId))
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareTransferNftTxInfo?account_name=%s&to_account_name=%s%s&nft_id=%d", c.accountName, toAccountName, NameSuffix, AssetId))
 	if err != nil {
 		return nil, err
 	}
@@ -705,6 +706,51 @@ func (c *client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big
 		return nil, err
 	}
 	return c.Offer(c.accountName, tx)
+}
+
+func (c *client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
+	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/offer/xxxxxxxx?offerId=%d", offerId))
+	if err != nil {
+		return nil, err
+	}
+	body, err := ioutil.ReadAll(respPrepareTx.Body)
+	if err != nil {
+		return nil, err
+	}
+	if respPrepareTx.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	resultPrepare := &RespetPreparetxInfo{}
+	if err := json.Unmarshal(body, &resultPrepare); err != nil {
+		return nil, err
+	}
+	tx, err := PrepareOfferTxInfo(c.keyManager, resultPrepare.Transtion, false)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/offer/cancelOffer",
+		url.Values{
+			"id":          {fmt.Sprintf("%d", offerId)},
+			"transaction": {tx},
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespCancelOffer{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+
 }
 
 func (c *client) Offer(accountName string, tx string) (*RespListOffer, error) {
@@ -852,6 +898,7 @@ func PrepareCreateCollectionTxInfo(key KeyManager, txInfoPrepare, Description st
 		return "", err
 	}
 	//reset
+	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
 	txInfo.Introduction = Description
 	tx, err := ConstructCreateCollectionTx(key, txInfo) //sign tx message
 	if err != nil {
@@ -866,6 +913,7 @@ func PrepareMintNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) 
 	if err != nil {
 		return "", err
 	}
+	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
 	tx, err := ConstructMintNftTx(key, txInfo)
 	if err != nil {
 		return "", err
@@ -879,6 +927,7 @@ func PrepareTransferNftTxInfo(key KeyManager, txInfoPrepare string) (string, err
 	if err != nil {
 		return "", err
 	}
+	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
 	tx, err := ConstructTransferNftTx(key, txInfo)
 	if err != nil {
 		return "", err
@@ -924,6 +973,7 @@ func PrepareWithdrawNftTxInfo(key KeyManager, txInfoPrepare string) (string, err
 	if err != nil {
 		return "", err
 	}
+	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
 	tx, err := ConstructWithdrawNftTx(key, txInfo)
 	if err != nil {
 		return "", err
@@ -1091,17 +1141,20 @@ func GetSeedAndL2Pk(privateKeyStr string) (l2pk, seed string, err error) {
 	return
 }
 
-func RegisterAccountWithPrivateKey(accountName, l1Addr, l2pk, privateKey, seed string) (ZecreyNftMarketSDK, error) {
-	c := &client{}
-	if ok, err := c.GetAccountIsRegistered(accountName); ok {
+func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (ZecreyNftMarketSDK, error) {
+	l2pk, seed, err := GetSeedAndL2Pk(privateKey)
+	if err != nil {
+		return nil, err
+	}
+	c := newZecreyNftMarketSDK(accountName, seed)
+	if ok, err := GetAccountIsRegistered(accountName); ok {
 		if err != nil {
 			return nil, err
 		}
 		return NewZecreyNftMarketSDK(accountName, seed), nil
 	}
-	c = newZecreyNftMarketSDK(accountName, seed)
 	var chainId *big.Int
-	chainId, err := c.providerClient.ChainID(context.Background())
+	chainId, err = c.providerClient.ChainID(context.Background())
 	if err != nil {
 		return nil, err
 	}

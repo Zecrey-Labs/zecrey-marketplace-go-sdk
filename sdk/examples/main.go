@@ -37,12 +37,7 @@ func main() {
 	{
 		accountName := "A_account" //set your account a name
 		privateKey := "1a061a8e74cee1ce2e2ddd29f5afea99ecfbaf1998b6d349a8c09a368e637b8e"
-		//Get legend seed and l2Pk
-		l2Pk, seed, err := sdk.GetSeedAndL2Pk(privateKey)
-		if err != nil {
-			panic(err)
-		}
-		_sdkA, err = sdk.RegisterAccountWithPrivateKey(accountName, l1Addr, l2Pk, privateKey, seed)
+		_sdkA, err := sdk.RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey)
 		if err != nil {
 			panic(err)
 		}
@@ -57,14 +52,11 @@ func main() {
 		privateKey := "1a061a8e74cee1ce2e2ddd29f5afea99ecfbaf1998b6d349a8c09a368e637b8e"
 		l2Addr := "0xD207262DEA01aE806fA2dCaEdd489Bd2f5FABcFE"
 		//Get legend seed and l2Pk
-		l2Pk, seed, err := sdk.GetSeedAndL2Pk(privateKey)
+		sdkB, err := sdk.RegisterAccountWithPrivateKey(accountName, l2Addr, privateKey)
 		if err != nil {
 			panic(err)
 		}
-		_sdkB, err = sdk.RegisterAccountWithPrivateKey(accountName, l2Addr, l2Pk, privateKey, seed)
-		if err != nil {
-			panic(err)
-		}
+		_sdkB = sdkB
 	}
 
 	//2.Synchronize the registered account to the legend
