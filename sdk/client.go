@@ -31,23 +31,21 @@ import (
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
 )
 
-var (
-	ZecreyLegendContract = "0x5761494e2C0B890dE64aa009AFE9596A5Fbf47A7"
-	ZnsPriceOracle       = "0x736922e13c7df2D99D9A244f86815b663DcAAE03"
-)
-
 const (
 	//nftMarketUrl = "http://localhost:9999"
 	//nftMarketUrl = "https://test-legend-nft.zecrey.com"
-	//nftMarketUrl = "https://dev-legend-nft.zecrey.com"
-	nftMarketUrl = "https://qa-legend-nft.zecrey.com"
+	nftMarketUrl = "https://dev-legend-nft.zecrey.com"
+	//nftMarketUrl = "https://qa-legend-nft.zecrey.com"
 
-	legendUrl = "https://qa-legend-app.zecrey.com"
-	//legendUrl    = "https://dev-legend-app.zecrey.com"
+	//legendUrl = "https://qa-legend-app.zecrey.com"
+	legendUrl = "https://dev-legend-app.zecrey.com"
 	//legendUrl    = "https://test-legend-app.zecrey.com"
 
-	chainRpcUrl = "https://data-seed-prebsc-1-s1.binance.org:8545"
+	hasuraUrl          = "https://legend-market-dev.hasura.app/v1/graphql"
+	hasuraAdminKey     = "kqWAsFWVvn61mFuiuQ5yqJkWpu5VS1B5FGTdFzlVlQJ9fMTr9yNIjOnN3hERC9ex"
+	hasuraTimeDeadline = 15 //15s
 
+	chainRpcUrl     = "https://data-seed-prebsc-1-s1.binance.org:8545"
 	DefaultGasLimit = 5000000
 	NameSuffix      = ".zec"
 )
@@ -66,35 +64,6 @@ func (c *client) SetKeyManager(keyManager KeyManager) {
 	c.keyManager = keyManager
 }
 
-func GetAccountIsRegistered(accountName string) (bool, error) {
-	c := newZecreyNftMarketSDK(accountName, "undefined")
-	res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
-	if err != nil {
-		logx.Error(err)
-		return false, err
-	}
-	//get base contract address
-	resp, err := c.GetLayer2BasicInfo()
-	if err != nil {
-		return false, err
-	}
-	ZecreyLegendContract = resp.ContractAddresses[0]
-	ZnsPriceOracle = resp.ContractAddresses[1]
-
-	resBytes := zecreyLegendUtil.SetFixed32Bytes(res)
-	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
-	if err != nil {
-		return false, err
-	}
-	// fetch by accountNameHash
-	addr, err := zecreyInstance.GetAddressByAccountNameHash(zecreyLegendRpc.EmptyCallOpts(), resBytes)
-	if err != nil {
-		logx.Error(err)
-		return false, err
-	}
-	return !bytes.Equal(addr.Bytes(), BytesToAddress([]byte{}).Bytes()), nil
-}
-
 func (c *client) GetAccountL1Address(accountName string) (common.Address, error) {
 	res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
 	if err != nil {
@@ -106,8 +75,8 @@ func (c *client) GetAccountL1Address(accountName string) (common.Address, error)
 	if err != nil {
 		return BytesToAddress([]byte{}), err
 	}
-	ZecreyLegendContract = resp.ContractAddresses[0]
-	ZnsPriceOracle = resp.ContractAddresses[1]
+	ZecreyLegendContract := resp.ContractAddresses[0]
+	//ZnsPriceOracle := resp.ContractAddresses[1]
 
 	resBytes := zecreyLegendUtil.SetFixed32Bytes(res)
 	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
@@ -164,6 +133,34 @@ func (c *client) GetCategories() (*RespGetCollectionCategories, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+func GetCategories1() (string, error) {
+	var data = []byte(`
+{"query":"query MyQuery {\n  category {\n    name\n    id\n  }\n}\n","variables":{}}
+`)
+	req, err := http.NewRequest(http.MethodPost, "https://legend-market-dev.hasura.app/v1/graphql", bytes.NewReader(data))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("x-hasura-access-key", "kqWAsFWVvn61mFuiuQ5yqJkWpu5VS1B5FGTdFzlVlQJ9fMTr9yNIjOnN3hERC9ex")
+	hc := http.DefaultClient
+	hc.Timeout = time.Second * 15
+	resp, err := hc.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf(string(body))
+	}
+
+	return string(body), nil
 }
 
 func (c *client) ApplyRegisterHost(
@@ -1171,8 +1168,8 @@ func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (Zecr
 	if err != nil {
 		return nil, err
 	}
-	ZecreyLegendContract = resp.ContractAddresses[0]
-	ZnsPriceOracle = resp.ContractAddresses[1]
+	ZecreyLegendContract := resp.ContractAddresses[0]
+	ZnsPriceOracle := resp.ContractAddresses[1]
 
 	gasPrice, err := c.providerClient.SuggestGasPrice(context.Background())
 	if err != nil {
@@ -1200,4 +1197,57 @@ func BytesToAddress(b []byte) common.Address {
 	var a common.Address
 	a.SetBytes(b)
 	return a
+}
+
+func GetAccountIsRegistered(accountName string) (bool, error) {
+	c := newZecreyNftMarketSDK(accountName, "undefined")
+	res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
+	if err != nil {
+		logx.Error(err)
+		return false, err
+	}
+	//get base contract address
+	resp, err := c.GetLayer2BasicInfo()
+	if err != nil {
+		return false, err
+	}
+	ZecreyLegendContract := resp.ContractAddresses[0]
+	//ZnsPriceOracle := resp.ContractAddresses[1]
+
+	resBytes := zecreyLegendUtil.SetFixed32Bytes(res)
+	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
+	if err != nil {
+		return false, err
+	}
+	// fetch by accountNameHash
+	addr, err := zecreyInstance.GetAddressByAccountNameHash(zecreyLegendRpc.EmptyCallOpts(), resBytes)
+	if err != nil {
+		logx.Error(err)
+		return false, err
+	}
+	return !bytes.Equal(addr.Bytes(), BytesToAddress([]byte{}).Bytes()), nil
+}
+
+func Post2Hasura(data []byte) (string, error) {
+	req, err := http.NewRequest(http.MethodPost, hasuraUrl, bytes.NewReader(data))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("x-hasura-access-key", hasuraAdminKey)
+	hc := http.DefaultClient
+	hc.Timeout = time.Second * hasuraTimeDeadline
+	resp, err := hc.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf(string(body))
+	}
+	return string(body), nil
 }

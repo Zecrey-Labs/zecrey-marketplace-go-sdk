@@ -162,7 +162,7 @@ func TestUpdateCollection(t *testing.T) {
 }
 
 func TestMintNft(t *testing.T) {
-	var CollectionId int64 = 15
+	var CollectionId int64 = 247
 	accountName := "sher"
 	seed := "28e1a3762ff99...."
 	c := NewZecreyNftMarketSDK(accountName, seed)
@@ -170,7 +170,7 @@ func TestMintNft(t *testing.T) {
 	NftUrl := "-"
 	Name := "-"
 	Description := "nft-sdk-Description"
-	Media := "collection/dekkg5j1ptccq9ttliui"
+	Media := "collection/e2rdcsgitkxonxqjcmkg"
 	key := fmt.Sprintf("zw:%s:%d", accountName, 2)
 	value := "red1"
 	assetProperty := Propertie{
@@ -179,7 +179,7 @@ func TestMintNft(t *testing.T) {
 	}
 	assetLevel := Level{
 		Name:     "assetLevel",
-		Value:    123,
+		Value:    12,
 		MaxValue: 123,
 	}
 	assetStats := Stat{
@@ -272,7 +272,7 @@ func TestWithdrawNft(t *testing.T) {
 }
 
 func TestSellOffer(t *testing.T) {
-	var AssetId int64 = 11
+	var AssetId int64 = 383
 	accountName := "sher"
 	seed := "28e1a3762ff9.........."
 
@@ -299,6 +299,7 @@ func TestBuyOffer(t *testing.T) {
 	data, err := json.Marshal(ret2)
 	fmt.Println("CreateBuyOffer:", string(data))
 }
+
 func TestCancelOffer(t *testing.T) {
 	var OfferId int64 = 9
 	accountName := "sher"
