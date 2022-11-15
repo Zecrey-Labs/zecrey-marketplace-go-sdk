@@ -2,19 +2,26 @@ package sdk
 
 import (
 	"bytes"
+	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/zecrey-labs/zecrey-eth-rpc/_rpc"
-	zecreyLegendRpc "github.com/zecrey-labs/zecrey-eth-rpc/zecrey/core/zecrey-legend"
-	zecreyLegendUtil "github.com/zecrey-labs/zecrey-legend/common/util"
-	"github.com/zeromicro/go-zero/core/logx"
 	"io"
 	"io/ioutil"
+	"math/big"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/zecrey-labs/zecrey-crypto/util/ecdsaHelper"
+	"github.com/zecrey-labs/zecrey-crypto/util/eddsaHelper"
+	"github.com/zecrey-labs/zecrey-eth-rpc/_rpc"
+	zecreyLegendRpc "github.com/zecrey-labs/zecrey-eth-rpc/zecrey/core/zecrey-legend"
+	zecreyLegendUtil "github.com/zecrey-labs/zecrey-legend/common/util"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 func GetAccountL1Address(accountName string) (common.Address, error) {
@@ -110,6 +117,39 @@ func GetAccountIndex(accountName string) (int64, error) {
 		return 0, err
 	}
 	return result.Account.AccountIndex, nil
+}
+
+func IfAccountRegistered(accountName string) (bool, error) {
+	c, err := newZecreyMarketplaceClientDefault(accountName)
+	if err != nil {
+		logx.Error(err)
+		return false, err
+	}
+	res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
+	if err != nil {
+		logx.Error(err)
+		return false, err
+	}
+	//get base contract address
+	resp, err := GetLayer2BasicInfo()
+	if err != nil {
+		return false, err
+	}
+	ZecreyLegendContract := resp.ContractAddresses[0]
+	//ZnsPriceOracle := resp.ContractAddresses[1]
+
+	resBytes := zecreyLegendUtil.SetFixed32Bytes(res)
+	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
+	if err != nil {
+		return false, err
+	}
+	// fetch by accountNameHash
+	addr, err := zecreyInstance.GetAddressByAccountNameHash(zecreyLegendRpc.EmptyCallOpts(), resBytes)
+	if err != nil {
+		logx.Error(err)
+		return false, err
+	}
+	return !bytes.Equal(addr.Bytes(), BytesToAddress([]byte{}).Bytes()), nil
 }
 
 func GetCategories() (*RespGetCollectionCategories, error) {
@@ -363,26 +403,12 @@ func GetOfferById(OfferId int64) (*RespGetOfferByOfferId, error) {
 	return result, nil
 }
 
-func GetOffersBeingSell() (*RespGetNftBeingSell, error) {
-	var data = []byte(`
-{"query":"query MyQuery {\n  offer(where: {status: {_eq: \"1\"}, direction: {_eq: \"1\"}}) {\n    id\n    l2_offer_id\n    asset_id\n    counterpart_id\n    payment_asset_id\n    payment_asset_amount\n    signature\n    status\n    direction\n    expired_at\n   created_at\n    asset {\n      id\n      nft_index\n      name\n      collection_id\n      content_hash\n      create_tx_hash\n      creator_earning_rate\n      description\n      expired_at\n      image_thumb\n      l1_token_id\n      last_payment_asset_amount\n      last_payment_asset_id\n      media_detail {\n        url\n      }\n      nft_url\n      status\n      video_thumb\n      asset_stats {\n        max_value\n        key\n      }\n      asset_properties {\n        key\n        value\n      }\n      asset_levels {\n        key\n        max_value\n        value\n      }\n    }\n  }\n}\n","variables":{}}
-`)
-	body, err := Post2Hasura(data)
-	if err != nil {
-		return nil, err
-	}
+func GetListingOffers(isSell int64) (*RespGetNftBeingSell, error) {
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery {\n  offer(where: {status: {_eq: \"%d\"}, direction: {_eq: \"1\"}}) {\n    id\n    l2_offer_id\n    asset_id\n    counterpart_id\n    payment_asset_id\n    payment_asset_amount\n    signature\n    status\n    direction\n    expired_at\n   created_at\n    asset {\n      id\n      nft_index\n      name\n      collection_id\n      content_hash\n      create_tx_hash\n      creator_earning_rate\n      description\n      expired_at\n      image_thumb\n      l1_token_id\n      last_payment_asset_amount\n      last_payment_asset_id\n      media_detail {\n        url\n      }\n      nft_url\n      status\n      video_thumb\n      asset_stats {\n        max_value\n        key\n      }\n      asset_properties {\n        key\n        value\n      }\n      asset_levels {\n        key\n        max_value\n        value\n      }\n    }\n  }\n}\n","variables":{}}
+`, isSell)
 
-	result := &RespGetNftBeingSell{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
-func GetOffersBeingBuy() (*RespGetNftBeingSell, error) {
-	var data = []byte(`
-{"query":"query MyQuery {\n  offer(where: {status: {_eq: \"1\"}, direction: {_eq: \"0\"}}) {\n    id\n    l2_offer_id\n    asset_id\n    counterpart_id\n    payment_asset_id\n    payment_asset_amount\n    signature\n    status\n    direction\n    expired_at\n    created_at\n    asset {\n      id\n      nft_index\n      name\n      collection_id\n      content_hash\n      create_tx_hash\n      creator_earning_rate\n      description\n      expired_at\n      image_thumb\n      l1_token_id\n      last_payment_asset_amount\n      last_payment_asset_id\n      media_detail {\n        url\n      }\n      nft_url\n      status\n      video_thumb\n      asset_stats {\n        max_value\n        key\n      }\n      asset_properties {\n        key\n        value\n      }\n      asset_levels {\n        key\n        max_value\n        value\n      }\n    }\n  }\n}\n","variables":{}}
-`)
+	var data = []byte(queryStr)
 	body, err := Post2Hasura(data)
 	if err != nil {
 		return nil, err
@@ -471,4 +497,136 @@ func UploadMedia(filePath string) (*RespMediaUpload, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+//newZecreyMarketplaceClientDefault private
+func newZecreyMarketplaceClientWithSeed(accountName, seed string) (*client, error) {
+	keyManager, err := NewSeedKeyManager(seed)
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("wrong seed:%s", seed))
+	}
+	l2pk := eddsaHelper.GetEddsaPublicKey(seed[2:])
+	connEth, err := _rpc.NewClient(chainRpcUrl)
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
+	}
+	return &client{
+		accountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
+		seed:           seed,
+		l2pk:           l2pk,
+		nftMarketUrl:   nftMarketUrl,
+		legendUrl:      legendUrl,
+		providerClient: connEth,
+		keyManager:     keyManager,
+	}, nil
+}
+
+//newZecreyMarketplaceClientDefault private
+func newZecreyMarketplaceClientDefault(accountName string) (*client, error) {
+	connEth, err := _rpc.NewClient(chainRpcUrl)
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
+	}
+	return &client{
+		accountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
+		nftMarketUrl:   nftMarketUrl,
+		legendUrl:      legendUrl,
+		providerClient: connEth,
+	}, nil
+}
+
+func CreateL1Account() (l1Addr, privateKeyStr, l2pk, seed string, err error) {
+	privateKey, err := crypto.GenerateKey()
+	if err != nil {
+		logx.Errorf("[CreateL1Account] GenerateKey err: %s", err)
+		return "", "", "", "", err
+	}
+	privateKeyStr = hex.EncodeToString(crypto.FromECDSA(privateKey))
+	l1Addr, err = ecdsaHelper.GenerateL1Address(privateKey)
+	if err != nil {
+		logx.Errorf("[CreateL1Account] GenerateL1Address err: %s", err)
+		return "", "", "", "", err
+	}
+	seed, err = eddsaHelper.GetEddsaSeed(privateKey)
+	if err != nil {
+		logx.Errorf("[CreateL1Account] GetEddsaSeed err: %s", err)
+		return "", "", "", "", err
+	}
+	l2pk = eddsaHelper.GetEddsaPublicKey(seed[2:])
+	return
+}
+
+func GetSeedAndL2Pk(privateKeyStr string) (l2pk, seed string, err error) {
+	privECDSA, err := crypto.ToECDSA(common.FromHex(privateKeyStr))
+	seed, err = eddsaHelper.GetEddsaSeed(privECDSA)
+	if err != nil {
+		logx.Errorf("[CreateL1Account] GetEddsaSeed err: %s", err)
+		return "", "", err
+	}
+	l2pk = eddsaHelper.GetEddsaPublicKey(seed[2:])
+	return
+}
+
+func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (ZecreyNftMarketSDK, error) {
+	l2pk, seed, err := GetSeedAndL2Pk(privateKey)
+	if err != nil {
+		return nil, err
+	}
+	c, err := newZecreyMarketplaceClientWithSeed(accountName, seed)
+	if err != nil {
+		return nil, err
+	}
+	if ok, err := IfAccountRegistered(accountName); ok {
+		if err != nil {
+			return nil, err
+		}
+		return NewZecreyMarketplaceClient(accountName, seed)
+	}
+	var chainId *big.Int
+	chainId, err = c.providerClient.ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	authCli, err := _rpc.NewAuthClient(c.providerClient, privateKey, chainId)
+	if err != nil {
+		return nil, err
+	}
+	px, py, err := zecreyLegendUtil.PubKeyStrToPxAndPy(l2pk)
+	if err != nil {
+		return nil, err
+	}
+	//get base contract address
+	resp, err := GetLayer2BasicInfo()
+	if err != nil {
+		return nil, err
+	}
+	ZecreyLegendContract := resp.ContractAddresses[0]
+	ZnsPriceOracle := resp.ContractAddresses[1]
+
+	gasPrice, err := c.providerClient.SuggestGasPrice(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
+	if err != nil {
+		return nil, err
+	}
+	priceOracleInstance, err := zecreyLegendRpc.LoadStablePriceOracleInstance(c.providerClient, ZnsPriceOracle)
+	if err != nil {
+		return nil, err
+	}
+	_, err = zecreyLegendRpc.RegisterZNS(c.providerClient, authCli,
+		zecreyInstance, priceOracleInstance,
+		gasPrice, DefaultGasLimit, accountName,
+		common.HexToAddress(l1Addr), px, py)
+	if err != nil {
+		return nil, err
+	}
+	return NewZecreyMarketplaceClient(accountName, seed)
+}
+
+func BytesToAddress(b []byte) common.Address {
+	var a common.Address
+	a.SetBytes(b)
+	return a
 }

@@ -398,12 +398,12 @@ func TestRegisterAccountWithPrivateKey(t *testing.T) {
 
 func TestGetAccountIsRegistered(t *testing.T) {
 	accountName := "6633332"
-	result, err := GetAccountIsRegistered(accountName)
+	result, err := IfAccountRegistered(accountName)
 	if err != nil {
 		t.Fatal(err)
 	}
 	data, err := json.Marshal(result)
-	fmt.Println("GetAccountIsRegistered:", string(data))
+	fmt.Println("IfAccountRegistered:", string(data))
 }
 
 func TestGetAccountByAccountName(t *testing.T) {
@@ -458,19 +458,8 @@ func TestGetCategories(t *testing.T) {
 }
 
 func TestGetOfferBeingSell(t *testing.T) {
-	result, err := GetOffersBeingSell()
-	if err != nil {
-		t.Fatal(err)
-	}
-	data, err := json.Marshal(result)
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println(string(data))
-}
-
-func TestGetOfferBeingBuy(t *testing.T) {
-	result, err := GetOffersBeingBuy()
+	var isSell int64 = 1
+	result, err := GetListingOffers(isSell)
 	if err != nil {
 		t.Fatal(err)
 	}
