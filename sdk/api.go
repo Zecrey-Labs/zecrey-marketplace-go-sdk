@@ -9,29 +9,9 @@ import (
 )
 
 type ZecreyNftMarketSDK interface {
-	GetAccountByAccountName(accountName string) (*RespGetAccountByAccountName, error)
-
-	GetCategories() (*RespGetCollectionCategories, error)
-
-	GetCollectionById(collectionId int64) (*RespGetCollectionByCollectionId, error)
-
-	GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetAccountCollections, error)
-
-	GetAccountNFTs(AccountIndex int64) (*RespGetAccountAssets, error)
-
-	GetAccountOffers(AccountIndex int64) (*RespGetAccountOffers, error)
-
-	GetNftOffers(nftId int64) (*RespGetAssetOffers, error)
-
-	GetNftById(nftId int64) (*RespetAssetByAssetId, error)
-
-	GetOfferById(OfferId int64) (*RespGetOfferByOfferId, error)
-
 	GetMyInfo() (accountName string, l2pk string, seed string)
 
 	ApplyRegisterHost(accountName string, l2Pk string, OwnerAddr string) (*RespApplyRegisterHost, error)
-
-	UploadMedia(filePath string) (*RespMediaUpload, error)
 
 	CreateCollection(ShortName string, CategoryId string, CreatorEarningRate string,
 		ops ...model.CollectionOption) (*RespCreateCollection, error)
@@ -59,24 +39,24 @@ type ZecreyNftMarketSDK interface {
 	AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error)
 }
 
-//NewZecreyNftMarketSDK public
-func NewZecreyNftMarketSDK(accountName, seed string) ZecreyNftMarketSDK {
+//NewZecreyMarketplaceClient public
+func NewZecreyMarketplaceClient(accountName, seed string) (ZecreyNftMarketSDK, error) {
 	keyManager, err := NewSeedKeyManager(seed)
 	if err != nil {
-		panic(fmt.Sprintf("wrong seed:%s", seed))
+		return nil, fmt.Errorf(fmt.Sprintf("wrong seed:%s", seed))
 	}
 	l2pk := eddsaHelper.GetEddsaPublicKey(seed[2:])
 	connEth, err := _rpc.NewClient(chainRpcUrl)
 	if err != nil {
-		panic(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
+		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
 	}
 	return &client{
 		accountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
 		seed:           seed,
 		l2pk:           l2pk,
-		nftMarketURL:   nftMarketUrl,
-		legendURL:      legendUrl,
+		nftMarketUrl:   nftMarketUrl,
+		legendUrl:      legendUrl,
 		providerClient: connEth,
 		keyManager:     keyManager,
-	}
+	}, nil
 }

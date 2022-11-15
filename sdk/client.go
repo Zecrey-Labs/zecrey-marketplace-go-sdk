@@ -7,13 +7,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/zecrey-labs/zecrey-crypto/util/ecdsaHelper"
-	"io"
 	"io/ioutil"
 	"math/big"
-	"mime/multipart"
 	"net/http"
 	"net/url"
-	"os"
 	"sort"
 	"time"
 
@@ -33,16 +30,19 @@ import (
 
 const (
 	//nftMarketUrl = "http://localhost:9999"
-	//nftMarketUrl = "https://test-legend-nft.zecrey.com"
-	nftMarketUrl = "https://dev-legend-nft.zecrey.com"
+	nftMarketUrl = "https://test-legend-nft.zecrey.com"
+	//nftMarketUrl = "https://dev-legend-nft.zecrey.com"
 	//nftMarketUrl = "https://qa-legend-nft.zecrey.com"
 
-	//legendUrl = "https://qa-legend-app.zecrey.com"
-	legendUrl = "https://dev-legend-app.zecrey.com"
+	legendUrl = "https://qa-legend-app.zecrey.com"
+	//legendUrl = "https://dev-legend-app.zecrey.com"
 	//legendUrl    = "https://test-legend-app.zecrey.com"
 
-	hasuraUrl          = "https://legend-market-dev.hasura.app/v1/graphql"
-	hasuraAdminKey     = "kqWAsFWVvn61mFuiuQ5yqJkWpu5VS1B5FGTdFzlVlQJ9fMTr9yNIjOnN3hERC9ex"
+	//hasuraUrl          = "https://legend-market-dev.hasura.app/v1/graphql"
+	hasuraUrl = "https://legend-market-qa.hasura.app/v1/graphql"
+	//hasuraUrl          = "https://legend-marketplace.hasura.app/v1/graphql"
+	hasuraAdminKey = "M5tpo0dWWjYdW0erD0mHqwcRSObUowSprpS7Q3K33SNQ0dcXkPeL63tpoka9dTBw" //qa
+	//hasuraAdminKey     = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos"//test
 	hasuraTimeDeadline = 15 //15s
 
 	chainRpcUrl     = "https://data-seed-prebsc-1-s1.binance.org:8545"
@@ -54,8 +54,8 @@ type client struct {
 	accountName    string
 	l2pk           string
 	seed           string
-	nftMarketURL   string
-	legendURL      string
+	nftMarketUrl   string
+	legendUrl      string
 	providerClient *_rpc.ProviderClient
 	keyManager     KeyManager
 }
@@ -64,108 +64,9 @@ func (c *client) SetKeyManager(keyManager KeyManager) {
 	c.keyManager = keyManager
 }
 
-func (c *client) GetAccountL1Address(accountName string) (common.Address, error) {
-	res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
-	if err != nil {
-		logx.Error(err)
-		return BytesToAddress([]byte{}), err
-	}
-	//get base contract address
-	resp, err := c.GetLayer2BasicInfo()
-	if err != nil {
-		return BytesToAddress([]byte{}), err
-	}
-	ZecreyLegendContract := resp.ContractAddresses[0]
-	//ZnsPriceOracle := resp.ContractAddresses[1]
-
-	resBytes := zecreyLegendUtil.SetFixed32Bytes(res)
-	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
-	if err != nil {
-		return BytesToAddress([]byte{}), err
-	}
-	// fetch by accountNameHash
-	addr, err := zecreyInstance.GetAddressByAccountNameHash(zecreyLegendRpc.EmptyCallOpts(), resBytes)
-	if err != nil {
-		logx.Error(err)
-		return BytesToAddress([]byte{}), err
-	}
-	if bytes.Equal(addr.Bytes(), BytesToAddress([]byte{}).Bytes()) {
-		return BytesToAddress([]byte{}), fmt.Errorf("null address")
-	}
-	return addr, nil
-}
-
-func (c *client) GetAccountByAccountName(accountName string) (*RespGetAccountByAccountName, error) {
-	resp, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/account/getAccountByAccountName?account_name=%s", accountName))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
-	}
-	result := &RespGetAccountByAccountName{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
-func (c *client) GetCategories() (*RespGetCollectionCategories, error) {
-	resp, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/collection/getCollectionCategories"))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
-	}
-	result := &RespGetCollectionCategories{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
-func GetCategories1() (string, error) {
-	var data = []byte(`
-{"query":"query MyQuery {\n  category {\n    name\n    id\n  }\n}\n","variables":{}}
-`)
-	req, err := http.NewRequest(http.MethodPost, "https://legend-market-dev.hasura.app/v1/graphql", bytes.NewReader(data))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("x-hasura-access-key", "kqWAsFWVvn61mFuiuQ5yqJkWpu5VS1B5FGTdFzlVlQJ9fMTr9yNIjOnN3hERC9ex")
-	hc := http.DefaultClient
-	hc.Timeout = time.Second * 15
-	resp, err := hc.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf(string(body))
-	}
-
-	return string(body), nil
-}
-
 func (c *client) ApplyRegisterHost(
 	accountName string, l2Pk string, OwnerAddr string) (*RespApplyRegisterHost, error) {
-	resp, err := http.PostForm(c.legendURL+"/api/v1/register/applyRegisterHost",
+	resp, err := http.PostForm(c.legendUrl+"/api/v1/register/applyRegisterHost",
 		url.Values{
 			"account_name": {accountName},
 			"l2_pk":        {l2Pk},
@@ -194,7 +95,7 @@ func (c *client) CreateCollection(ShortName string, CategoryId string, CreatorEa
 		do.F(cp)
 	}
 
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareCreateCollectionTxInfo?account_name=%s", c.accountName))
+	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareCreateCollectionTxInfo?account_name=%s", c.accountName))
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +115,7 @@ func (c *client) CreateCollection(ShortName string, CategoryId string, CreatorEa
 	if err != nil {
 		return nil, err
 	}
-	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/collection/createCollection",
+	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/collection/createCollection",
 		url.Values{"short_name": {ShortName},
 			"category_id":          {CategoryId},
 			"collection_url":       {cp.CollectionUrl},
@@ -247,72 +148,6 @@ func (c *client) CreateCollection(ShortName string, CategoryId string, CreatorEa
 	return result, nil
 }
 
-func (c *client) UploadMedia(filePath string) (*RespMediaUpload, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		panic(err)
-	}
-
-	buf := new(bytes.Buffer)
-	writer := multipart.NewWriter(buf)
-	formFile, err := writer.CreateFormFile("image", "image.jpg")
-	defer file.Close()
-	_, err = io.Copy(formFile, file)
-
-	req := ReqMediaUpload{
-		image: formFile,
-	}
-	statusJSON, _ := json.Marshal(req)
-	resp, err := http.Post(c.nftMarketURL+"/api/v1/asset/media", "application/json", bytes.NewReader(statusJSON))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
-	}
-	result := &RespMediaUpload{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
-func (c *client) GetCollectionById(collectionId int64) (*RespGetCollectionByCollectionId, error) {
-	request_query := fmt.Sprintf("query MyQuery {\n  actionGetCollectionById(collection_id: %d) {\n    collection {\n      account_name\n      banner_thumb\n    }\n  }\n}\n", collectionId)
-	input := InputCollectionByIdActionBody{CollectionId: collectionId}
-	action := ActionBody{Name: "actionGetCollectionById"}
-	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
-	req := ReqGetCollectionById{
-		Input:            input,
-		Action:           action,
-		SessionVariables: SessionVariables,
-		RequestQuery:     request_query,
-	}
-	statusJSON, _ := json.Marshal(req)
-	resp, err := http.Post(c.nftMarketURL+"/api/v1/action/actionGetCollectionById", "application/json", bytes.NewReader(statusJSON))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
-	}
-	result := &RespGetCollectionByCollectionId{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
 func (c *client) UpdateCollection(Id string, Name string, ops ...model.CollectionOption) (*RespUpdateCollection, error) {
 	cp := &model.CollectionParams{}
 	for _, do := range ops {
@@ -322,7 +157,7 @@ func (c *client) UpdateCollection(Id string, Name string, ops ...model.Collectio
 	timestamp := time.Now().Unix()
 	message := fmt.Sprintf("%dupdate_collection", timestamp)
 	signature := SignMessage(c.keyManager, message)
-	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/collection/updateCollection",
+	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/collection/updateCollection",
 		url.Values{
 			"id":             {Id},
 			"account_name":   {c.accountName},
@@ -359,139 +194,11 @@ func (c *client) UpdateCollection(Id string, Name string, ops ...model.Collectio
 	return result, nil
 }
 
-func (c *client) GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetAccountCollections, error) {
-	request_query := fmt.Sprintf("query MyQuery {\n  actionGetAccountCollections(account_index: %d) {\n    confirmedCollectionIdList\n    pendingCollections {\n      account_name\n      banner_image\n      banner_thumb\n      browse_count\n      category_id\n      created_at\n      creator_earning_rate\n      description\n      discord_link\n      expired_at\n      external_link\n      featured_Thumb\n      featured_image\n      floor_price\n      id\n      instagram_link\n      item_count\n      l2_collection_id\n      logo_image\n      logo_thumb\n      name\n      one_day_trade_volume\n      short_name\n      status\n      telegram_link\n      total_trade_volume\n      twitter_link\n    }\n  }\n}", AccountIndex)
-	input := InputGetAccountCollectionsActionBody{AccountIndex: AccountIndex}
-	action := ActionBody{Name: "actionGetAccountCollections"}
-	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
-	req := ReqGetAccountCollections{
-		Input:            input,
-		Action:           action,
-		SessionVariables: SessionVariables,
-		RequestQuery:     request_query,
-	}
-	statusJSON, _ := json.Marshal(req)
-	resp, err := http.Post(c.nftMarketURL+"/api/v1/action/actionGetAccountCollections", "application/json", bytes.NewReader(statusJSON))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
-	}
-	result := &RespGetAccountCollections{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	//get collections status = 1
-	return result, nil
-}
-
-func (c *client) GetAccountNFTs(AccountIndex int64) (*RespGetAccountAssets, error) {
-	request_query := fmt.Sprintf("query MyQuery {\n  actionGetAccountAssets(account_index: %d) {\n    confirmedAssetIdList\n    pendingAssets {\n      account_name\n      audio_thumb\n      collection_id\n      content_hash\n      creator_earning_rate\n      created_at\n      description\n      expired_at\n      id\n      image_thumb\n      levels\n      media\n      name\n      nft_index\n      properties\n      stats\n      status\n      video_thumb\n    }\n  }\n}", AccountIndex)
-	input := InputAssetActionBody{AccountIndex: AccountIndex}
-	action := ActionBody{Name: "actionGetAccountAssets"}
-	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
-	req := ReqGetAccountAssets{
-		Input:            input,
-		Action:           action,
-		SessionVariables: SessionVariables,
-		RequestQuery:     request_query,
-	}
-	statusJSON, _ := json.Marshal(req)
-	resp, err := http.Post(c.nftMarketURL+"/api/v1/action/actionGetAccountAssets", "application/json", bytes.NewReader(statusJSON))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
-	}
-	result := &RespGetAccountAssets{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	//get collections status = 1
-	return result, nil
-}
-
-func (c *client) GetAccountOffers(AccountIndex int64) (*RespGetAccountOffers, error) {
-	request_query := fmt.Sprintf("query MyQuery {\n  actionGetAccountOffers(account_index: %d) {\n    confirmedOfferIdList\n    pendingOffers {\n      account_name\n      asset_id\n      created_at\n      direction\n      expired_at\n      id\n      payment_asset_amount\n      payment_asset_id\n      signature\n      status\n    }\n  }\n}", AccountIndex)
-	input := InputGetAccountOffersActionBody{AccountIndex: AccountIndex}
-	action := ActionBody{Name: "actionGetAccountOffers"}
-	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
-	req := ReqGetAccountOffers{
-		Input:            input,
-		Action:           action,
-		SessionVariables: SessionVariables,
-		RequestQuery:     request_query,
-	}
-	statusJSON, _ := json.Marshal(req)
-	resp, err := http.Post(c.nftMarketURL+"/api/v1/action/actionGetAccountOffers", "application/json", bytes.NewReader(statusJSON))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
-	}
-	result := &RespGetAccountOffers{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	//get collections status = 1
-	return result, nil
-}
-
-func (c *client) GetNftOffers(NftId int64) (*RespGetAssetOffers, error) {
-	request_query := fmt.Sprintf("query MyQuery {\n  actionGetAssetOffers(asset_id: %d) {\n    confirmedOfferIdList\n    pendingOffers {\n      account_name\n      asset_id\n      created_at\n      direction\n      expired_at\n      id\n      payment_asset_amount\n      payment_asset_id\n      signature\n      status\n    }\n  }\n}", NftId)
-	input := InputGetAssetOffersActionBody{AssetId: NftId}
-	action := ActionBody{Name: "actionGetAssetOffers"}
-	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
-	req := ReqGetAssetOffers{
-		Input:            input,
-		Action:           action,
-		SessionVariables: SessionVariables,
-		RequestQuery:     request_query,
-	}
-	statusJSON, _ := json.Marshal(req)
-	resp, err := http.Post(c.nftMarketURL+"/api/v1/action/actionGetAssetOffers", "application/json", bytes.NewReader(statusJSON))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
-	}
-	result := &RespGetAssetOffers{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	//get collections status = 1
-	return result, nil
-}
-
 func (c *client) MintNft(CollectionId int64, NftUrl string, Name string, Description string, Media string, Properties string, Levels string, Stats string) (*RespCreateAsset, error) {
 
 	ContentHash, err := calculateContentHash(c.accountName, CollectionId, Name, Properties, Levels, Stats)
 
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionId, Name, ContentHash))
+	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionId, Name, ContentHash))
 	if err != nil {
 		return nil, err
 	}
@@ -511,7 +218,7 @@ func (c *client) MintNft(CollectionId int64, NftUrl string, Name string, Descrip
 		return nil, err
 	}
 
-	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/asset/createAsset",
+	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/asset/createAsset",
 		url.Values{
 			"collection_id": {fmt.Sprintf("%d", CollectionId)},
 			"nft_url":       {NftUrl},
@@ -540,41 +247,10 @@ func (c *client) MintNft(CollectionId int64, NftUrl string, Name string, Descrip
 	return result, nil
 }
 
-func (c *client) GetNftById(nftId int64) (*RespetAssetByAssetId, error) {
-	request_query := fmt.Sprintf("query MyQuery {\n  actionGetAssetByAssetId(asset_id: %d) {\n    asset {\n      account_name\n      audio_thumb\n      collection_id\n      content_hash\n      created_at\n      creator_earning_rate\n      description\n      expired_at\n      id\n      image_thumb\n      levels\n      media\n      name\n      nft_index\n      properties\n      stats\n      status\n      video_thumb\n    }\n  }\n}\n", nftId)
-	input := InputGetAssetByIdActionBody{AssetId: nftId}
-	action := ActionBody{Name: "actionGetAssetByAssetId"}
-	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
-	req := ReqGetAssetById{
-		Input:            input,
-		Action:           action,
-		SessionVariables: SessionVariables,
-		RequestQuery:     request_query,
-	}
-	statusJSON, _ := json.Marshal(req)
-	resp, err := http.Post(c.nftMarketURL+"/api/v1/action/actionGetAssetByAssetId", "application/json", bytes.NewReader(statusJSON))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
-	}
-	result := &RespetAssetByAssetId{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
 func (c *client) TransferNft(
 	AssetId int64,
 	toAccountName string) (*ResqSendTransferNft, error) {
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareTransferNftTxInfo?account_name=%s&to_account_name=%s%s&nft_id=%d", c.accountName, toAccountName, NameSuffix, AssetId))
+	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareTransferNftTxInfo?account_name=%s&to_account_name=%s%s&nft_id=%d", c.accountName, toAccountName, NameSuffix, AssetId))
 	if err != nil {
 		return nil, err
 	}
@@ -592,7 +268,7 @@ func (c *client) TransferNft(
 	}
 	txInfo, err := PrepareTransferNftTxInfo(c.keyManager, resultPrepare.Transtion)
 
-	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/asset/sendTransferNft",
+	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/asset/sendTransferNft",
 		url.Values{
 			"asset_id":    {fmt.Sprintf("%d", AssetId)},
 			"transaction": {txInfo},
@@ -617,7 +293,7 @@ func (c *client) TransferNft(
 }
 
 func (c *client) WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error) {
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareWithdrawNftTxInfo?account_name=%s&nft_id=%d", c.accountName, AssetId))
+	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareWithdrawNftTxInfo?account_name=%s&nft_id=%d", c.accountName, AssetId))
 	if err != nil {
 		return nil, err
 	}
@@ -634,7 +310,7 @@ func (c *client) WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error) {
 	}
 
 	txInfo, err := PrepareWithdrawNftTxInfo(c.keyManager, resultPrepare.Transtion)
-	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/asset/sendWithdrawNft",
+	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/asset/sendWithdrawNft",
 		url.Values{
 			"asset_id":    {fmt.Sprintf("%d", AssetId)},
 			"transaction": {txInfo},
@@ -659,7 +335,7 @@ func (c *client) WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error) {
 }
 
 func (c *client) CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error) {
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=true", c.accountName, AssetId, AssetType, AssetAmount))
+	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=true", c.accountName, AssetId, AssetType, AssetAmount))
 	if err != nil {
 		return nil, err
 	}
@@ -683,7 +359,7 @@ func (c *client) CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *bi
 }
 
 func (c *client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error) {
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=false", c.accountName, AssetId, AssetType, AssetAmount))
+	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=false", c.accountName, AssetId, AssetType, AssetAmount))
 	if err != nil {
 		return nil, err
 	}
@@ -706,7 +382,7 @@ func (c *client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big
 }
 
 func (c *client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/offer/xxxxxxxx?offerId=%d", offerId))
+	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/offer/xxxxxxxx?offerId=%d", offerId))
 	if err != nil {
 		return nil, err
 	}
@@ -725,7 +401,7 @@ func (c *client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/offer/cancelOffer",
+	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/offer/cancelOffer",
 		url.Values{
 			"id":          {fmt.Sprintf("%d", offerId)},
 			"transaction": {tx},
@@ -751,7 +427,7 @@ func (c *client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
 }
 
 func (c *client) Offer(accountName string, tx string) (*RespListOffer, error) {
-	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/offer/listOffer",
+	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/offer/listOffer",
 		url.Values{
 			"accountName": {accountName},
 			"transaction": {tx},
@@ -775,49 +451,8 @@ func (c *client) Offer(accountName string, tx string) (*RespListOffer, error) {
 	return result, nil
 }
 
-func (c *client) GetNextOfferId(AccountName string) (*RespGetNextOfferId, error) {
-	resp, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/offer/getNextOfferId?account_name=%s", AccountName))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
-	}
-	result := &RespGetNextOfferId{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
-func (c *client) GetOfferById(OfferId int64) (*RespGetOfferByOfferId, error) {
-	resp, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/offer/getOfferByOfferId?offer_id=%d", OfferId))
-
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
-	}
-	result := &RespGetOfferByOfferId{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
 func (c *client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error) {
-	respPrepareTx, err := http.Get(c.nftMarketURL + fmt.Sprintf("/api/v1/preparetx/getPrepareAtomicMatchWithTx?account_name=%s&offer_id=%d&money_id=%d&money_amount=%s&is_sell=%v", c.accountName, offerId, 0, AssetAmount.String(), isSell))
+	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareAtomicMatchWithTx?account_name=%s&offer_id=%d&money_id=%d&money_amount=%s&is_sell=%v", c.accountName, offerId, 0, AssetAmount.String(), isSell))
 	if err != nil {
 		return nil, err
 	}
@@ -837,7 +472,7 @@ func (c *client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (
 	if err != nil {
 		return nil, err
 	}
-	resp, err := http.PostForm(c.nftMarketURL+"/api/v1/offer/acceptOffer",
+	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/offer/acceptOffer",
 		url.Values{
 			"id":          {fmt.Sprintf("%d", offerId)},
 			"transaction": {txInfo},
@@ -855,26 +490,6 @@ func (c *client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (
 		return nil, fmt.Errorf(string(body))
 	}
 	result := &RespAcceptOffer{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
-func (c *client) GetLayer2BasicInfo() (*RespGetLayer2BasicInfo, error) {
-	resp, err := http.Get(c.legendURL + "/api/v1/info/getLayer2BasicInfo")
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
-	}
-	result := &RespGetLayer2BasicInfo{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
@@ -1084,26 +699,40 @@ func SignMessage(key KeyManager, message string) string {
 	return signed
 }
 
-//newZecreyNftMarketSDK private
-func newZecreyNftMarketSDK(accountName, seed string) *client {
+//newZecreyMarketplaceClientDefault private
+func newZecreyMarketplaceClientWithSeed(accountName, seed string) (*client, error) {
 	keyManager, err := NewSeedKeyManager(seed)
 	if err != nil {
-		panic(fmt.Sprintf("wrong seed:%s", seed))
+		return nil, fmt.Errorf(fmt.Sprintf("wrong seed:%s", seed))
 	}
 	l2pk := eddsaHelper.GetEddsaPublicKey(seed[2:])
 	connEth, err := _rpc.NewClient(chainRpcUrl)
 	if err != nil {
-		panic(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
+		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
 	}
 	return &client{
 		accountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
 		seed:           seed,
 		l2pk:           l2pk,
-		nftMarketURL:   nftMarketUrl,
-		legendURL:      legendUrl,
+		nftMarketUrl:   nftMarketUrl,
+		legendUrl:      legendUrl,
 		providerClient: connEth,
 		keyManager:     keyManager,
+	}, nil
+}
+
+//newZecreyMarketplaceClientDefault private
+func newZecreyMarketplaceClientDefault(accountName string) (*client, error) {
+	connEth, err := _rpc.NewClient(chainRpcUrl)
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
 	}
+	return &client{
+		accountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
+		nftMarketUrl:   nftMarketUrl,
+		legendUrl:      legendUrl,
+		providerClient: connEth,
+	}, nil
 }
 
 func CreateL1Account() (l1Addr, privateKeyStr, l2pk, seed string, err error) {
@@ -1143,12 +772,15 @@ func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (Zecr
 	if err != nil {
 		return nil, err
 	}
-	c := newZecreyNftMarketSDK(accountName, seed)
+	c, err := newZecreyMarketplaceClientWithSeed(accountName, seed)
+	if err != nil {
+		return nil, err
+	}
 	if ok, err := GetAccountIsRegistered(accountName); ok {
 		if err != nil {
 			return nil, err
 		}
-		return NewZecreyNftMarketSDK(accountName, seed), nil
+		return NewZecreyMarketplaceClient(accountName, seed)
 	}
 	var chainId *big.Int
 	chainId, err = c.providerClient.ChainID(context.Background())
@@ -1164,7 +796,7 @@ func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (Zecr
 		return nil, err
 	}
 	//get base contract address
-	resp, err := c.GetLayer2BasicInfo()
+	resp, err := GetLayer2BasicInfo()
 	if err != nil {
 		return nil, err
 	}
@@ -1190,7 +822,7 @@ func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (Zecr
 	if err != nil {
 		return nil, err
 	}
-	return NewZecreyNftMarketSDK(accountName, seed), nil
+	return NewZecreyMarketplaceClient(accountName, seed)
 }
 
 func BytesToAddress(b []byte) common.Address {
@@ -1200,14 +832,18 @@ func BytesToAddress(b []byte) common.Address {
 }
 
 func GetAccountIsRegistered(accountName string) (bool, error) {
-	c := newZecreyNftMarketSDK(accountName, "undefined")
+	c, err := newZecreyMarketplaceClientDefault(accountName)
+	if err != nil {
+		logx.Error(err)
+		return false, err
+	}
 	res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
 	if err != nil {
 		logx.Error(err)
 		return false, err
 	}
 	//get base contract address
-	resp, err := c.GetLayer2BasicInfo()
+	resp, err := GetLayer2BasicInfo()
 	if err != nil {
 		return false, err
 	}
@@ -1226,28 +862,4 @@ func GetAccountIsRegistered(accountName string) (bool, error) {
 		return false, err
 	}
 	return !bytes.Equal(addr.Bytes(), BytesToAddress([]byte{}).Bytes()), nil
-}
-
-func Post2Hasura(data []byte) (string, error) {
-	req, err := http.NewRequest(http.MethodPost, hasuraUrl, bytes.NewReader(data))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("x-hasura-access-key", hasuraAdminKey)
-	hc := http.DefaultClient
-	hc.Timeout = time.Second * hasuraTimeDeadline
-	resp, err := hc.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf(string(body))
-	}
-	return string(body), nil
 }

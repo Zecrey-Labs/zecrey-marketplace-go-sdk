@@ -221,6 +221,7 @@ type RespGetNextOfferId struct {
 
 type Offer struct {
 	Id                 int64  `json:"id"`
+	L2OfferId          int64  `json:"l2_offer_id"`
 	AccountName        string `json:"account_name"`
 	Direction          string `json:"direction"`
 	AssetId            int64  `json:"asset_id"`
@@ -270,8 +271,8 @@ type ReqGetAccountAssets struct {
 	RequestQuery     string               `json:"request_query"`
 }
 type RespGetAccountAssets struct {
-	ConfirmedAssetIdList []int64  `json:"confirmedAssetIdList"`
-	PendingAssets        []*Asset `json:"pendingAssets"`
+	ConfirmedAssetIdList []int64    `json:"confirmedAssetIdList"`
+	PendingAssets        []*NftInfo `json:"pendingAssets"`
 }
 
 type InputGetAccountCollectionsActionBody struct {
@@ -441,6 +442,8 @@ type RespGetAccountByAccountName struct {
 
 type NftAccountInfo struct {
 	Id            int64  `json:"id"`
+	AccountIndex  int64  `json:"account_index"`
+	AccountPk     string `json:"account_pk"`
 	AccountName   string `json:"account_name"`
 	Bio           string `json:"bio"`
 	Email         string `json:"email"`
@@ -459,4 +462,54 @@ type ReqMediaUpload struct {
 
 type RespGetCollectionCategories struct {
 	Categories []*Categorie `json:"categories"`
+}
+
+//=========================  hasura struct ============================
+type MediaDetail struct {
+	Url string `json:"url"`
+}
+type HauaraNftInfo struct {
+	Id                 int64       `json:"id"`
+	NftIndex           int64       `json:"nft_index"`
+	CollectionId       int64       `json:"collection_id"`
+	CreatorEarningRate int64       `json:"creator_earning_rate"`
+	Name               string      `json:"name"`
+	Description        string      `json:"description"`
+	Media              MediaDetail `json:"media_detail"`
+	ImageThumb         string      `json:"image_thumb"`
+	VideoThumb         string      `json:"video_thumb"`
+	AudioThumb         string      `json:"audio_thumb"`
+	Status             int64       `json:"status"`
+	ContentHash        string      `json:"content_hash"`
+	NftUrl             string      `json:"nft_url"`
+	ExpiredAt          int64       `json:"expired_at"`
+	CreatedAt          int64       `json:"created_at"`
+	Properties         Propertie   `json:"properties"`
+	Levels             Level       `json:"levels"`
+	Stats              Stat        `json:"stats"`
+}
+type HasuraOffer struct {
+	Id                 int64          `json:"id"`
+	L2OfferId          int64          `json:"l2_offer_id"`
+	Direction          int            `json:"direction"`
+	AssetId            int64          `json:"asset_id"`
+	PaymentAssetId     int64          `json:"payment_asset_id"`
+	PaymentAssetAmount float64        `json:"payment_asset_amount"`
+	Status             int            `json:"status"`
+	Signature          string         `json:"signature"`
+	ExpiredAt          int64          `json:"expired_at"`
+	CreatedAt          string         `json:"created_at"`
+	Asset              *HauaraNftInfo `json:"asset"`
+}
+
+type HasuraDataOffer struct {
+	Offers []*HasuraOffer `json:"offer"`
+}
+
+type RespGetNftBeingSell struct {
+	Data *HasuraDataOffer `json:"data"`
+}
+
+type RespGetNftBeingBuy struct {
+	Data *HasuraDataOffer `json:"data"`
 }

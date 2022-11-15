@@ -37,11 +37,11 @@ func main() {
 	{
 		accountName := "A_account" //set your account a name
 		privateKey := "1a061a8e74cee1ce2e2ddd29f5afea99ecfbaf1998b6d349a8c09a368e637b8e"
-		_sdkA, err := sdk.RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey)
+		_, err := sdk.RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey)
 		if err != nil {
 			panic(err)
 		}
-		accountInfo, err = _sdkA.GetAccountByAccountName(accountName)
+		accountInfo, err = sdk.GetAccountByAccountName(accountName)
 		if err != nil {
 			panic(err)
 		}
@@ -151,7 +151,7 @@ func main() {
 	log.Info("accept Offer", retAccept)
 
 	//5.1 check nft
-	retGetNftByNftId, err := _sdkA.GetNftById(retAccept.Offer.AssetId)
+	retGetNftByNftId, err := sdk.GetNftById(retAccept.Offer.AssetId)
 	if err != nil {
 		panic(err)
 	}
