@@ -469,6 +469,16 @@ func (c *client) GetMyInfo() (accountName string, l2pk string, seed string) {
 	return c.accountName, c.l2pk, c.seed
 }
 
+func (c *client) SignTx(msgHash []byte) ([]byte, error) {
+	hFunc := mimc.NewMiMC()
+	hFunc.Reset()
+	signature, err := c.keyManager.Sign(msgHash, hFunc)
+	if err != nil {
+		return []byte(""), err
+	}
+	return signature, nil
+}
+
 func PrepareCreateCollectionTxInfo(key KeyManager, txInfoPrepare, Description string) (string, error) {
 	txInfo := &CreateCollectionTxInfo{}
 	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)

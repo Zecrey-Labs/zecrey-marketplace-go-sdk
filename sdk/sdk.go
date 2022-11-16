@@ -100,6 +100,27 @@ func GetAccountByAccountName(accountName string) (*RespGetAccountByAccountName, 
 	return result, nil
 }
 
+func GetNextNonce(accountIdx int64) (int64, error) {
+	resp, err := http.Get(legendUrl +
+		fmt.Sprintf("/api/v1/tx/getNextNonce?account_index=%d", accountIdx))
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf(string(body))
+	}
+	result := &RespGetNextNonce{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, err
+	}
+	return result.Nonce, nil
+}
+
 func GetAccountIndex(accountName string) (int64, error) {
 	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/account/getAccountByAccountName?account_name=%s", accountName))
 	if err != nil {

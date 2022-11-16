@@ -439,7 +439,9 @@ type RespGetLayer2BasicInfo struct {
 type RespGetAccountByAccountName struct {
 	Account NftAccountInfo `json:"account"`
 }
-
+type RespGetNextNonce struct {
+	Nonce int64 `json:"nonce"`
+}
 type NftAccountInfo struct {
 	Id            int64  `json:"id"`
 	AccountIndex  int64  `json:"account_index"`

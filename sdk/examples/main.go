@@ -62,7 +62,7 @@ func main() {
 	//2.Synchronize the registered account to the legend
 	if accountInfo == nil {
 		accountName, l2Pk, _ := _sdkA.GetMyInfo()
-		ok, err := _sdkA.ApplyRegisterHost(accountName, l2Pk, l1Addr)
+		ok, err := sdk.ApplyRegisterHost(accountName, l2Pk, l1Addr)
 		if err != nil {
 			panic(err)
 		}
