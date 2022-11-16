@@ -11,8 +11,6 @@ import (
 type ZecreyNftMarketSDK interface {
 	GetMyInfo() (accountName string, l2pk string, seed string)
 
-	ApplyRegisterHost(accountName string, l2Pk string, OwnerAddr string) (*RespApplyRegisterHost, error)
-
 	CreateCollection(ShortName string, CategoryId string, CreatorEarningRate string,
 		ops ...model.CollectionOption) (*RespCreateCollection, error)
 

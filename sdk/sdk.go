@@ -11,6 +11,7 @@ import (
 	"math/big"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -623,6 +624,31 @@ func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (Zecr
 		return nil, err
 	}
 	return NewZecreyMarketplaceClient(accountName, seed)
+}
+
+func ApplyRegisterHost(
+	accountName string, l2Pk string, OwnerAddr string) (*RespApplyRegisterHost, error) {
+	resp, err := http.PostForm(legendUrl+"/api/v1/register/applyRegisterHost",
+		url.Values{
+			"account_name": {accountName},
+			"l2_pk":        {l2Pk},
+			"owner_addr":   {OwnerAddr}})
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespApplyRegisterHost{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func BytesToAddress(b []byte) common.Address {

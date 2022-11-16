@@ -55,31 +55,6 @@ func (c *client) SetKeyManager(keyManager KeyManager) {
 	c.keyManager = keyManager
 }
 
-func (c *client) ApplyRegisterHost(
-	accountName string, l2Pk string, OwnerAddr string) (*RespApplyRegisterHost, error) {
-	resp, err := http.PostForm(c.legendUrl+"/api/v1/register/applyRegisterHost",
-		url.Values{
-			"account_name": {accountName},
-			"l2_pk":        {l2Pk},
-			"owner_addr":   {OwnerAddr}})
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
-	}
-	result := &RespApplyRegisterHost{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
 func (c *client) CreateCollection(ShortName string, CategoryId string, CreatorEarningRate string, ops ...model.CollectionOption) (*RespCreateCollection, error) {
 	cp := &model.CollectionParams{}
 	for _, do := range ops {

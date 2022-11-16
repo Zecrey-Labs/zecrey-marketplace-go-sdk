@@ -420,12 +420,7 @@ func TestApplyRegisterHost(t *testing.T) {
 	l1Addr := "0x805e286D05388911cCdB10E3c7b9713415607c72"
 	l2pk := "22fc6f5d74c8639245462a0af6b5c931bd209c04034b28421a60336635ab85950a3163e68ec29319ca200fac009408369b0a1f75200a118aded920cd240e1358"
 	accountName := "6633332"
-	seed := "0x7ea589236ac7e6034a40ad31f27a6ea1bbaeb7746ba5e8d3408a3abb480a8688"
-	c, err := NewZecreyMarketplaceClient(accountName, seed)
-	if err != nil {
-		t.Fatal(err)
-	}
-	ret, err := c.ApplyRegisterHost(fmt.Sprintf("%s", accountName), l2pk, l1Addr)
+	ret, err := ApplyRegisterHost(fmt.Sprintf("%s", accountName), l2pk, l1Addr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -457,7 +452,7 @@ func TestGetCategories(t *testing.T) {
 	fmt.Println(string(data))
 }
 
-func TestGetOfferBeingSell(t *testing.T) {
+func TestGetListingOffers(t *testing.T) {
 	var isSell int64 = 1
 	result, err := GetListingOffers(isSell)
 	if err != nil {
