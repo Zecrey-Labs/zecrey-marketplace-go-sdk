@@ -32,6 +32,4 @@ type ZecreyNftMarketSDK interface {
 	CancelOffer(offerId int64) (*RespCancelOffer, error)
 
 	AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error)
-
-	SignTx(msgHash []byte) ([]byte, error)
 }

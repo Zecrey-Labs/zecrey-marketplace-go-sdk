@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/zecrey-labs/zecrey-crypto/util/eddsaHelper"
@@ -492,16 +491,6 @@ func (c *Client) GetMyInfo() (accountName string, l2pk string, seed string) {
 	return c.accountName, c.l2pk, c.seed
 }
 
-func (c *Client) SignTx(msgHash []byte) ([]byte, error) {
-	hFunc := mimc.NewMiMC()
-	hFunc.Reset()
-	signature, err := c.keyManager.Sign(msgHash, hFunc)
-	if err != nil {
-		return []byte(""), err
-	}
-	return signature, nil
-}
-
 func prepareCreateCollectionTxInfo(key KeyManager, txInfoPrepare, Description string) (string, error) {
 	txInfo := &CreateCollectionTxInfo{}
 	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
@@ -682,15 +671,5 @@ func calculateContentHash(accountName string, collectionId int64, name string, _
 	hFunc := mimc.NewMiMC()
 	hFunc.Write([]byte(content))
 	bytes := crypto.Keccak256Hash([]byte(content))
-	fmt.Println("==nft content ==", content)
 	return common.Bytes2Hex(bytes[:]), nil
-}
-
-func SignMessage(key KeyManager, message string) string {
-	sig, err := key.Sign([]byte(message), mimc.NewMiMC())
-	if err != nil {
-		panic("failed to sign message, err: " + err.Error())
-	}
-	signed := hex.EncodeToString(sig[:])
-	return signed
 }

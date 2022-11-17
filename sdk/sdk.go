@@ -15,6 +15,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/zecrey-labs/zecrey-crypto/util/ecdsaHelper"
@@ -28,17 +29,17 @@ import (
 func GetAccountL1Address(accountName string) (common.Address, error) {
 	providerClient, err := _rpc.NewClient(chainRpcUrl)
 	if err != nil {
-		return BytesToAddress([]byte{}), fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
+		return bytesToAddress([]byte{}), fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
 	}
 	res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
 	if err != nil {
 		logx.Error(err)
-		return BytesToAddress([]byte{}), err
+		return bytesToAddress([]byte{}), err
 	}
 	//get base contract address
 	resp, err := GetLayer2BasicInfo()
 	if err != nil {
-		return BytesToAddress([]byte{}), err
+		return bytesToAddress([]byte{}), err
 	}
 	ZecreyLegendContract := resp.ContractAddresses[0]
 	//ZnsPriceOracle := resp.ContractAddresses[1]
@@ -46,16 +47,16 @@ func GetAccountL1Address(accountName string) (common.Address, error) {
 	resBytes := zecreyLegendUtil.SetFixed32Bytes(res)
 	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(providerClient, ZecreyLegendContract)
 	if err != nil {
-		return BytesToAddress([]byte{}), err
+		return bytesToAddress([]byte{}), err
 	}
 	// fetch by accountNameHash
 	addr, err := zecreyInstance.GetAddressByAccountNameHash(zecreyLegendRpc.EmptyCallOpts(), resBytes)
 	if err != nil {
 		logx.Error(err)
-		return BytesToAddress([]byte{}), err
+		return bytesToAddress([]byte{}), err
 	}
-	if bytes.Equal(addr.Bytes(), BytesToAddress([]byte{}).Bytes()) {
-		return BytesToAddress([]byte{}), fmt.Errorf("null address")
+	if bytes.Equal(addr.Bytes(), bytesToAddress([]byte{}).Bytes()) {
+		return bytesToAddress([]byte{}), fmt.Errorf("null address")
 	}
 	return addr, nil
 }
@@ -171,7 +172,7 @@ func IfAccountRegistered(accountName string) (bool, error) {
 		logx.Error(err)
 		return false, err
 	}
-	return !bytes.Equal(addr.Bytes(), BytesToAddress([]byte{}).Bytes()), nil
+	return !bytes.Equal(addr.Bytes(), bytesToAddress([]byte{}).Bytes()), nil
 }
 
 func GetCategories() (*RespGetCollectionCategories, error) {
@@ -672,8 +673,17 @@ func ApplyRegisterHost(
 	return result, nil
 }
 
-func BytesToAddress(b []byte) common.Address {
+func bytesToAddress(b []byte) common.Address {
 	var a common.Address
 	a.SetBytes(b)
 	return a
+}
+
+func SignMessage(key KeyManager, message string) string {
+	sig, err := key.Sign([]byte(message), mimc.NewMiMC())
+	if err != nil {
+		panic("failed to sign message, err: " + err.Error())
+	}
+	signed := hex.EncodeToString(sig[:])
+	return signed
 }
