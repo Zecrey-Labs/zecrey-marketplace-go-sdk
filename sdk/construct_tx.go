@@ -7,8 +7,8 @@ import (
 	"github.com/zecrey-labs/zecrey-crypto/wasm/zecrey-legend/legendTxTypes"
 )
 
-func ConstructCreateCollectionTx(key KeyManager, tx *CreateCollectionTxInfo) (string, error) {
-	convertedTx := ConvertCreateCollectionTxInfo(tx)
+func constructCreateCollectionTx(key KeyManager, tx *CreateCollectionTxInfo) (string, error) {
+	convertedTx := convertCreateCollectionTxInfo(tx)
 	hFunc := mimc.NewMiMC()
 	msgHash, err := legendTxTypes.ComputeCreateCollectionMsgHash(convertedTx, hFunc)
 	if err != nil {
@@ -27,8 +27,8 @@ func ConstructCreateCollectionTx(key KeyManager, tx *CreateCollectionTxInfo) (st
 	return string(txInfoBytes), nil
 }
 
-func ConstructTransferNftTx(key KeyManager, tx *TransferNftTxInfo) (string, error) {
-	convertedTx := ConvertTransferNftTxInfo(tx)
+func constructTransferNftTx(key KeyManager, tx *TransferNftTxInfo) (string, error) {
+	convertedTx := convertTransferNftTxInfo(tx)
 	hFunc := mimc.NewMiMC()
 	msgHash, err := legendTxTypes.ComputeTransferNftMsgHash(convertedTx, hFunc)
 	if err != nil {
@@ -47,8 +47,8 @@ func ConstructTransferNftTx(key KeyManager, tx *TransferNftTxInfo) (string, erro
 	return string(txInfoBytes), nil
 }
 
-func ConstructWithdrawNftTx(key KeyManager, tx *WithdrawNftTxInfo) (string, error) {
-	convertedTx := ConvertWithdrawNftTxInfo(tx)
+func constructWithdrawNftTx(key KeyManager, tx *WithdrawNftTxInfo) (string, error) {
+	convertedTx := convertWithdrawNftTxInfo(tx)
 	hFunc := mimc.NewMiMC()
 	msgHash, err := legendTxTypes.ComputeWithdrawNftMsgHash(convertedTx, hFunc)
 	if err != nil {
@@ -67,8 +67,8 @@ func ConstructWithdrawNftTx(key KeyManager, tx *WithdrawNftTxInfo) (string, erro
 	return string(txInfoBytes), nil
 }
 
-func ConstructOfferTx(key KeyManager, tx *OfferTxInfo) (string, error) {
-	convertedTx := ConvertOfferTxInfo(tx)
+func constructOfferTx(key KeyManager, tx *OfferTxInfo) (string, error) {
+	convertedTx := convertOfferTxInfo(tx)
 	hFunc := mimc.NewMiMC()
 	msgHash, err := legendTxTypes.ComputeOfferMsgHash(convertedTx, hFunc)
 	if err != nil {
@@ -87,8 +87,8 @@ func ConstructOfferTx(key KeyManager, tx *OfferTxInfo) (string, error) {
 	return string(txInfoBytes), nil
 }
 
-func ConstructMintNftTx(key KeyManager, tx *MintNftTxInfo) (string, error) {
-	convertedTx := ConvertMintNftTxInfo(tx)
+func constructMintNftTx(key KeyManager, tx *MintNftTxInfo) (string, error) {
+	convertedTx := convertMintNftTxInfo(tx)
 	hFunc := mimc.NewMiMC()
 	msgHash, err := legendTxTypes.ComputeMintNftMsgHash(convertedTx, hFunc)
 	if err != nil {
@@ -107,8 +107,8 @@ func ConstructMintNftTx(key KeyManager, tx *MintNftTxInfo) (string, error) {
 	return string(txInfoBytes), nil
 }
 
-func ConstructAtomicMatchTx(key KeyManager, tx *AtomicMatchTxInfo) (string, error) {
-	convertedTx := ConvertAtomicMatchTxInfo(tx)
+func constructAtomicMatchTx(key KeyManager, tx *AtomicMatchTxInfo) (string, error) {
+	convertedTx := convertAtomicMatchTxInfo(tx)
 	hFunc := mimc.NewMiMC()
 	msgHash, err := legendTxTypes.ComputeAtomicMatchMsgHash(convertedTx, hFunc)
 	if err != nil {
@@ -127,7 +127,7 @@ func ConstructAtomicMatchTx(key KeyManager, tx *AtomicMatchTxInfo) (string, erro
 	return string(txInfoBytes), nil
 }
 
-func ConvertTransferNftTxInfo(tx *TransferNftTxInfo) *legendTxTypes.TransferNftTxInfo {
+func convertTransferNftTxInfo(tx *TransferNftTxInfo) *legendTxTypes.TransferNftTxInfo {
 	return &legendTxTypes.TransferNftTxInfo{
 		FromAccountIndex:  tx.FromAccountIndex,
 		ToAccountIndex:    tx.ToAccountIndex,
@@ -144,7 +144,7 @@ func ConvertTransferNftTxInfo(tx *TransferNftTxInfo) *legendTxTypes.TransferNftT
 	}
 }
 
-func ConvertWithdrawNftTxInfo(tx *WithdrawNftTxInfo) *legendTxTypes.WithdrawNftTxInfo {
+func convertWithdrawNftTxInfo(tx *WithdrawNftTxInfo) *legendTxTypes.WithdrawNftTxInfo {
 	return &legendTxTypes.WithdrawNftTxInfo{
 		AccountIndex:           tx.AccountIndex,
 		CreatorAccountIndex:    tx.CreatorAccountIndex,
@@ -165,7 +165,7 @@ func ConvertWithdrawNftTxInfo(tx *WithdrawNftTxInfo) *legendTxTypes.WithdrawNftT
 	}
 }
 
-func ConvertOfferTxInfo(tx *OfferTxInfo) *legendTxTypes.OfferTxInfo {
+func convertOfferTxInfo(tx *OfferTxInfo) *legendTxTypes.OfferTxInfo {
 	return &legendTxTypes.OfferTxInfo{
 		Type:         tx.Type,
 		OfferId:      tx.OfferId,
@@ -180,7 +180,7 @@ func ConvertOfferTxInfo(tx *OfferTxInfo) *legendTxTypes.OfferTxInfo {
 	}
 }
 
-func ConvertMintNftTxInfo(tx *MintNftTxInfo) *legendTxTypes.MintNftTxInfo {
+func convertMintNftTxInfo(tx *MintNftTxInfo) *legendTxTypes.MintNftTxInfo {
 	return &legendTxTypes.MintNftTxInfo{
 		CreatorAccountIndex: tx.CreatorAccountIndex,
 		ToAccountIndex:      tx.ToAccountIndex,
@@ -198,7 +198,7 @@ func ConvertMintNftTxInfo(tx *MintNftTxInfo) *legendTxTypes.MintNftTxInfo {
 	}
 }
 
-func ConvertCreateCollectionTxInfo(tx *CreateCollectionTxInfo) *legendTxTypes.CreateCollectionTxInfo {
+func convertCreateCollectionTxInfo(tx *CreateCollectionTxInfo) *legendTxTypes.CreateCollectionTxInfo {
 	return &legendTxTypes.CreateCollectionTxInfo{
 		AccountIndex:      tx.AccountIndex,
 		CollectionId:      tx.CollectionId,
@@ -213,7 +213,7 @@ func ConvertCreateCollectionTxInfo(tx *CreateCollectionTxInfo) *legendTxTypes.Cr
 	}
 }
 
-func ConvertAtomicMatchTxInfo(tx *AtomicMatchTxInfo) *legendTxTypes.AtomicMatchTxInfo {
+func convertAtomicMatchTxInfo(tx *AtomicMatchTxInfo) *legendTxTypes.AtomicMatchTxInfo {
 	return &legendTxTypes.AtomicMatchTxInfo{
 		AccountIndex: tx.AccountIndex,
 		BuyOffer: &legendTxTypes.OfferTxInfo{

@@ -522,7 +522,7 @@ func UploadMedia(filePath string) (*RespMediaUpload, error) {
 }
 
 //newZecreyMarketplaceClientDefault private
-func newZecreyMarketplaceClientWithSeed(accountName, seed string) (*client, error) {
+func newZecreyMarketplaceClientWithSeed(accountName, seed string) (*Client, error) {
 	keyManager, err := NewSeedKeyManager(seed)
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong seed:%s", seed))
@@ -532,7 +532,7 @@ func newZecreyMarketplaceClientWithSeed(accountName, seed string) (*client, erro
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
 	}
-	return &client{
+	return &Client{
 		accountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
 		seed:           seed,
 		l2pk:           l2pk,
@@ -544,12 +544,12 @@ func newZecreyMarketplaceClientWithSeed(accountName, seed string) (*client, erro
 }
 
 //newZecreyMarketplaceClientDefault private
-func newZecreyMarketplaceClientDefault(accountName string) (*client, error) {
+func newZecreyMarketplaceClientDefault(accountName string) (*Client, error) {
 	connEth, err := _rpc.NewClient(chainRpcUrl)
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
 	}
-	return &client{
+	return &Client{
 		accountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
 		nftMarketUrl:   nftMarketUrl,
 		legendUrl:      legendUrl,

@@ -50,7 +50,7 @@ func NewZecreyMarketplaceClient(accountName, seed string) (ZecreyNftMarketSDK, e
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
 	}
-	return &client{
+	return &Client{
 		accountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
 		seed:           seed,
 		l2pk:           l2pk,

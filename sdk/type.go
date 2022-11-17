@@ -264,12 +264,14 @@ type RespListOffer struct {
 type InputAssetActionBody struct {
 	AccountIndex int64 `json:"account_index"`
 }
+
 type ReqGetAccountAssets struct {
 	Input            InputAssetActionBody `json:"input"`
 	Action           ActionBody           `json:"action,optional"`
 	SessionVariables SessionVariablesBody `json:"session_variables,optional"`
 	RequestQuery     string               `json:"request_query"`
 }
+
 type RespGetAccountAssets struct {
 	ConfirmedAssetIdList []int64    `json:"confirmedAssetIdList"`
 	PendingAssets        []*NftInfo `json:"pendingAssets"`
@@ -439,9 +441,11 @@ type RespGetLayer2BasicInfo struct {
 type RespGetAccountByAccountName struct {
 	Account NftAccountInfo `json:"account"`
 }
+
 type RespGetNextNonce struct {
 	Nonce int64 `json:"nonce"`
 }
+
 type NftAccountInfo struct {
 	Id            int64  `json:"id"`
 	AccountIndex  int64  `json:"account_index"`
@@ -458,6 +462,7 @@ type NftAccountInfo struct {
 	BannerThumb   string `json:"banner_thumb"`
 	CreatedAt     int64  `json:"created_at"`
 }
+
 type ReqMediaUpload struct {
 	image io.Writer `form:"image"`
 }
@@ -470,6 +475,7 @@ type RespGetCollectionCategories struct {
 type MediaDetail struct {
 	Url string `json:"url"`
 }
+
 type HauaraNftInfo struct {
 	Id                 int64       `json:"id"`
 	NftIndex           int64       `json:"nft_index"`
@@ -490,6 +496,7 @@ type HauaraNftInfo struct {
 	Levels             Level       `json:"levels"`
 	Stats              Stat        `json:"stats"`
 }
+
 type HasuraOffer struct {
 	Id                 int64          `json:"id"`
 	L2OfferId          int64          `json:"l2_offer_id"`

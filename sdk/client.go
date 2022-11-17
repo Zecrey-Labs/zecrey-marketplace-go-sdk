@@ -41,7 +41,7 @@ const (
 	NameSuffix      = ".zec"
 )
 
-type client struct {
+type Client struct {
 	accountName    string
 	l2pk           string
 	seed           string
@@ -51,11 +51,11 @@ type client struct {
 	keyManager     KeyManager
 }
 
-func (c *client) SetKeyManager(keyManager KeyManager) {
+func (c *Client) SetKeyManager(keyManager KeyManager) {
 	c.keyManager = keyManager
 }
 
-func (c *client) CreateCollection(ShortName string, CategoryId string, CreatorEarningRate string, ops ...model.CollectionOption) (*RespCreateCollection, error) {
+func (c *Client) CreateCollection(ShortName string, CategoryId string, CreatorEarningRate string, ops ...model.CollectionOption) (*RespCreateCollection, error) {
 	cp := &model.CollectionParams{}
 	for _, do := range ops {
 		do.F(cp)
@@ -114,7 +114,7 @@ func (c *client) CreateCollection(ShortName string, CategoryId string, CreatorEa
 	return result, nil
 }
 
-func (c *client) UpdateCollection(Id string, Name string, ops ...model.CollectionOption) (*RespUpdateCollection, error) {
+func (c *Client) UpdateCollection(Id string, Name string, ops ...model.CollectionOption) (*RespUpdateCollection, error) {
 	cp := &model.CollectionParams{}
 	for _, do := range ops {
 		do.F(cp)
@@ -160,7 +160,7 @@ func (c *client) UpdateCollection(Id string, Name string, ops ...model.Collectio
 	return result, nil
 }
 
-func (c *client) MintNft(CollectionId int64, NftUrl string, Name string, Description string, Media string, Properties string, Levels string, Stats string) (*RespCreateAsset, error) {
+func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, Description string, Media string, Properties string, Levels string, Stats string) (*RespCreateAsset, error) {
 
 	ContentHash, err := calculateContentHash(c.accountName, CollectionId, Name, Properties, Levels, Stats)
 
@@ -213,7 +213,7 @@ func (c *client) MintNft(CollectionId int64, NftUrl string, Name string, Descrip
 	return result, nil
 }
 
-func (c *client) TransferNft(
+func (c *Client) TransferNft(
 	AssetId int64,
 	toAccountName string) (*ResqSendTransferNft, error) {
 	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareTransferNftTxInfo?account_name=%s&to_account_name=%s%s&nft_id=%d", c.accountName, toAccountName, NameSuffix, AssetId))
@@ -258,7 +258,7 @@ func (c *client) TransferNft(
 	return result, nil
 }
 
-func (c *client) WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error) {
+func (c *Client) WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error) {
 	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareWithdrawNftTxInfo?account_name=%s&nft_id=%d", c.accountName, AssetId))
 	if err != nil {
 		return nil, err
@@ -300,7 +300,7 @@ func (c *client) WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error) {
 	return result, nil
 }
 
-func (c *client) CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error) {
+func (c *Client) CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error) {
 	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=true", c.accountName, AssetId, AssetType, AssetAmount))
 	if err != nil {
 		return nil, err
@@ -324,7 +324,7 @@ func (c *client) CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *bi
 	return c.Offer(c.accountName, tx)
 }
 
-func (c *client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error) {
+func (c *Client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error) {
 	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=false", c.accountName, AssetId, AssetType, AssetAmount))
 	if err != nil {
 		return nil, err
@@ -347,7 +347,7 @@ func (c *client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big
 	return c.Offer(c.accountName, tx)
 }
 
-func (c *client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
+func (c *Client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
 	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/offer/xxxxxxxx?offerId=%d", offerId))
 	if err != nil {
 		return nil, err
@@ -392,7 +392,7 @@ func (c *client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
 
 }
 
-func (c *client) Offer(accountName string, tx string) (*RespListOffer, error) {
+func (c *Client) Offer(accountName string, tx string) (*RespListOffer, error) {
 	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/offer/listOffer",
 		url.Values{
 			"accountName": {accountName},
@@ -417,7 +417,7 @@ func (c *client) Offer(accountName string, tx string) (*RespListOffer, error) {
 	return result, nil
 }
 
-func (c *client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error) {
+func (c *Client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error) {
 	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareAtomicMatchWithTx?account_name=%s&offer_id=%d&money_id=%d&money_amount=%s&is_sell=%v", c.accountName, offerId, 0, AssetAmount.String(), isSell))
 	if err != nil {
 		return nil, err
@@ -465,11 +465,11 @@ func (c *client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (
 /*
 GetMyInfo accountName、l2pk、seed
 */
-func (c *client) GetMyInfo() (accountName string, l2pk string, seed string) {
+func (c *Client) GetMyInfo() (accountName string, l2pk string, seed string) {
 	return c.accountName, c.l2pk, c.seed
 }
 
-func (c *client) SignTx(msgHash []byte) ([]byte, error) {
+func (c *Client) SignTx(msgHash []byte) ([]byte, error) {
 	hFunc := mimc.NewMiMC()
 	hFunc.Reset()
 	signature, err := c.keyManager.Sign(msgHash, hFunc)
@@ -488,7 +488,7 @@ func PrepareCreateCollectionTxInfo(key KeyManager, txInfoPrepare, Description st
 	//reset
 	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
 	txInfo.Introduction = Description
-	tx, err := ConstructCreateCollectionTx(key, txInfo) //sign tx message
+	tx, err := constructCreateCollectionTx(key, txInfo) //sign tx message
 	if err != nil {
 		return "", err
 	}
@@ -502,7 +502,7 @@ func PrepareMintNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) 
 		return "", err
 	}
 	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
-	tx, err := ConstructMintNftTx(key, txInfo)
+	tx, err := constructMintNftTx(key, txInfo)
 	if err != nil {
 		return "", err
 	}
@@ -516,7 +516,7 @@ func PrepareTransferNftTxInfo(key KeyManager, txInfoPrepare string) (string, err
 		return "", err
 	}
 	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
-	tx, err := ConstructTransferNftTx(key, txInfo)
+	tx, err := constructTransferNftTx(key, txInfo)
 	if err != nil {
 		return "", err
 	}
@@ -530,7 +530,7 @@ func PrepareAtomicMatchWithTx(key KeyManager, txInfoPrepare string, isSell bool,
 		return "", err
 	}
 	if !isSell {
-		signedTx, err := ConstructOfferTx(key, txInfo.BuyOffer)
+		signedTx, err := constructOfferTx(key, txInfo.BuyOffer)
 		if err != nil {
 			return "", err
 		}
@@ -539,7 +539,7 @@ func PrepareAtomicMatchWithTx(key KeyManager, txInfoPrepare string, isSell bool,
 		txInfo.BuyOffer.AssetAmount = AssetAmount
 	}
 	if isSell {
-		signedTx, err := ConstructOfferTx(key, txInfo.SellOffer)
+		signedTx, err := constructOfferTx(key, txInfo.SellOffer)
 		if err != nil {
 			return "", err
 		}
@@ -548,7 +548,7 @@ func PrepareAtomicMatchWithTx(key KeyManager, txInfoPrepare string, isSell bool,
 		txInfo.SellOffer.AssetAmount = AssetAmount
 	}
 
-	tx, err := ConstructAtomicMatchTx(key, txInfo)
+	tx, err := constructAtomicMatchTx(key, txInfo)
 	if err != nil {
 		return "", err
 	}
@@ -562,7 +562,7 @@ func PrepareWithdrawNftTxInfo(key KeyManager, txInfoPrepare string) (string, err
 		return "", err
 	}
 	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
-	tx, err := ConstructWithdrawNftTx(key, txInfo)
+	tx, err := constructWithdrawNftTx(key, txInfo)
 	if err != nil {
 		return "", err
 	}
@@ -579,7 +579,7 @@ func PrepareOfferTxInfo(key KeyManager, txInfoPrepare string, isSell bool) (stri
 	if isSell {
 		txInfo.Type = 1
 	}
-	tx, err := ConstructOfferTx(key, txInfo)
+	tx, err := constructOfferTx(key, txInfo)
 	if err != nil {
 		return "", err
 	}
