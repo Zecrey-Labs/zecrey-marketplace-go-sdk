@@ -546,7 +546,7 @@ func prepareAtomicMatchWithTx(key KeyManager, txInfoPrepare string, isSell bool,
 		if err != nil {
 			return "", err
 		}
-		signedOffer, _ := ParseOfferTxInfo(signedTx)
+		signedOffer, _ := parseOfferTxInfo(signedTx)
 		txInfo.BuyOffer = signedOffer
 		txInfo.BuyOffer.AssetAmount = AssetAmount
 	}
@@ -555,7 +555,7 @@ func prepareAtomicMatchWithTx(key KeyManager, txInfoPrepare string, isSell bool,
 		if err != nil {
 			return "", err
 		}
-		signedOffer, _ := ParseOfferTxInfo(signedTx)
+		signedOffer, _ := parseOfferTxInfo(signedTx)
 		txInfo.SellOffer = signedOffer
 		txInfo.SellOffer.AssetAmount = AssetAmount
 	}

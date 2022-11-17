@@ -84,7 +84,7 @@ type OfferTxInfo struct {
 	Sig          []byte
 }
 
-func ParseOfferTxInfo(txInfoStr string) (txInfo *OfferTxInfo, err error) {
+func parseOfferTxInfo(txInfoStr string) (txInfo *OfferTxInfo, err error) {
 	err = json.Unmarshal([]byte(txInfoStr), &txInfo)
 	if err != nil {
 		return nil, err

@@ -432,7 +432,7 @@ func GetListingOffers(isSell int64) (*RespGetNftBeingSell, error) {
 `, isSell)
 
 	var data = []byte(queryStr)
-	body, err := Post2Hasura(data)
+	body, err := post2Hasura(data)
 	if err != nil {
 		return nil, err
 	}
@@ -444,7 +444,7 @@ func GetListingOffers(isSell int64) (*RespGetNftBeingSell, error) {
 	return result, nil
 }
 
-func Post2Hasura(data []byte) ([]byte, error) {
+func post2Hasura(data []byte) ([]byte, error) {
 	req, err := http.NewRequest(http.MethodPost, hasuraUrl, bytes.NewReader(data))
 	if err != nil {
 		return []byte(""), err
