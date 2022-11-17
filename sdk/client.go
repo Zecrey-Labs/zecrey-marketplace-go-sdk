@@ -82,23 +82,23 @@ func (c *Client) CreateCollection(ShortName string, CategoryId string, CreatorEa
 		do.F(cp)
 	}
 
-	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareCreateCollectionTxInfo?account_name=%s", c.accountName))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkCreateCollectionTxInfo?account_name=%s", c.accountName))
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(respPrepareTx.Body)
+	body, err := ioutil.ReadAll(respSdkTx.Body)
 	if err != nil {
 		return nil, err
 	}
-	if respPrepareTx.StatusCode != http.StatusOK {
+	if respSdkTx.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
 
-	resultPrepare := &RespetPreparetxInfo{}
-	if err := json.Unmarshal(body, &resultPrepare); err != nil {
+	resultSdk := &RespetSdktxInfo{}
+	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	tx, err := prepareCreateCollectionTxInfo(c.keyManager, resultPrepare.Transtion, cp.Description)
+	tx, err := sdkCreateCollectionTxInfo(c.keyManager, resultSdk.Transtion, cp.Description)
 	if err != nil {
 		return nil, err
 	}
@@ -185,22 +185,22 @@ func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, Descrip
 
 	ContentHash, err := calculateContentHash(c.accountName, CollectionId, Name, Properties, Levels, Stats)
 
-	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionId, Name, ContentHash))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionId, Name, ContentHash))
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(respPrepareTx.Body)
+	body, err := ioutil.ReadAll(respSdkTx.Body)
 	if err != nil {
 		return nil, err
 	}
-	if respPrepareTx.StatusCode != http.StatusOK {
+	if respSdkTx.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	resultPrepare := &RespetPreparetxInfo{}
-	if err := json.Unmarshal(body, &resultPrepare); err != nil {
+	resultSdk := &RespetSdktxInfo{}
+	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	tx, err := prepareMintNftTxInfo(c.keyManager, resultPrepare.Transtion)
+	tx, err := sdkMintNftTxInfo(c.keyManager, resultSdk.Transtion)
 	if err != nil {
 		return nil, err
 	}
@@ -237,23 +237,23 @@ func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, Descrip
 func (c *Client) TransferNft(
 	AssetId int64,
 	toAccountName string) (*ResqSendTransferNft, error) {
-	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareTransferNftTxInfo?account_name=%s&to_account_name=%s%s&nft_id=%d", c.accountName, toAccountName, NameSuffix, AssetId))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkTransferNftTxInfo?account_name=%s&to_account_name=%s%s&nft_id=%d", c.accountName, toAccountName, NameSuffix, AssetId))
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(respPrepareTx.Body)
+	body, err := ioutil.ReadAll(respSdkTx.Body)
 	if err != nil {
 		return nil, err
 	}
-	if respPrepareTx.StatusCode != http.StatusOK {
+	if respSdkTx.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
 
-	resultPrepare := &RespetPreparetxInfo{}
-	if err := json.Unmarshal(body, &resultPrepare); err != nil {
+	resultSdk := &RespetSdktxInfo{}
+	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	txInfo, err := prepareTransferNftTxInfo(c.keyManager, resultPrepare.Transtion)
+	txInfo, err := sdkTransferNftTxInfo(c.keyManager, resultSdk.Transtion)
 
 	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/asset/sendTransferNft",
 		url.Values{
@@ -280,23 +280,23 @@ func (c *Client) TransferNft(
 }
 
 func (c *Client) WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error) {
-	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareWithdrawNftTxInfo?account_name=%s&nft_id=%d", c.accountName, AssetId))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkWithdrawNftTxInfo?account_name=%s&nft_id=%d", c.accountName, AssetId))
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(respPrepareTx.Body)
+	body, err := ioutil.ReadAll(respSdkTx.Body)
 	if err != nil {
 		return nil, err
 	}
-	if respPrepareTx.StatusCode != http.StatusOK {
+	if respSdkTx.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	resultPrepare := &RespetPreparetxInfo{}
-	if err := json.Unmarshal(body, &resultPrepare); err != nil {
+	resultSdk := &RespetSdktxInfo{}
+	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
 
-	txInfo, err := prepareWithdrawNftTxInfo(c.keyManager, resultPrepare.Transtion)
+	txInfo, err := sdkWithdrawNftTxInfo(c.keyManager, resultSdk.Transtion)
 	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/asset/sendWithdrawNft",
 		url.Values{
 			"asset_id":    {fmt.Sprintf("%d", AssetId)},
@@ -322,23 +322,23 @@ func (c *Client) WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error) {
 }
 
 func (c *Client) CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error) {
-	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=true", c.accountName, AssetId, AssetType, AssetAmount))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=true", c.accountName, AssetId, AssetType, AssetAmount))
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(respPrepareTx.Body)
+	body, err := ioutil.ReadAll(respSdkTx.Body)
 	if err != nil {
 		return nil, err
 	}
-	if respPrepareTx.StatusCode != http.StatusOK {
+	if respSdkTx.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	resultPrepare := &RespetPreparetxInfo{}
-	if err := json.Unmarshal(body, &resultPrepare); err != nil {
+	resultSdk := &RespetSdktxInfo{}
+	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
 
-	tx, err := prepareOfferTxInfo(c.keyManager, resultPrepare.Transtion, true)
+	tx, err := sdkOfferTxInfo(c.keyManager, resultSdk.Transtion, true)
 	if err != nil {
 		return nil, err
 	}
@@ -346,22 +346,22 @@ func (c *Client) CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *bi
 }
 
 func (c *Client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error) {
-	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=false", c.accountName, AssetId, AssetType, AssetAmount))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=false", c.accountName, AssetId, AssetType, AssetAmount))
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(respPrepareTx.Body)
+	body, err := ioutil.ReadAll(respSdkTx.Body)
 	if err != nil {
 		return nil, err
 	}
-	if respPrepareTx.StatusCode != http.StatusOK {
+	if respSdkTx.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	resultPrepare := &RespetPreparetxInfo{}
-	if err := json.Unmarshal(body, &resultPrepare); err != nil {
+	resultSdk := &RespetSdktxInfo{}
+	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	tx, err := prepareOfferTxInfo(c.keyManager, resultPrepare.Transtion, false)
+	tx, err := sdkOfferTxInfo(c.keyManager, resultSdk.Transtion, false)
 	if err != nil {
 		return nil, err
 	}
@@ -369,22 +369,22 @@ func (c *Client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big
 }
 
 func (c *Client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
-	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareCancelOfferTxInfo?account_name=%s&offerId=%d", c.accountName, offerId))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkCancelOfferTxInfo?account_name=%s&offerId=%d", c.accountName, offerId))
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(respPrepareTx.Body)
+	body, err := ioutil.ReadAll(respSdkTx.Body)
 	if err != nil {
 		return nil, err
 	}
-	if respPrepareTx.StatusCode != http.StatusOK {
+	if respSdkTx.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	resultPrepare := &RespetPreparetxInfo{}
-	if err := json.Unmarshal(body, &resultPrepare); err != nil {
+	resultSdk := &RespetSdktxInfo{}
+	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	tx, err := prepareOfferTxInfo(c.keyManager, resultPrepare.Transtion, false)
+	tx, err := sdkOfferTxInfo(c.keyManager, resultSdk.Transtion, false)
 	if err != nil {
 		return nil, err
 	}
@@ -438,23 +438,23 @@ func (c *Client) Offer(accountName string, tx string) (*RespListOffer, error) {
 }
 
 func (c *Client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error) {
-	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareAtomicMatchWithTx?account_name=%s&offer_id=%d&money_id=%d&money_amount=%s&is_sell=%v", c.accountName, offerId, 0, AssetAmount.String(), isSell))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAtomicMatchWithTx?account_name=%s&offer_id=%d&money_id=%d&money_amount=%s&is_sell=%v", c.accountName, offerId, 0, AssetAmount.String(), isSell))
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(respPrepareTx.Body)
+	body, err := ioutil.ReadAll(respSdkTx.Body)
 	if err != nil {
 		return nil, err
 	}
-	if respPrepareTx.StatusCode != http.StatusOK {
+	if respSdkTx.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	resultPrepare := &RespetPreparetxInfo{}
-	if err := json.Unmarshal(body, &resultPrepare); err != nil {
+	resultSdk := &RespetSdktxInfo{}
+	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
 
-	txInfo, err := prepareAtomicMatchWithTx(c.keyManager, resultPrepare.Transtion, isSell, AssetAmount)
+	txInfo, err := sdkAtomicMatchWithTx(c.keyManager, resultSdk.Transtion, isSell, AssetAmount)
 	if err != nil {
 		return nil, err
 	}
@@ -489,9 +489,9 @@ func (c *Client) GetMyInfo() (accountName string, l2pk string, seed string) {
 	return c.accountName, c.l2pk, c.seed
 }
 
-func prepareCreateCollectionTxInfo(key KeyManager, txInfoPrepare, Description string) (string, error) {
+func sdkCreateCollectionTxInfo(key KeyManager, txInfoSdk, Description string) (string, error) {
 	txInfo := &CreateCollectionTxInfo{}
-	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
+	err := json.Unmarshal([]byte(txInfoSdk), txInfo)
 	if err != nil {
 		return "", err
 	}
@@ -505,9 +505,9 @@ func prepareCreateCollectionTxInfo(key KeyManager, txInfoPrepare, Description st
 	return tx, nil
 }
 
-func prepareMintNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
+func sdkMintNftTxInfo(key KeyManager, txInfoSdk string) (string, error) {
 	txInfo := &MintNftTxInfo{}
-	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
+	err := json.Unmarshal([]byte(txInfoSdk), txInfo)
 	if err != nil {
 		return "", err
 	}
@@ -519,9 +519,9 @@ func prepareMintNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) 
 	return tx, nil
 }
 
-func prepareTransferNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
+func sdkTransferNftTxInfo(key KeyManager, txInfoSdk string) (string, error) {
 	txInfo := &TransferNftTxInfo{}
-	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
+	err := json.Unmarshal([]byte(txInfoSdk), txInfo)
 	if err != nil {
 		return "", err
 	}
@@ -533,9 +533,9 @@ func prepareTransferNftTxInfo(key KeyManager, txInfoPrepare string) (string, err
 	return tx, err
 }
 
-func prepareAtomicMatchWithTx(key KeyManager, txInfoPrepare string, isSell bool, AssetAmount *big.Int) (string, error) {
+func sdkAtomicMatchWithTx(key KeyManager, txInfoSdk string, isSell bool, AssetAmount *big.Int) (string, error) {
 	txInfo := &AtomicMatchTxInfo{}
-	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
+	err := json.Unmarshal([]byte(txInfoSdk), txInfo)
 	if err != nil {
 		return "", err
 	}
@@ -565,9 +565,9 @@ func prepareAtomicMatchWithTx(key KeyManager, txInfoPrepare string, isSell bool,
 	return tx, err
 }
 
-func prepareWithdrawNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
+func sdkWithdrawNftTxInfo(key KeyManager, txInfoSdk string) (string, error) {
 	txInfo := &WithdrawNftTxInfo{}
-	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
+	err := json.Unmarshal([]byte(txInfoSdk), txInfo)
 	if err != nil {
 		return "", err
 	}
@@ -579,9 +579,9 @@ func prepareWithdrawNftTxInfo(key KeyManager, txInfoPrepare string) (string, err
 	return tx, err
 }
 
-func prepareOfferTxInfo(key KeyManager, txInfoPrepare string, isSell bool) (string, error) {
+func sdkOfferTxInfo(key KeyManager, txInfoSdk string, isSell bool) (string, error) {
 	txInfo := &OfferTxInfo{}
-	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
+	err := json.Unmarshal([]byte(txInfoSdk), txInfo)
 	if err != nil {
 		return "", err
 	}

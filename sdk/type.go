@@ -53,32 +53,6 @@ type Tx struct {
 	ExpiredAt     int64       `json:"expired_at"`
 }
 
-type InputBody struct {
-	URL string `json:"url"`
-}
-
-type ActionBody struct {
-	Name string `json:"name,optional"`
-}
-
-type SessionVariablesBody struct {
-	XHasuraUserId string `json:"x-hasura-user-id,optional"`
-	XHasuraRole   string `json:"x-hasura-role,optional"`
-}
-
-type ReqGetActionStatus struct {
-	Input            InputBody            `json:"input"`
-	Action           ActionBody           `json:"action,optional"`
-	SessionVariables SessionVariablesBody `json:"session_variables,optional"`
-	RequestQuery     string               `json:"request_query"`
-}
-
-type RespGetActionStatus struct {
-	Status        uint32 `json:"status"`
-	NetworkId     uint32 `json:"network_id"`
-	ServerVersion string `json:"server_version"`
-}
-
 type Categorie struct {
 	Id   int64  `json:"id"`
 	Name string `json:"name"`
@@ -261,142 +235,9 @@ type RespListOffer struct {
 	Offer Offer `json:"offer"`
 }
 
-type InputAssetActionBody struct {
-	AccountIndex int64 `json:"account_index"`
-}
-
-type ReqGetAccountAssets struct {
-	Input            InputAssetActionBody `json:"input"`
-	Action           ActionBody           `json:"action,optional"`
-	SessionVariables SessionVariablesBody `json:"session_variables,optional"`
-	RequestQuery     string               `json:"request_query"`
-}
-
-type RespGetAccountAssets struct {
-	ConfirmedAssetIdList []int64    `json:"confirmedAssetIdList"`
-	PendingAssets        []*NftInfo `json:"pendingAssets"`
-}
-
-type InputGetAccountCollectionsActionBody struct {
-	AccountIndex int64 `json:"account_index"`
-}
-
-type ReqGetAccountCollections struct {
-	Input            InputGetAccountCollectionsActionBody `json:"input"`
-	Action           ActionBody                           `json:"action,optional"`
-	SessionVariables SessionVariablesBody                 `json:"session_variables,optional"`
-	RequestQuery     string                               `json:"request_query"`
-}
-
-type RespGetAccountCollections struct {
-	ConfirmedCollectionIdList []int64      `json:"confirmedCollectionIdList"`
-	PendingCollections        []Collection `json:"pendingCollections"`
-}
-
-type InputCollectionActionBody struct {
-	OpCode       string `json:"opCode"`
-	CollectionId int64  `json:"collection_id"`
-}
-
-type ReqGetCollectionAction struct {
-	Input            InputCollectionActionBody `json:"input"`
-	Action           ActionBody                `json:"action,optional"`
-	SessionVariables SessionVariablesBody      `json:"session_variables,optional"`
-	RequestQuery     string                    `json:"request_query"`
-}
-
 type RespGetCollectionAction struct {
 	OpCode     string     `json:"opCode"`
 	Collection Collection `json:"collection"`
-}
-
-type InputCollectionAssetActionBody struct {
-	CollectionId int64 `json:"collection_id"`
-}
-
-type ReqGetCollectionAssets struct {
-	Input            InputCollectionAssetActionBody `json:"input"`
-	Action           ActionBody                     `json:"action,optional"`
-	SessionVariables SessionVariablesBody           `json:"session_variables,optional"`
-	RequestQuery     string                         `json:"request_query"`
-}
-
-type ResqGetCollectionAssets struct {
-	ConfirmedAssetIdList []int64  `json:"confirmedAssetIdList"`
-	PendingAssets        []*Asset `json:"pendingAssets"`
-}
-
-type InputGetAccountOffersActionBody struct {
-	AccountIndex int64 `json:"account_index"`
-}
-
-type ReqGetAccountOffers struct {
-	Input            InputGetAccountOffersActionBody `json:"input"`
-	Action           ActionBody                      `json:"action,optional"`
-	SessionVariables SessionVariablesBody            `json:"session_variables,optional"`
-	RequestQuery     string                          `json:"request_query"`
-}
-
-type RespGetAccountOffers struct {
-	ConfirmedOfferIdList []int64 `json:"confirmedOfferIdList"`
-	PendingOffers        []Offer `json:"pendingOffers"`
-}
-
-type InputGetAssetOffersActionBody struct {
-	AssetId int64 `json:"asset_id"`
-}
-
-type ReqGetAssetOffers struct {
-	Input            InputGetAssetOffersActionBody `json:"input"`
-	Action           ActionBody                    `json:"action,optional"`
-	SessionVariables SessionVariablesBody          `json:"session_variables,optional"`
-	RequestQuery     string                        `json:"request_query"`
-}
-
-type RespGetAssetOffers struct {
-	ConfirmedOfferIdList []int64 `json:"confirmedOfferIdList"`
-	PendingOffers        []Offer `json:"pendingOffers"`
-}
-
-type InputCollectionByIdActionBody struct {
-	CollectionId int64 `json:"collection_id"`
-}
-
-type ReqGetCollectionById struct {
-	Input            InputCollectionByIdActionBody `json:"input"`
-	Action           ActionBody                    `json:"action,optional"`
-	SessionVariables SessionVariablesBody          `json:"session_variables,optional"`
-	RequestQuery     string                        `json:"request_query"`
-}
-
-type RespGetCollectionByCollectionId struct {
-	Collection Collection `json:"collection"`
-}
-
-type InputGetAssetByIdActionBody struct {
-	AssetId int64 `json:"asset_id"`
-}
-
-type ReqGetAssetById struct {
-	Input            InputGetAssetByIdActionBody `json:"input"`
-	Action           ActionBody                  `json:"action,optional"`
-	SessionVariables SessionVariablesBody        `json:"session_variables,optional"`
-	RequestQuery     string                      `json:"request_query"`
-}
-
-type RespetAssetByAssetId struct {
-	Asset *NftInfo `json:"asset"`
-}
-
-type InputOfferActionBody struct {
-	OfferId int64 `json:"offer_id"`
-}
-
-type ReqGetOfferById struct {
-	Input            InputOfferActionBody `json:"input"`
-	Action           ActionBody           `json:"action,optional"`
-	SessionVariables SessionVariablesBody `json:"session_variables,optional"`
-	RequestQuery     string               `json:"request_query"`
 }
 
 type RespGetOfferById struct {
@@ -521,4 +362,122 @@ type RespGetNftBeingSell struct {
 
 type RespGetNftBeingBuy struct {
 	Data *HasuraDataOffer `json:"data"`
+}
+
+//=======================   sdk ======================================
+type ReqGetSdkCreateCollectionTxInfo struct {
+	AccountName string `form:"account_name"`
+}
+
+type ReqGetSdkMintNftTxInfo struct {
+	AccountName  string `form:"account_name"`
+	CollectionId int64  `form:"collection_id"`
+	TreasuryRate int64  `form:"treasury_rate"`
+	Name         string `form:"name"`
+	ContentHash  string `form:"content_hash"`
+}
+
+type ReqGetSdkTransferNftTxInfo struct {
+	AccountName   string `form:"account_name"`
+	ToAccountName string `form:"to_account_name"`
+	NftId         int64  `form:"nft_id"`
+}
+
+type ReqGetSdkAtomicMatchWithTx struct {
+	AccountName string `form:"account_name"`
+	IsSell      bool   `form:"is_sell"`
+	OfferId     int64  `form:"offer_id"`
+	MoneyId     int64  `form:"money_id"`
+	MoneyAmount string `form:"money_amount"`
+}
+
+type ReqGetSdkWithdrawNftTxInfo struct {
+	AccountName string `form:"account_name"`
+	NftId       int64  `form:"nft_id"`
+}
+
+type ReqGetSdkOfferTxInfo struct {
+	AccountName string `form:"account_name"`
+	NftId       int64  `form:"nft_id"`
+	MoneyId     int64  `form:"money_id"`
+	MoneyAmount string `form:"money_amount"`
+	IsSell      bool   `form:"is_sell"`
+}
+
+type ReqGetSdkCancelOfferTxInfo struct {
+	AccountName string `form:"account_name"`
+	OfferId     int64  `form:"offer_id"`
+}
+
+type RespetSdktxInfo struct {
+	TxType    int64  `json:"tx_type"`
+	Transtion string `json:"transtion"`
+}
+
+type ReqGetSdkAccountAssets struct {
+	AccountIndex int64 `json:"account_index"`
+}
+
+type RespGetSdkAccountAssets struct {
+	SdkAssets []*NftInfo `json:"sdkAssets"`
+}
+
+type ReqGetSdkAccountCollections struct {
+	AccountIndex int64 `json:"account_index"`
+}
+
+type RespGetSdkAccountCollections struct {
+	SdkCollections []*Collection `json:"sdkCollections"`
+}
+
+type ReqGetSdkCollection struct {
+	CollectionId int64 `json:"collection_id"`
+}
+
+type ReqGetSdkCollectionAssets struct {
+	CollectionId int64 `json:"collection_id"`
+}
+
+type ResqGetSdkCollectionAssets struct {
+	SdkAssets []*NftInfo `json:"sdkAssets"`
+}
+
+type ReqGetSdkAccountOffers struct {
+	AccountIndex int64 `json:"account_index"`
+}
+
+type RespGetSdkAccountOffers struct {
+	SdkOffers []*Offer `json:"sdkOffers"`
+}
+
+type ReqGetSdkAssetOffers struct {
+	AssetId int64 `json:"asset_id"`
+}
+
+type RespGetSdkAssetOffers struct {
+	SdkOffers []*Offer `json:"sdkOffers"`
+}
+
+type ReqGetSdkCollectionById struct {
+	CollectionId int64 `json:"collection_id"`
+}
+
+type RespGetSdkCollectionById struct {
+	Collection Collection `json:"collection"`
+}
+
+type ReqGetSdkAssetById struct {
+	AssetId int64 `json:"asset_id"`
+}
+
+type RespGetSdkAssetById struct {
+	Asset *NftInfo `json:"asset"`
+}
+
+type ReqGetSdkOffer struct {
+	OfferId int64 `json:"offer_id"`
+}
+
+type RespGetSdkOfferById struct {
+	OfferId Offer `json:"offer"`
 }

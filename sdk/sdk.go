@@ -195,19 +195,8 @@ func GetCategories() (*RespGetCollectionCategories, error) {
 	return result, nil
 }
 
-func GetCollectionById(collectionId int64) (*RespGetCollectionByCollectionId, error) {
-	request_query := fmt.Sprintf("query MyQuery {\n  actionGetCollectionById(collection_id: %d) {\n    collection {\n      account_name\n      banner_thumb\n    }\n  }\n}\n", collectionId)
-	input := InputCollectionByIdActionBody{CollectionId: collectionId}
-	action := ActionBody{Name: "actionGetCollectionById"}
-	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
-	req := ReqGetCollectionById{
-		Input:            input,
-		Action:           action,
-		SessionVariables: SessionVariables,
-		RequestQuery:     request_query,
-	}
-	statusJSON, _ := json.Marshal(req)
-	resp, err := http.Post(nftMarketUrl+"/api/v1/action/actionGetCollectionById", "application/json", bytes.NewReader(statusJSON))
+func GetCollectionById(collectionId int64) (*RespGetSdkCollectionById, error) {
+	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkCollectionById?collection_id=%d", collectionId))
 	if err != nil {
 		return nil, err
 	}
@@ -219,26 +208,15 @@ func GetCollectionById(collectionId int64) (*RespGetCollectionByCollectionId, er
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	result := &RespGetCollectionByCollectionId{}
+	result := &RespGetSdkCollectionById{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
 	return result, nil
 }
 
-func GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetAccountCollections, error) {
-	request_query := fmt.Sprintf("query MyQuery {\n  actionGetAccountCollections(account_index: %d) {\n    confirmedCollectionIdList\n    pendingCollections {\n      account_name\n      banner_image\n      banner_thumb\n      browse_count\n      category_id\n      created_at\n      creator_earning_rate\n      description\n      discord_link\n      expired_at\n      external_link\n      featured_Thumb\n      featured_image\n      floor_price\n      id\n      instagram_link\n      item_count\n      l2_collection_id\n      logo_image\n      logo_thumb\n      name\n      one_day_trade_volume\n      short_name\n      status\n      telegram_link\n      total_trade_volume\n      twitter_link\n    }\n  }\n}", AccountIndex)
-	input := InputGetAccountCollectionsActionBody{AccountIndex: AccountIndex}
-	action := ActionBody{Name: "actionGetAccountCollections"}
-	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
-	req := ReqGetAccountCollections{
-		Input:            input,
-		Action:           action,
-		SessionVariables: SessionVariables,
-		RequestQuery:     request_query,
-	}
-	statusJSON, _ := json.Marshal(req)
-	resp, err := http.Post(nftMarketUrl+"/api/v1/action/actionGetAccountCollections", "application/json", bytes.NewReader(statusJSON))
+func GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetSdkAccountCollections, error) {
+	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAccountCollections?account_index=%d", AccountIndex))
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +228,7 @@ func GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetAccountCollection
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	result := &RespGetAccountCollections{}
+	result := &RespGetSdkAccountCollections{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
@@ -258,19 +236,8 @@ func GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetAccountCollection
 	return result, nil
 }
 
-func GetAccountNFTs(AccountIndex int64) (*RespGetAccountAssets, error) {
-	request_query := fmt.Sprintf("query MyQuery {\n  actionGetAccountAssets(account_index: %d) {\n    confirmedAssetIdList\n    pendingAssets {\n      account_name\n      audio_thumb\n      collection_id\n      content_hash\n      creator_earning_rate\n      created_at\n      description\n      expired_at\n      id\n      image_thumb\n      levels\n      media\n      name\n      nft_index\n      properties\n      stats\n      status\n      video_thumb\n    }\n  }\n}", AccountIndex)
-	input := InputAssetActionBody{AccountIndex: AccountIndex}
-	action := ActionBody{Name: "actionGetAccountAssets"}
-	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
-	req := ReqGetAccountAssets{
-		Input:            input,
-		Action:           action,
-		SessionVariables: SessionVariables,
-		RequestQuery:     request_query,
-	}
-	statusJSON, _ := json.Marshal(req)
-	resp, err := http.Post(nftMarketUrl+"/api/v1/action/actionGetAccountAssets", "application/json", bytes.NewReader(statusJSON))
+func GetAccountNFTs(AccountIndex int64) (*RespGetSdkAccountAssets, error) {
+	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAccountAssets?account_index=%d", AccountIndex))
 	if err != nil {
 		return nil, err
 	}
@@ -282,7 +249,7 @@ func GetAccountNFTs(AccountIndex int64) (*RespGetAccountAssets, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	result := &RespGetAccountAssets{}
+	result := &RespGetSdkAccountAssets{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
@@ -290,19 +257,8 @@ func GetAccountNFTs(AccountIndex int64) (*RespGetAccountAssets, error) {
 	return result, nil
 }
 
-func GetAccountOffers(AccountIndex int64) (*RespGetAccountOffers, error) {
-	request_query := fmt.Sprintf("query MyQuery {\n  actionGetAccountOffers(account_index: %d) {\n    confirmedOfferIdList\n    pendingOffers {\n      account_name\n      asset_id\n      created_at\n      direction\n      expired_at\n      id\n      payment_asset_amount\n      payment_asset_id\n      signature\n      status\n    }\n  }\n}", AccountIndex)
-	input := InputGetAccountOffersActionBody{AccountIndex: AccountIndex}
-	action := ActionBody{Name: "actionGetAccountOffers"}
-	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
-	req := ReqGetAccountOffers{
-		Input:            input,
-		Action:           action,
-		SessionVariables: SessionVariables,
-		RequestQuery:     request_query,
-	}
-	statusJSON, _ := json.Marshal(req)
-	resp, err := http.Post(nftMarketUrl+"/api/v1/action/actionGetAccountOffers", "application/json", bytes.NewReader(statusJSON))
+func GetAccountOffers(AccountIndex int64) (*RespGetSdkAccountOffers, error) {
+	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAccountOffers?account_index=%d", AccountIndex))
 	if err != nil {
 		return nil, err
 	}
@@ -314,7 +270,7 @@ func GetAccountOffers(AccountIndex int64) (*RespGetAccountOffers, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	result := &RespGetAccountOffers{}
+	result := &RespGetSdkAccountOffers{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
@@ -322,19 +278,8 @@ func GetAccountOffers(AccountIndex int64) (*RespGetAccountOffers, error) {
 	return result, nil
 }
 
-func GetNftOffers(NftId int64) (*RespGetAssetOffers, error) {
-	request_query := fmt.Sprintf("query MyQuery {\n  actionGetAssetOffers(asset_id: %d) {\n    confirmedOfferIdList\n    pendingOffers {\n      account_name\n      asset_id\n      created_at\n      direction\n      expired_at\n      id\n      payment_asset_amount\n      payment_asset_id\n      signature\n      status\n    }\n  }\n}", NftId)
-	input := InputGetAssetOffersActionBody{AssetId: NftId}
-	action := ActionBody{Name: "actionGetAssetOffers"}
-	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
-	req := ReqGetAssetOffers{
-		Input:            input,
-		Action:           action,
-		SessionVariables: SessionVariables,
-		RequestQuery:     request_query,
-	}
-	statusJSON, _ := json.Marshal(req)
-	resp, err := http.Post(nftMarketUrl+"/api/v1/action/actionGetAssetOffers", "application/json", bytes.NewReader(statusJSON))
+func GetNftOffers(NftId int64) (*RespGetSdkAssetOffers, error) {
+	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAssetOffers?asset_id=%d", NftId))
 	if err != nil {
 		return nil, err
 	}
@@ -346,7 +291,7 @@ func GetNftOffers(NftId int64) (*RespGetAssetOffers, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	result := &RespGetAssetOffers{}
+	result := &RespGetSdkAssetOffers{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
@@ -354,19 +299,8 @@ func GetNftOffers(NftId int64) (*RespGetAssetOffers, error) {
 	return result, nil
 }
 
-func GetNftById(nftId int64) (*RespetAssetByAssetId, error) {
-	request_query := fmt.Sprintf("query MyQuery {\n  actionGetAssetByAssetId(asset_id: %d) {\n    asset {\n      account_name\n      audio_thumb\n      collection_id\n      content_hash\n      created_at\n      creator_earning_rate\n      description\n      expired_at\n      id\n      image_thumb\n      levels\n      media\n      name\n      nft_index\n      properties\n      stats\n      status\n      video_thumb\n    }\n  }\n}\n", nftId)
-	input := InputGetAssetByIdActionBody{AssetId: nftId}
-	action := ActionBody{Name: "actionGetAssetByAssetId"}
-	SessionVariables := SessionVariablesBody{XHasuraUserId: "x-hasura-role", XHasuraRole: "admin"}
-	req := ReqGetAssetById{
-		Input:            input,
-		Action:           action,
-		SessionVariables: SessionVariables,
-		RequestQuery:     request_query,
-	}
-	statusJSON, _ := json.Marshal(req)
-	resp, err := http.Post(nftMarketUrl+"/api/v1/action/actionGetAssetByAssetId", "application/json", bytes.NewReader(statusJSON))
+func GetNftById(nftId int64) (*RespGetSdkAssetById, error) {
+	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAssetByAssetId?asset_id=%d", nftId))
 	if err != nil {
 		return nil, err
 	}
@@ -378,7 +312,7 @@ func GetNftById(nftId int64) (*RespetAssetByAssetId, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	result := &RespetAssetByAssetId{}
+	result := &RespGetSdkAssetById{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
@@ -407,7 +341,6 @@ func GetNextOfferId(AccountName string) (*RespGetNextOfferId, error) {
 
 func GetOfferById(OfferId int64) (*RespGetOfferByOfferId, error) {
 	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/offer/getOfferByOfferId?offer_id=%d", OfferId))
-
 	if err != nil {
 		return nil, err
 	}
