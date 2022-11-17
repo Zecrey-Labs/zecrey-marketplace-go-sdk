@@ -181,11 +181,10 @@ func (c *Client) UpdateCollection(Id string, Name string, ops ...model.Collectio
 	return result, nil
 }
 
-func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, Description string, Media string, Properties string, Levels string, Stats string) (*RespCreateAsset, error) {
+func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, TreasuryRate int64, Description string, Media string, Properties string, Levels string, Stats string) (*RespCreateAsset, error) {
 
 	ContentHash, err := calculateContentHash(c.accountName, CollectionId, Name, Properties, Levels, Stats)
-
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionId, Name, ContentHash))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%streasury_rate%d", c.accountName, CollectionId, Name, ContentHash, TreasuryRate))
 	if err != nil {
 		return nil, err
 	}

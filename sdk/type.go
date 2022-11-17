@@ -356,7 +356,7 @@ type HasuraDataOffer struct {
 	Offers []*HasuraOffer `json:"offer"`
 }
 
-type RespGetNftBeingSell struct {
+type RespGetListingOffers struct {
 	Data *HasuraDataOffer `json:"data"`
 }
 

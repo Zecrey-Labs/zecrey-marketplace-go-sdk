@@ -359,7 +359,7 @@ func GetOfferById(OfferId int64) (*RespGetOfferByOfferId, error) {
 	return result, nil
 }
 
-func GetListingOffers(isSell int64) (*RespGetNftBeingSell, error) {
+func GetListingOffers(isSell int64) (*RespGetListingOffers, error) {
 	queryStr := fmt.Sprintf(`
 {"query":"query MyQuery {\n  offer(where: {status: {_eq: \"%d\"}, direction: {_eq: \"1\"}}) {\n    id\n    l2_offer_id\n    asset_id\n    counterpart_id\n    payment_asset_id\n    payment_asset_amount\n    signature\n    status\n    direction\n    expired_at\n   created_at\n    asset {\n      id\n      nft_index\n      name\n      collection_id\n      content_hash\n      create_tx_hash\n      creator_earning_rate\n      description\n      expired_at\n      image_thumb\n      l1_token_id\n      last_payment_asset_amount\n      last_payment_asset_id\n      media_detail {\n        url\n      }\n      nft_url\n      status\n      video_thumb\n      asset_stats {\n        max_value\n        key\n      }\n      asset_properties {\n        key\n        value\n      }\n      asset_levels {\n        key\n        max_value\n        value\n      }\n    }\n  }\n}\n","variables":{}}
 `, isSell)
@@ -370,7 +370,7 @@ func GetListingOffers(isSell int64) (*RespGetNftBeingSell, error) {
 		return nil, err
 	}
 
-	result := &RespGetNftBeingSell{}
+	result := &RespGetListingOffers{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
