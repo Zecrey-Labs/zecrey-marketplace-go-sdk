@@ -590,7 +590,7 @@ func GetSeedAndL2Pk(privateKeyStr string) (l2pk, seed string, err error) {
 	return
 }
 
-func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (ZecreyNftMarketSDK, error) {
+func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (*Client, error) {
 	l2pk, seed, err := GetSeedAndL2Pk(privateKey)
 	if err != nil {
 		return nil, err
@@ -603,7 +603,7 @@ func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (Zecr
 		if err != nil {
 			return nil, err
 		}
-		return NewZecreyMarketplaceClient(accountName, seed)
+		return NewClient(accountName, seed)
 	}
 	var chainId *big.Int
 	chainId, err = c.providerClient.ChainID(context.Background())
@@ -645,7 +645,7 @@ func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (Zecr
 	if err != nil {
 		return nil, err
 	}
-	return NewZecreyMarketplaceClient(accountName, seed)
+	return NewClient(accountName, seed)
 }
 
 func ApplyRegisterHost(

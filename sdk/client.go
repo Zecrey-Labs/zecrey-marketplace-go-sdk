@@ -51,8 +51,7 @@ type Client struct {
 	keyManager     KeyManager
 }
 
-//NewZecreyMarketplaceClient
-func NewZecreyMarketplaceClient(accountName, seed string) (ZecreyNftMarketSDK, error) {
+func NewClient(accountName, seed string) (*Client, error) {
 	keyManager, err := NewSeedKeyManager(seed)
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong seed:%s", seed))

@@ -27,7 +27,7 @@ func TestParseCreateCollectionTxInfo(t *testing.T) {
 	CreatorEarningRate := "1000"
 	PaymentAssetIds := "[]"
 
-	c, err := NewZecreyMarketplaceClient(accountName, seed)
+	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -139,7 +139,7 @@ func TestUpdateCollection(t *testing.T) {
 
 	var AccountIndex int64 = 2
 	seed := "28e1a3762f....."
-	c, err := NewZecreyMarketplaceClient(accountName, seed)
+	c, err := NewClient(accountName, seed)
 	if err != nil {
 		panic(err)
 	}
@@ -172,7 +172,7 @@ func TestMintNft(t *testing.T) {
 	var CollectionId int64 = 247
 	accountName := "sher"
 	seed := "28e1a3762ff99...."
-	c, err := NewZecreyMarketplaceClient(accountName, seed)
+	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -255,7 +255,7 @@ func TestTransferNft(t *testing.T) {
 	seed := "28e1a37........."
 	toAccountName := "gavin"
 
-	c, err := NewZecreyMarketplaceClient(accountName, seed)
+	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -272,7 +272,7 @@ func TestWithdrawNft(t *testing.T) {
 	seed := "17673b9a9fd.........."
 	accountName := "gavin"
 
-	c, err := NewZecreyMarketplaceClient(accountName, seed)
+	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -289,7 +289,7 @@ func TestSellOffer(t *testing.T) {
 	accountName := "sher"
 	seed := "28e1a3762ff9.........."
 
-	c, err := NewZecreyMarketplaceClient(accountName, seed)
+	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -306,7 +306,7 @@ func TestBuyOffer(t *testing.T) {
 	accountName := "sher"
 	seed := "28e1a3762ff99...."
 
-	c, err := NewZecreyMarketplaceClient(accountName, seed)
+	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -323,7 +323,7 @@ func TestCancelOffer(t *testing.T) {
 	var OfferId int64 = 9
 	accountName := "sher"
 	seed := "28e1a3762ff99...."
-	c, err := NewZecreyMarketplaceClient(accountName, seed)
+	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -339,7 +339,7 @@ func TestAcceptOffer(t *testing.T) {
 	var offerId int64 = 21
 	seed := "28e1a3762ff99...."
 	accountName := "gavin"
-	c, err := NewZecreyMarketplaceClient(accountName, seed)
+	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
