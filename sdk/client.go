@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/zecrey-labs/zecrey-crypto/util/eddsaHelper"
 	"io/ioutil"
 	"math/big"
 	"net/http"
@@ -51,6 +52,28 @@ type Client struct {
 	keyManager     KeyManager
 }
 
+//NewZecreyMarketplaceClient
+func NewZecreyMarketplaceClient(accountName, seed string) (ZecreyNftMarketSDK, error) {
+	keyManager, err := NewSeedKeyManager(seed)
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("wrong seed:%s", seed))
+	}
+	l2pk := eddsaHelper.GetEddsaPublicKey(seed[2:])
+	connEth, err := _rpc.NewClient(chainRpcUrl)
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
+	}
+	return &Client{
+		accountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
+		seed:           seed,
+		l2pk:           l2pk,
+		nftMarketUrl:   nftMarketUrl,
+		legendUrl:      legendUrl,
+		providerClient: connEth,
+		keyManager:     keyManager,
+	}, nil
+}
+
 func (c *Client) SetKeyManager(keyManager KeyManager) {
 	c.keyManager = keyManager
 }
@@ -77,7 +100,7 @@ func (c *Client) CreateCollection(ShortName string, CategoryId string, CreatorEa
 	if err := json.Unmarshal(body, &resultPrepare); err != nil {
 		return nil, err
 	}
-	tx, err := PrepareCreateCollectionTxInfo(c.keyManager, resultPrepare.Transtion, cp.Description)
+	tx, err := prepareCreateCollectionTxInfo(c.keyManager, resultPrepare.Transtion, cp.Description)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +202,7 @@ func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, Descrip
 	if err := json.Unmarshal(body, &resultPrepare); err != nil {
 		return nil, err
 	}
-	tx, err := PrepareMintNftTxInfo(c.keyManager, resultPrepare.Transtion)
+	tx, err := prepareMintNftTxInfo(c.keyManager, resultPrepare.Transtion)
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +255,7 @@ func (c *Client) TransferNft(
 	if err := json.Unmarshal(body, &resultPrepare); err != nil {
 		return nil, err
 	}
-	txInfo, err := PrepareTransferNftTxInfo(c.keyManager, resultPrepare.Transtion)
+	txInfo, err := prepareTransferNftTxInfo(c.keyManager, resultPrepare.Transtion)
 
 	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/asset/sendTransferNft",
 		url.Values{
@@ -275,7 +298,7 @@ func (c *Client) WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error) {
 		return nil, err
 	}
 
-	txInfo, err := PrepareWithdrawNftTxInfo(c.keyManager, resultPrepare.Transtion)
+	txInfo, err := prepareWithdrawNftTxInfo(c.keyManager, resultPrepare.Transtion)
 	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/asset/sendWithdrawNft",
 		url.Values{
 			"asset_id":    {fmt.Sprintf("%d", AssetId)},
@@ -317,7 +340,7 @@ func (c *Client) CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *bi
 		return nil, err
 	}
 
-	tx, err := PrepareOfferTxInfo(c.keyManager, resultPrepare.Transtion, true)
+	tx, err := prepareOfferTxInfo(c.keyManager, resultPrepare.Transtion, true)
 	if err != nil {
 		return nil, err
 	}
@@ -340,7 +363,7 @@ func (c *Client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big
 	if err := json.Unmarshal(body, &resultPrepare); err != nil {
 		return nil, err
 	}
-	tx, err := PrepareOfferTxInfo(c.keyManager, resultPrepare.Transtion, false)
+	tx, err := prepareOfferTxInfo(c.keyManager, resultPrepare.Transtion, false)
 	if err != nil {
 		return nil, err
 	}
@@ -363,7 +386,7 @@ func (c *Client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
 	if err := json.Unmarshal(body, &resultPrepare); err != nil {
 		return nil, err
 	}
-	tx, err := PrepareOfferTxInfo(c.keyManager, resultPrepare.Transtion, false)
+	tx, err := prepareOfferTxInfo(c.keyManager, resultPrepare.Transtion, false)
 	if err != nil {
 		return nil, err
 	}
@@ -434,7 +457,7 @@ func (c *Client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (
 		return nil, err
 	}
 
-	txInfo, err := PrepareAtomicMatchWithTx(c.keyManager, resultPrepare.Transtion, isSell, AssetAmount)
+	txInfo, err := prepareAtomicMatchWithTx(c.keyManager, resultPrepare.Transtion, isSell, AssetAmount)
 	if err != nil {
 		return nil, err
 	}
@@ -479,7 +502,7 @@ func (c *Client) SignTx(msgHash []byte) ([]byte, error) {
 	return signature, nil
 }
 
-func PrepareCreateCollectionTxInfo(key KeyManager, txInfoPrepare, Description string) (string, error) {
+func prepareCreateCollectionTxInfo(key KeyManager, txInfoPrepare, Description string) (string, error) {
 	txInfo := &CreateCollectionTxInfo{}
 	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
 	if err != nil {
@@ -495,7 +518,7 @@ func PrepareCreateCollectionTxInfo(key KeyManager, txInfoPrepare, Description st
 	return tx, nil
 }
 
-func PrepareMintNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
+func prepareMintNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
 	txInfo := &MintNftTxInfo{}
 	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
 	if err != nil {
@@ -509,7 +532,7 @@ func PrepareMintNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) 
 	return tx, nil
 }
 
-func PrepareTransferNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
+func prepareTransferNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
 	txInfo := &TransferNftTxInfo{}
 	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
 	if err != nil {
@@ -523,7 +546,7 @@ func PrepareTransferNftTxInfo(key KeyManager, txInfoPrepare string) (string, err
 	return tx, err
 }
 
-func PrepareAtomicMatchWithTx(key KeyManager, txInfoPrepare string, isSell bool, AssetAmount *big.Int) (string, error) {
+func prepareAtomicMatchWithTx(key KeyManager, txInfoPrepare string, isSell bool, AssetAmount *big.Int) (string, error) {
 	txInfo := &AtomicMatchTxInfo{}
 	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
 	if err != nil {
@@ -555,7 +578,7 @@ func PrepareAtomicMatchWithTx(key KeyManager, txInfoPrepare string, isSell bool,
 	return tx, err
 }
 
-func PrepareWithdrawNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
+func prepareWithdrawNftTxInfo(key KeyManager, txInfoPrepare string) (string, error) {
 	txInfo := &WithdrawNftTxInfo{}
 	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
 	if err != nil {
@@ -569,7 +592,7 @@ func PrepareWithdrawNftTxInfo(key KeyManager, txInfoPrepare string) (string, err
 	return tx, err
 }
 
-func PrepareOfferTxInfo(key KeyManager, txInfoPrepare string, isSell bool) (string, error) {
+func prepareOfferTxInfo(key KeyManager, txInfoPrepare string, isSell bool) (string, error) {
 	txInfo := &OfferTxInfo{}
 	err := json.Unmarshal([]byte(txInfoPrepare), txInfo)
 	if err != nil {
@@ -664,13 +687,10 @@ func calculateContentHash(accountName string, collectionId int64, name string, _
 }
 
 func SignMessage(key KeyManager, message string) string {
-	fmt.Println("message: ", message)
 	sig, err := key.Sign([]byte(message), mimc.NewMiMC())
 	if err != nil {
 		panic("failed to sign message, err: " + err.Error())
 	}
-
 	signed := hex.EncodeToString(sig[:])
-	fmt.Println("signed:", signed)
 	return signed
 }
