@@ -369,7 +369,7 @@ func (c *Client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big
 }
 
 func (c *Client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
-	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/offer/xxxxxxxx?offerId=%d", offerId))
+	respPrepareTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/preparetx/getPrepareCancelOfferTxInfo?account_name=%s&offerId=%d", c.accountName, offerId))
 	if err != nil {
 		return nil, err
 	}
@@ -410,7 +410,6 @@ func (c *Client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
 		return nil, err
 	}
 	return result, nil
-
 }
 
 func (c *Client) Offer(accountName string, tx string) (*RespListOffer, error) {
