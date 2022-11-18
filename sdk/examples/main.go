@@ -30,8 +30,8 @@ func main() {
 
 	//1.Create  account in the contract，Please ensure that your L1 address has enough tokens to pay the GasFee.
 	//A account
-	var _sdkA sdk.ZecreyNftMarketSDK
-	var _sdkB sdk.ZecreyNftMarketSDK
+	var _sdkA *sdk.Client
+	var _sdkB *sdk.Client
 	l1Addr := "0xD207262DEA01aE806fA2dCaEdd489Bd2f5FABcFE"
 	var accountInfo *sdk.RespGetAccountByAccountName
 	{
@@ -103,6 +103,7 @@ func main() {
 	log.Info("create collection Info:", retCollection)
 	accountName, _, _ := _sdkA.GetMyInfo()
 	var CollectionId int64 = 54
+	var TreasuryRate int64 = 54
 	NftUrl := "-"
 	Name := "-"
 	DescriptionNft := "nft-sdk-Description"
@@ -135,7 +136,7 @@ func main() {
 
 	retNft, err := _sdkA.MintNft(
 		CollectionId,
-		NftUrl, Name,
+		NftUrl, Name, TreasuryRate,
 		DescriptionNft, Media,
 		string(_PropertiesByte), string(_LevelsByte), string(_StatsByte))
 	log.Info("create nft Info:", retNft)
