@@ -214,7 +214,7 @@ func (c *Client) MintNft(nftInfo Mintnft) (*RespCreateAsset, error) {
 	}
 
 	respSdkTx, err := http.Get(c.NftMarketUrl +
-		fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%streasury_rate%d",
+		fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%streasury_rate=%d",
 			c.AccountName, nftInfo.CollectionId, nftInfo.Name, ContentHash, nftInfo.TreasuryRate))
 	if err != nil {
 		fmt.Println("getSdkMintNftTxInfo err:", err)
@@ -229,57 +229,52 @@ func (c *Client) MintNft(nftInfo Mintnft) (*RespCreateAsset, error) {
 		fmt.Println("StatusCode err:", fmt.Errorf(string(body)))
 		return nil, fmt.Errorf(string(body))
 	}
-	/*
-		resultSdk := &RespetSdktxInfo{}
-		if err := json.Unmarshal(body, &resultSdk); err != nil {
-			fmt.Println("Unmarshal resultSdk err:", err)
-			return nil, err
-		}
 
-			tx, err := sdkMintNftTxInfo(c.KeyManager, resultSdk.Transtion)
-			if err != nil {
-				fmt.Println("sdkMintNftTxInfo err:", err)
-				return nil, err
-			}
-			resp, err := http.PostForm(c.NftMarketUrl+"/api/v1/asset/createAsset",
-				url.Values{
-					"collection_id": {fmt.Sprintf("%d", nftInfo.CollectionId)},
-					"nft_url":       {nftInfo.NftUrl},
-					"name":          {nftInfo.Name},
-					"description":   {nftInfo.Description},
-					"media":         {nftInfo.Media},
-					"properties":    {nftInfo.Properties},
-					"levels":        {nftInfo.Levels},
-					"stats":         {nftInfo.Stats},
-					"transaction":   {tx},
-					"treasury_rate": {fmt.Sprintf("%d", nftInfo.TreasuryRate)},
-				},
-			)
-			if err != nil {
-				fmt.Println("PostForm err:", err)
-				return nil, err
-			}
+	resultSdk := &RespetSdktxInfo{}
+	if err := json.Unmarshal(body, &resultSdk); err != nil {
+		fmt.Println("Unmarshal resultSdk err:", err)
+		return nil, err
+	}
 
-			defer resp.Body.Close()
-			body, err = ioutil.ReadAll(resp.Body)
-			if err != nil {
-				fmt.Println("body err:", err)
-				return nil, err
-			}
-			if resp.StatusCode != http.StatusOK {
-				fmt.Println("StatusCode err:", err)
-				return nil, fmt.Errorf(string(body))
-			}
-	*/
-	// result := &RespCreateAsset{}
-	// if err := json.Unmarshal(body, &result); err != nil {
-	// 	fmt.Println("Unmarshal err:", err)
-	// 	return nil, err
-	// }
-
-	// return result, nil
-	return nil, nil
-
+	tx, err := sdkMintNftTxInfo(c.KeyManager, resultSdk.Transtion)
+	if err != nil {
+		fmt.Println("sdkMintNftTxInfo err:", err)
+		return nil, err
+	}
+	resp, err := http.PostForm(c.NftMarketUrl+"/api/v1/asset/createAsset",
+		url.Values{
+			"collection_id": {fmt.Sprintf("%d", nftInfo.CollectionId)},
+			"nft_url":       {nftInfo.NftUrl},
+			"name":          {nftInfo.Name},
+			"description":   {nftInfo.Description},
+			"media":         {nftInfo.Media},
+			"properties":    {nftInfo.Properties},
+			"levels":        {nftInfo.Levels},
+			"stats":         {nftInfo.Stats},
+			"transaction":   {tx},
+			"treasury_rate": {fmt.Sprintf("%d", nftInfo.TreasuryRate)},
+		},
+	)
+	if err != nil {
+		fmt.Println("PostForm err:", err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("body err:", err)
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("StatusCode err:", fmt.Errorf(string(body)))
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespCreateAsset{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		fmt.Println("Unmarshal err:", err)
+		return nil, err
+	}
+	return result, nil
 }
 
 func (c *Client) TransferNft(
