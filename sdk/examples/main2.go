@@ -23,11 +23,6 @@ func main() {
 			fmt.Println("UploadMedia err:", err)
 			return
 		}
-		collectionFeatureFile, err := sdk.UploadMedia(collectionName + "/collectionFeature.png")
-		if err != nil {
-			fmt.Println("UploadMedia err:", err)
-			return
-		}
 		collectionBannerFile, err := sdk.UploadMedia(collectionName + "/collection_cover.png")
 		if err != nil {
 			fmt.Println("UploadMedia err:", err)
@@ -38,7 +33,6 @@ func main() {
 			CategoryId:         "1",
 			CreatorEarningRate: "1",
 			LogoImage:          collectionLogoFile.PublicId,
-			FeaturedImage:      collectionFeatureFile.PublicId,
 			BannerImage:        collectionBannerFile.PublicId,
 			PaymentAssetIds:    "[]",
 		}
