@@ -272,13 +272,15 @@ func (c *Client) MintNft(nftInfo Mintnft) (*RespCreateAsset, error) {
 				return nil, fmt.Errorf(string(body))
 			}
 	*/
-	result := &RespCreateAsset{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		fmt.Println("Unmarshal err:", err)
-		return nil, err
-	}
+	// result := &RespCreateAsset{}
+	// if err := json.Unmarshal(body, &result); err != nil {
+	// 	fmt.Println("Unmarshal err:", err)
+	// 	return nil, err
+	// }
 
-	return result, nil
+	// return result, nil
+	return nil, nil
+
 }
 
 func (c *Client) TransferNft(
