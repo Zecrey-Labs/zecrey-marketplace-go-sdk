@@ -212,6 +212,7 @@ func (c *Client) MintNft(nftInfo Mintnft) (*RespCreateAsset, error) {
 		fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%streasury_rate%d",
 			c.AccountName, nftInfo.CollectionId, nftInfo.Name, ContentHash, nftInfo.TreasuryRate))
 	if err != nil {
+		fmt.Println("getSdkMintNftTxInfo err:", err)
 		return nil, err
 	}
 	body, err := ioutil.ReadAll(respSdkTx.Body)
