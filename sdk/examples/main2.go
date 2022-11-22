@@ -48,6 +48,7 @@ func main() {
 		if err != nil {
 			fmt.Println("CreateCollection err:", err)
 		}
+		fmt.Println("collection id:", collectionResp.Collection.Id)
 
 		// 2. mint nft
 		rd, err := ioutil.ReadDir(collectionName + "/nft")
@@ -91,10 +92,12 @@ func main() {
 					Levels:       string(_LevelsByte),
 					Stats:        string(_StatsByte),
 				}
-				_, mintErr := c.MintNft(nftInfo)
+				nftresp, mintErr := c.MintNft(nftInfo)
 				if mintErr != nil {
 					fmt.Println("MintNft mintErr:", mintErr)
 				}
+				fmt.Println("NftIndex:", nftresp.Asset.NftIndex)
+
 			}
 		}
 	}
