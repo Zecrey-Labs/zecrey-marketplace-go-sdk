@@ -18,17 +18,17 @@ func main() {
 	filesName := []string{"./eightBits"}
 	for _, collectionName := range filesName {
 		// 1. creat collection
-		collectionLogoFile, err := sdk.UploadMedia(collectionName + "/collection_icon.jpg")
+		collectionLogoFile, err := sdk.UploadMedia(collectionName + "/collection_icon.png")
 		if err != nil {
 			fmt.Println("UploadMedia err:", err)
 			return
 		}
-		collectionFeatureFile, err := sdk.UploadMedia(collectionName + "/collectionFeature.jpg")
+		collectionFeatureFile, err := sdk.UploadMedia(collectionName + "/collectionFeature.png")
 		if err != nil {
 			fmt.Println("UploadMedia err:", err)
 			return
 		}
-		collectionBannerFile, err := sdk.UploadMedia(collectionName + "/collection_cover.jpg")
+		collectionBannerFile, err := sdk.UploadMedia(collectionName + "/collection_cover.png")
 		if err != nil {
 			fmt.Println("UploadMedia err:", err)
 			return
