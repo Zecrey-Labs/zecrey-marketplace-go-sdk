@@ -15,7 +15,17 @@ func main() {
 		fmt.Println("NewClient err:", err)
 		return
 	}
-	filesName := []string{"./eightBits"}
+	filesName := []string{
+		"./Ball",
+		"./Blocks",
+		"./CG",
+		"./Comics",
+		"./eightBits",
+		"./EndoftheWorld",
+		"./Piece",
+		"./Portrait",
+		"./WeatherMapofLizard34",
+	}
 	for _, collectionName := range filesName {
 		// 1. creat collection
 		collectionLogoFile, err := sdk.UploadMedia(collectionName + "/collection_icon.png")
