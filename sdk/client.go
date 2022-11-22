@@ -228,6 +228,8 @@ func (c *Client) MintNft(nftInfo Mintnft) (*RespCreateAsset, error) {
 	}
 	tx, err := sdkMintNftTxInfo(c.KeyManager, resultSdk.Transtion)
 	if err != nil {
+		fmt.Println("sdkMintNftTxInfo err:", err)
+
 		return nil, err
 	}
 
@@ -258,6 +260,7 @@ func (c *Client) MintNft(nftInfo Mintnft) (*RespCreateAsset, error) {
 	}
 	result := &RespCreateAsset{}
 	if err := json.Unmarshal(body, &result); err != nil {
+		fmt.Println("Unmarshal err:", err)
 		return nil, err
 	}
 	return result, nil
