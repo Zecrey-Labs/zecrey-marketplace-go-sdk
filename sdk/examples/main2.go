@@ -35,6 +35,14 @@ func main() {
 			LogoImage:          collectionLogoFile.PublicId,
 			BannerImage:        collectionBannerFile.PublicId,
 			PaymentAssetIds:    "[]",
+			CollectionUrl:      "_",
+			ExternalLink:       "_",
+			TwitterLink:        "_",
+			InstagramLink:      "_",
+			TelegramLink:       "_",
+			DiscordLink:        "_",
+			FeaturedImage:      "_",
+			Description:        "_",
 		}
 		collectionResp, err := c.CreateCollection(collection)
 		if err != nil {
