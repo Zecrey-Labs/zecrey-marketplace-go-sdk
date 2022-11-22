@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/consensys/gnark-crypto v0.7.0
 	github.com/ethereum/go-ethereum v1.10.17
-	github.com/jmcvetta/napping v3.2.0+incompatible
+	github.com/tsenart/vegeta/v12 v12.8.4
 	github.com/zecrey-labs/zecrey-crypto v1.0.18
 	github.com/zecrey-labs/zecrey-eth-rpc v0.0.16-0.20220901141132-9dc73c6ca518
 	github.com/zecrey-labs/zecrey-legend v1.0.19
@@ -30,9 +30,11 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/influxdata/tdigest v0.0.0-20181121200506-bf2b5ad3c0a9 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.4 // indirect
-	github.com/jmcvetta/randutil v0.0.0-20150817122601-2bb1b664bcff // indirect
+	github.com/josharian/intern v1.0.0 // indirect
+	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/openzipkin/zipkin-go v0.4.0 // indirect
 	github.com/rjeczalik/notify v0.9.1 // indirect
@@ -50,7 +52,9 @@ require (
 	go.opentelemetry.io/otel/trace v1.7.0 // indirect
 	go.uber.org/automaxprocs v1.4.0 // indirect
 	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064 // indirect
+	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e // indirect
 	golang.org/x/sys v0.0.0-20220712014510-0a85c31ab51e // indirect
+	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/grpc v1.48.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect

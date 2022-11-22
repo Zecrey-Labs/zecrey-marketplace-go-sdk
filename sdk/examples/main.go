@@ -26,7 +26,7 @@ Explain clearly
 6.Transfer your nft
 7.Withdraw your nft
 */
-func main() {
+func main1() {
 
 	//1.Create  account in the contract，Please ensure that your L1 address has enough tokens to pay the GasFee.
 	//A account

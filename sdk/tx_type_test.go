@@ -10,9 +10,9 @@ import (
 )
 
 func TestParseCreateCollectionTxInfo(t *testing.T) {
-	accountName := "alice"
-	seed := "28e1a3762f....."
-	ShortName := fmt.Sprintf("collection_Shortname %d", time.Now().Second())
+	accountName := "amber1"
+	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
+	ShortName := fmt.Sprintf("amber1 %d", time.Now().Second())
 	CategoryId := "1"
 	CollectionUrl := "-"
 	ExternalLink := "-"
@@ -20,9 +20,9 @@ func TestParseCreateCollectionTxInfo(t *testing.T) {
 	InstagramLink := "-"
 	TelegramLink := "-"
 	DiscordLink := "-"
-	LogoImage := "collection/dekkg5j1ptccq9ttliui"
-	FeaturedImage := "collection/dekkg5j1ptccq9ttliui"
-	BannerImage := "collection/dekkg5j1ptccq9ttliui"
+	LogoImage := "collection/tvbish3l1djoeqfgqjy9"
+	FeaturedImage := "collection/tvbish3l1djoeqfgqjy9"
+	BannerImage := "collection/tvbish3l1djoeqfgqjy9"
 	Description := "Description information"
 	CreatorEarningRate := "1000"
 	PaymentAssetIds := "[]"
@@ -169,9 +169,9 @@ func TestUpdateCollection(t *testing.T) {
 }
 
 func TestMintNft(t *testing.T) {
-	var CollectionId int64 = 247
-	accountName := "sher"
-	seed := "28e1a3762ff99...."
+	var CollectionId int64 = 10
+	accountName := "amber1"
+	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f "
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
@@ -180,7 +180,7 @@ func TestMintNft(t *testing.T) {
 	NftUrl := "-"
 	Name := "-"
 	Description := "nft-sdk-Description"
-	Media := "collection/e2rdcsgitkxonxqjcmkg"
+	Media := "collection/bwe4gk9vrk9vo4vf7csn"
 	key := fmt.Sprintf("zw:%s:%d", accountName, 2)
 	value := "red1"
 	assetProperty := Propertie{
@@ -209,7 +209,7 @@ func TestMintNft(t *testing.T) {
 
 	ret, err := c.MintNft(
 		CollectionId,
-		NftUrl, Name,
+		NftUrl, Name, 20,
 		Description, Media,
 		string(_PropertiesByte), string(_LevelsByte), string(_StatsByte))
 	if err != nil {
@@ -428,7 +428,7 @@ func TestApplyRegisterHost(t *testing.T) {
 }
 
 func TestUploadMeida(t *testing.T) {
-	filePath := "/Users/alice/Documents/20221112-142909.jpg"
+	filePath := "/Users/zhangwei/Documents/飞书20221112-142909.jpg"
 	result, err := UploadMedia(filePath)
 	if err != nil {
 		t.Fatal(err)
