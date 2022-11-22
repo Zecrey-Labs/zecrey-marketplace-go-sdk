@@ -63,8 +63,6 @@ func main() {
 					fmt.Println("UploadMedia err:", err)
 					return
 				}
-				nftname := nftfileName[:len(nftfileName)-4]
-
 				_Properties := []sdk.Propertie{sdk.Propertie{
 					Name:  fmt.Sprintf("zw:%s:%d", c.AccountName, 2),
 					Value: "red1",
@@ -85,7 +83,7 @@ func main() {
 				nftInfo := sdk.Mintnft{
 					CollectionId: collectionResp.Collection.Id,
 					NftUrl:       "",
-					Name:         nftname,
+					Name:         nftfileName[:len(nftfileName)-4],
 					TreasuryRate: 30,
 					Description:  "",
 					Media:        nftImageResp.PublicId,
@@ -93,10 +91,11 @@ func main() {
 					Levels:       string(_LevelsByte),
 					Stats:        string(_StatsByte),
 				}
-				_, err = c.MintNft(nftInfo)
+				resp, err := c.MintNft(nftInfo)
 				if err != nil {
 					fmt.Println("MintNft err:", err)
 				}
+				fmt.Println("MintNft resp:", resp)
 			}
 		}
 	}
