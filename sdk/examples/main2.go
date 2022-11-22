@@ -82,7 +82,7 @@ func main() {
 				_StatsByte, _ := json.Marshal(_Stats)
 				nftInfo := sdk.Mintnft{
 					CollectionId: collectionResp.Collection.Id,
-					NftUrl:       "",
+					NftUrl:       "_",
 					Name:         nftfileName[:len(nftfileName)-4],
 					TreasuryRate: 30,
 					Description:  "",
