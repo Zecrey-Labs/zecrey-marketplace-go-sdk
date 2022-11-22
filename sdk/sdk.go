@@ -404,7 +404,7 @@ func UploadMedia(filePath string) (*RespMediaUpload, error) {
 	uri := fmt.Sprintf(nftMarketUrl+"%s", "/api/v1/asset/media")
 	file, err := os.Open(filePath)
 	if err != nil {
-		fmt.Println(err)
+		logx.Error("open", err)
 		return nil, err
 	}
 	defer file.Close()
@@ -412,22 +412,22 @@ func UploadMedia(filePath string) (*RespMediaUpload, error) {
 	writer := multipart.NewWriter(body)
 	part, err := writer.CreateFormFile("image", filePath)
 	if err != nil {
-		fmt.Println(err)
+		logx.Error(err)
 		return nil, err
 	}
 	_, err = io.Copy(part, file)
 	if err != nil {
-		fmt.Println(err)
+		logx.Error(err)
 		return nil, err
 	}
 	err = writer.Close()
 	if err != nil {
-		fmt.Println(err)
+		logx.Error(err)
 		return nil, err
 	}
 	request, err := http.NewRequest("POST", uri, body)
 	if err != nil {
-		fmt.Println(err)
+		logx.Error(err)
 		return nil, err
 	}
 	request.Header.Set("Content-Type", writer.FormDataContentType())
