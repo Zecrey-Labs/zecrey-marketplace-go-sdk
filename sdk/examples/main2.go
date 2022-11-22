@@ -91,11 +91,10 @@ func main() {
 					Levels:       string(_LevelsByte),
 					Stats:        string(_StatsByte),
 				}
-				resp, err := c.MintNft(nftInfo)
-				if err != nil {
-					fmt.Println("MintNft err:", err)
+				_, mintErr := c.MintNft(nftInfo)
+				if mintErr != nil {
+					fmt.Println("MintNft mintErr:", mintErr)
 				}
-				fmt.Println("MintNft resp:", resp)
 			}
 		}
 	}
