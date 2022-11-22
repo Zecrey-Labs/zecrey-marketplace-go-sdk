@@ -241,6 +241,7 @@ func (c *Client) MintNft(nftInfo Mintnft) (*RespCreateAsset, error) {
 			"levels":        {nftInfo.Levels},
 			"stats":         {nftInfo.Stats},
 			"transaction":   {tx},
+			"treasury_rate": {fmt.Sprintf("%d", nftInfo.TreasuryRate)},
 		},
 	)
 
