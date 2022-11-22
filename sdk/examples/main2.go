@@ -57,7 +57,7 @@ func main() {
 		}
 		for _, fi := range rd {
 			if !fi.IsDir() {
-				nftfileName := collectionName + "/" + fi.Name()
+				nftfileName := collectionName + "/nft/" + fi.Name()
 				nftImageResp, err := sdk.UploadMedia(nftfileName)
 				if err != nil {
 					fmt.Println("UploadMedia err:", err)
