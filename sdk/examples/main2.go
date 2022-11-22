@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk"
 )
@@ -17,36 +18,36 @@ func main() {
 	filesName := []string{"./eightBits"}
 	for _, collectionName := range filesName {
 		// 1. creat collection
-		// collectionLogoFile, err := sdk.UploadMedia(collectionName + "/collection_icon.png")
-		// if err != nil {
-		// 	fmt.Println("UploadMedia err:", err)
-		// 	return
-		// }
-		// collectionBannerFile, err := sdk.UploadMedia(collectionName + "/collection_cover.png")
-		// if err != nil {
-		// 	fmt.Println("UploadMedia err:", err)
-		// 	return
-		// }
-		// collection := sdk.Colletcion{
-		// 	ShortName:          fmt.Sprintf("%v_%d", collectionName, time.Now().Second()),
-		// 	CategoryId:         "1",
-		// 	CreatorEarningRate: "1",
-		// 	LogoImage:          collectionLogoFile.PublicId,
-		// 	BannerImage:        collectionBannerFile.PublicId,
-		// 	PaymentAssetIds:    "[]",
-		// 	CollectionUrl:      "_",
-		// 	ExternalLink:       "_",
-		// 	TwitterLink:        "_",
-		// 	InstagramLink:      "_",
-		// 	TelegramLink:       "_",
-		// 	DiscordLink:        "_",
-		// 	FeaturedImage:      "_",
-		// 	Description:        "_",
-		// }
-		// collectionResp, err := c.CreateCollection(collection)
-		// if err != nil {
-		// 	fmt.Println("CreateCollection err:", err)
-		// }
+		collectionLogoFile, err := sdk.UploadMedia(collectionName + "/collection_icon.png")
+		if err != nil {
+			fmt.Println("UploadMedia err:", err)
+			return
+		}
+		collectionBannerFile, err := sdk.UploadMedia(collectionName + "/collection_cover.png")
+		if err != nil {
+			fmt.Println("UploadMedia err:", err)
+			return
+		}
+		collection := sdk.Colletcion{
+			ShortName:          fmt.Sprintf("%v_%d", collectionName, time.Now().Second()),
+			CategoryId:         "1",
+			CreatorEarningRate: "1",
+			LogoImage:          collectionLogoFile.PublicId,
+			BannerImage:        collectionBannerFile.PublicId,
+			PaymentAssetIds:    "[]",
+			CollectionUrl:      "_",
+			ExternalLink:       "_",
+			TwitterLink:        "_",
+			InstagramLink:      "_",
+			TelegramLink:       "_",
+			DiscordLink:        "_",
+			FeaturedImage:      "_",
+			Description:        "_",
+		}
+		collectionResp, err := c.CreateCollection(collection)
+		if err != nil {
+			fmt.Println("CreateCollection err:", err)
+		}
 
 		// 2. mint nft
 		rd, err := ioutil.ReadDir(collectionName + "/nft")
