@@ -208,6 +208,10 @@ type Mintnft struct {
 
 func (c *Client) MintNft(nftInfo Mintnft) (*RespCreateAsset, error) {
 	ContentHash, err := calculateContentHash(c.AccountName, nftInfo.CollectionId, nftInfo.Name, nftInfo.Properties, nftInfo.Levels, nftInfo.Stats)
+	if err != nil {
+		fmt.Println("calculateContentHash err:", err)
+		return nil, err
+	}
 	respSdkTx, err := http.Get(c.NftMarketUrl +
 		fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%streasury_rate%d",
 			c.AccountName, nftInfo.CollectionId, nftInfo.Name, ContentHash, nftInfo.TreasuryRate))
@@ -249,6 +253,10 @@ func (c *Client) MintNft(nftInfo Mintnft) (*RespCreateAsset, error) {
 			"treasury_rate": {fmt.Sprintf("%d", nftInfo.TreasuryRate)},
 		},
 	)
+	if err != nil {
+		fmt.Println("PostForm err:", err)
+		return nil, err
+	}
 
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
