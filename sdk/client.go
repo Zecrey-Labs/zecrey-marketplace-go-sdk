@@ -217,19 +217,21 @@ func (c *Client) MintNft(nftInfo Mintnft) (*RespCreateAsset, error) {
 	}
 	body, err := ioutil.ReadAll(respSdkTx.Body)
 	if err != nil {
+		fmt.Println("ReadAll err:", err)
 		return nil, err
 	}
 	if respSdkTx.StatusCode != http.StatusOK {
+		fmt.Println("StatusCode err:", err)
 		return nil, fmt.Errorf(string(body))
 	}
 	resultSdk := &RespetSdktxInfo{}
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
+		fmt.Println("Unmarshal resultSdk err:", err)
 		return nil, err
 	}
 	tx, err := sdkMintNftTxInfo(c.KeyManager, resultSdk.Transtion)
 	if err != nil {
 		fmt.Println("sdkMintNftTxInfo err:", err)
-
 		return nil, err
 	}
 
