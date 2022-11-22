@@ -22,7 +22,6 @@ import (
 	"github.com/zecrey-labs/zecrey-crypto/util/eddsaHelper"
 	"github.com/zecrey-labs/zecrey-eth-rpc/_rpc"
 	zecreyLegendRpc "github.com/zecrey-labs/zecrey-eth-rpc/zecrey/core/zecrey-legend"
-	zecreyLegendUtil "github.com/zecrey-labs/zecrey-legend/common/util"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -31,7 +30,7 @@ func GetAccountL1Address(accountName string) (common.Address, error) {
 	if err != nil {
 		return bytesToAddress([]byte{}), fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
 	}
-	res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
+	res, err := ComputeAccountNameHashInBytes(accountName + NameSuffix)
 	if err != nil {
 		logx.Error(err)
 		return bytesToAddress([]byte{}), err
@@ -44,7 +43,7 @@ func GetAccountL1Address(accountName string) (common.Address, error) {
 	ZecreyLegendContract := resp.ContractAddresses[0]
 	//ZnsPriceOracle := resp.ContractAddresses[1]
 
-	resBytes := zecreyLegendUtil.SetFixed32Bytes(res)
+	resBytes := SetFixed32Bytes(res)
 	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(providerClient, ZecreyLegendContract)
 	if err != nil {
 		return bytesToAddress([]byte{}), err
@@ -148,7 +147,7 @@ func IfAccountRegistered(accountName string) (bool, error) {
 		logx.Error(err)
 		return false, err
 	}
-	res, err := zecreyLegendUtil.ComputeAccountNameHashInBytes(accountName + NameSuffix)
+	res, err := ComputeAccountNameHashInBytes(accountName + NameSuffix)
 	if err != nil {
 		logx.Error(err)
 		return false, err
@@ -161,8 +160,8 @@ func IfAccountRegistered(accountName string) (bool, error) {
 	ZecreyLegendContract := resp.ContractAddresses[0]
 	//ZnsPriceOracle := resp.ContractAddresses[1]
 
-	resBytes := zecreyLegendUtil.SetFixed32Bytes(res)
-	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
+	resBytes := SetFixed32Bytes(res)
+	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.ProviderClient, ZecreyLegendContract)
 	if err != nil {
 		return false, err
 	}
@@ -433,7 +432,7 @@ func UploadMedia(filePath string) (*RespMediaUpload, error) {
 	t.MaxConnsPerHost = 100
 	t.MaxIdleConnsPerHost = 100
 	clt := http.Client{
-		Timeout:   10 * time.Second,
+		Timeout:   30 * time.Second,
 		Transport: t,
 	}
 	defer clt.CloseIdleConnections()
@@ -467,13 +466,13 @@ func newZecreyMarketplaceClientWithSeed(accountName, seed string) (*Client, erro
 		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
 	}
 	return &Client{
-		accountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
-		seed:           seed,
-		l2pk:           l2pk,
-		nftMarketUrl:   nftMarketUrl,
-		legendUrl:      legendUrl,
-		providerClient: connEth,
-		keyManager:     keyManager,
+		AccountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
+		Seed:           seed,
+		L2pk:           l2pk,
+		NftMarketUrl:   nftMarketUrl,
+		LegendUrl:      legendUrl,
+		ProviderClient: connEth,
+		KeyManager:     keyManager,
 	}, nil
 }
 
@@ -484,10 +483,10 @@ func newZecreyMarketplaceClientDefault(accountName string) (*Client, error) {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
 	}
 	return &Client{
-		accountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
-		nftMarketUrl:   nftMarketUrl,
-		legendUrl:      legendUrl,
-		providerClient: connEth,
+		AccountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
+		NftMarketUrl:   nftMarketUrl,
+		LegendUrl:      legendUrl,
+		ProviderClient: connEth,
 	}, nil
 }
 
@@ -539,15 +538,15 @@ func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (*Cli
 		return NewClient(accountName, seed)
 	}
 	var chainId *big.Int
-	chainId, err = c.providerClient.ChainID(context.Background())
+	chainId, err = c.ProviderClient.ChainID(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	authCli, err := _rpc.NewAuthClient(c.providerClient, privateKey, chainId)
+	authCli, err := _rpc.NewAuthClient(c.ProviderClient, privateKey, chainId)
 	if err != nil {
 		return nil, err
 	}
-	px, py, err := zecreyLegendUtil.PubKeyStrToPxAndPy(l2pk)
+	px, py, err := PubKeyStrToPxAndPy(l2pk)
 	if err != nil {
 		return nil, err
 	}
@@ -559,19 +558,19 @@ func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (*Cli
 	ZecreyLegendContract := resp.ContractAddresses[0]
 	ZnsPriceOracle := resp.ContractAddresses[1]
 
-	gasPrice, err := c.providerClient.SuggestGasPrice(context.Background())
+	gasPrice, err := c.ProviderClient.SuggestGasPrice(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
+	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.ProviderClient, ZecreyLegendContract)
 	if err != nil {
 		return nil, err
 	}
-	priceOracleInstance, err := zecreyLegendRpc.LoadStablePriceOracleInstance(c.providerClient, ZnsPriceOracle)
+	priceOracleInstance, err := zecreyLegendRpc.LoadStablePriceOracleInstance(c.ProviderClient, ZnsPriceOracle)
 	if err != nil {
 		return nil, err
 	}
-	_, err = zecreyLegendRpc.RegisterZNS(c.providerClient, authCli,
+	_, err = zecreyLegendRpc.RegisterZNS(c.ProviderClient, authCli,
 		zecreyInstance, priceOracleInstance,
 		gasPrice, DefaultGasLimit, accountName,
 		common.HexToAddress(l1Addr), px, py)

@@ -3,13 +3,14 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/zecrey-labs/zecrey-crypto/util/eddsaHelper"
 	"io/ioutil"
 	"math/big"
 	"net/http"
 	"net/url"
 	"sort"
 	"time"
+
+	"github.com/zecrey-labs/zecrey-crypto/util/eddsaHelper"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
 	"github.com/ethereum/go-ethereum/common"
@@ -21,8 +22,8 @@ import (
 
 const (
 	//nftMarketUrl = "http://localhost:9999"
-	nftMarketUrl = "https://test-legend-nft.zecrey.com"
-	//nftMarketUrl = "https://dev-legend-nft.zecrey.com"
+	// nftMarketUrl = "https://test-legend-nft.zecrey.com"
+	nftMarketUrl = "https://dev-legend-nft.zecrey.com"
 	//nftMarketUrl = "https://qa-legend-nft.zecrey.com"
 
 	legendUrl = "https://qa-legend-app.zecrey.com"
@@ -42,13 +43,13 @@ const (
 )
 
 type Client struct {
-	accountName    string
-	l2pk           string
-	seed           string
-	nftMarketUrl   string
-	legendUrl      string
-	providerClient *_rpc.ProviderClient
-	keyManager     KeyManager
+	AccountName    string
+	L2pk           string
+	Seed           string
+	NftMarketUrl   string
+	LegendUrl      string
+	ProviderClient *_rpc.ProviderClient
+	KeyManager     KeyManager
 }
 
 func NewClient(accountName, seed string) (*Client, error) {
@@ -62,27 +63,39 @@ func NewClient(accountName, seed string) (*Client, error) {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
 	}
 	return &Client{
-		accountName:    fmt.Sprintf("%s%s", accountName, NameSuffix),
-		seed:           seed,
-		l2pk:           l2pk,
-		nftMarketUrl:   nftMarketUrl,
-		legendUrl:      legendUrl,
-		providerClient: connEth,
-		keyManager:     keyManager,
+		AccountName:    accountName,
+		Seed:           seed,
+		L2pk:           l2pk,
+		NftMarketUrl:   nftMarketUrl,
+		LegendUrl:      legendUrl,
+		ProviderClient: connEth,
+		KeyManager:     keyManager,
 	}, nil
 }
 
 func (c *Client) SetKeyManager(keyManager KeyManager) {
-	c.keyManager = keyManager
+	c.KeyManager = keyManager
 }
 
-func (c *Client) CreateCollection(ShortName string, CategoryId string, CreatorEarningRate string, ops ...model.CollectionOption) (*RespCreateCollection, error) {
-	cp := &model.CollectionParams{}
-	for _, do := range ops {
-		do.F(cp)
-	}
+type Colletcion struct {
+	ShortName          string
+	CategoryId         string
+	CreatorEarningRate string
+	CollectionUrl      string
+	ExternalLink       string
+	TwitterLink        string
+	InstagramLink      string
+	TelegramLink       string
+	DiscordLink        string
+	LogoImage          string
+	FeaturedImage      string
+	BannerImage        string
+	PaymentAssetIds    string
+	Description        string
+}
 
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkCreateCollectionTxInfo?account_name=%s", c.accountName))
+func (c *Client) CreateCollection(collection Colletcion) (*RespCreateCollection, error) {
+	respSdkTx, err := http.Get(c.NftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkCreateCollectionTxInfo?account_name=%s", c.AccountName))
 	if err != nil {
 		return nil, err
 	}
@@ -98,24 +111,24 @@ func (c *Client) CreateCollection(ShortName string, CategoryId string, CreatorEa
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	tx, err := sdkCreateCollectionTxInfo(c.keyManager, resultSdk.Transtion, cp.Description)
+	tx, err := sdkCreateCollectionTxInfo(c.KeyManager, resultSdk.Transtion, collection.Description)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/collection/createCollection",
-		url.Values{"short_name": {ShortName},
-			"category_id":          {CategoryId},
-			"collection_url":       {cp.CollectionUrl},
-			"external_link":        {cp.ExternalLink},
-			"twitter_link":         {cp.TwitterLink},
-			"instagram_link":       {cp.TelegramLink},
-			"discord_link":         {cp.InstagramLink},
-			"telegram_link":        {cp.DiscordLink},
-			"logo_image":           {cp.LogoImage},
-			"featured_image":       {cp.FeaturedImage},
-			"banner_image":         {cp.BannerImage},
-			"creator_earning_rate": {CreatorEarningRate},
-			"payment_asset_ids":    {cp.PaymentAssetIds},
+	resp, err := http.PostForm(c.NftMarketUrl+"/api/v1/collection/createCollection",
+		url.Values{"short_name": {collection.ShortName},
+			"category_id":          {collection.CategoryId},
+			"collection_url":       {collection.CollectionUrl},
+			"external_link":        {collection.ExternalLink},
+			"twitter_link":         {collection.TwitterLink},
+			"instagram_link":       {collection.TelegramLink},
+			"discord_link":         {collection.InstagramLink},
+			"telegram_link":        {collection.DiscordLink},
+			"logo_image":           {collection.LogoImage},
+			"featured_image":       {collection.FeaturedImage},
+			"banner_image":         {collection.BannerImage},
+			"creator_earning_rate": {collection.CreatorEarningRate},
+			"payment_asset_ids":    {collection.PaymentAssetIds},
 			"transaction":          {tx}})
 	if err != nil {
 		return nil, err
@@ -143,11 +156,11 @@ func (c *Client) UpdateCollection(Id string, Name string, ops ...model.Collectio
 	CategoryId := "1"
 	timestamp := time.Now().Unix()
 	message := fmt.Sprintf("%dupdate_collection", timestamp)
-	signature := SignMessage(c.keyManager, message)
-	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/collection/updateCollection",
+	signature := SignMessage(c.KeyManager, message)
+	resp, err := http.PostForm(c.NftMarketUrl+"/api/v1/collection/updateCollection",
 		url.Values{
 			"id":             {Id},
-			"account_name":   {c.accountName},
+			"account_name":   {c.AccountName},
 			"name":           {Name},
 			"collection_url": {cp.CollectionUrl},
 			"description":    {cp.Description},
@@ -181,10 +194,23 @@ func (c *Client) UpdateCollection(Id string, Name string, ops ...model.Collectio
 	return result, nil
 }
 
-func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, TreasuryRate int64, Description string, Media string, Properties string, Levels string, Stats string) (*RespCreateAsset, error) {
+type Mintnft struct {
+	CollectionId int64
+	NftUrl       string
+	Name         string
+	TreasuryRate int64
+	Description  string
+	Media        string
+	Properties   string
+	Levels       string
+	Stats        string
+}
 
-	ContentHash, err := calculateContentHash(c.accountName, CollectionId, Name, Properties, Levels, Stats)
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%streasury_rate%d", c.accountName, CollectionId, Name, ContentHash, TreasuryRate))
+func (c *Client) MintNft(nftInfo Mintnft) (*RespCreateAsset, error) {
+	ContentHash, err := calculateContentHash(c.AccountName, nftInfo.CollectionId, nftInfo.Name, nftInfo.Properties, nftInfo.Levels, nftInfo.Stats)
+	respSdkTx, err := http.Get(c.NftMarketUrl +
+		fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%streasury_rate%d",
+			c.AccountName, nftInfo.CollectionId, nftInfo.Name, ContentHash, nftInfo.TreasuryRate))
 	if err != nil {
 		return nil, err
 	}
@@ -199,21 +225,21 @@ func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, Treasur
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	tx, err := sdkMintNftTxInfo(c.keyManager, resultSdk.Transtion)
+	tx, err := sdkMintNftTxInfo(c.KeyManager, resultSdk.Transtion)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/asset/createAsset",
+	resp, err := http.PostForm(c.NftMarketUrl+"/api/v1/asset/createAsset",
 		url.Values{
-			"collection_id": {fmt.Sprintf("%d", CollectionId)},
-			"nft_url":       {NftUrl},
-			"name":          {Name},
-			"description":   {Description},
-			"media":         {Media},
-			"properties":    {Properties},
-			"levels":        {Levels},
-			"stats":         {Stats},
+			"collection_id": {fmt.Sprintf("%d", nftInfo.CollectionId)},
+			"nft_url":       {nftInfo.NftUrl},
+			"name":          {nftInfo.Name},
+			"description":   {nftInfo.Description},
+			"media":         {nftInfo.Media},
+			"properties":    {nftInfo.Properties},
+			"levels":        {nftInfo.Levels},
+			"stats":         {nftInfo.Stats},
 			"transaction":   {tx},
 		},
 	)
@@ -236,7 +262,7 @@ func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, Treasur
 func (c *Client) TransferNft(
 	AssetId int64,
 	toAccountName string) (*ResqSendTransferNft, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkTransferNftTxInfo?account_name=%s&to_account_name=%s%s&nft_id=%d", c.accountName, toAccountName, NameSuffix, AssetId))
+	respSdkTx, err := http.Get(c.NftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkTransferNftTxInfo?account_name=%s&to_account_name=%s%s&nft_id=%d", c.AccountName, toAccountName, NameSuffix, AssetId))
 	if err != nil {
 		return nil, err
 	}
@@ -252,9 +278,9 @@ func (c *Client) TransferNft(
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	txInfo, err := sdkTransferNftTxInfo(c.keyManager, resultSdk.Transtion)
+	txInfo, err := sdkTransferNftTxInfo(c.KeyManager, resultSdk.Transtion)
 
-	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/asset/sendTransferNft",
+	resp, err := http.PostForm(c.NftMarketUrl+"/api/v1/asset/sendTransferNft",
 		url.Values{
 			"asset_id":    {fmt.Sprintf("%d", AssetId)},
 			"transaction": {txInfo},
@@ -279,7 +305,7 @@ func (c *Client) TransferNft(
 }
 
 func (c *Client) WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkWithdrawNftTxInfo?account_name=%s&nft_id=%d", c.accountName, AssetId))
+	respSdkTx, err := http.Get(c.NftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkWithdrawNftTxInfo?account_name=%s&nft_id=%d", c.AccountName, AssetId))
 	if err != nil {
 		return nil, err
 	}
@@ -295,8 +321,8 @@ func (c *Client) WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error) {
 		return nil, err
 	}
 
-	txInfo, err := sdkWithdrawNftTxInfo(c.keyManager, resultSdk.Transtion)
-	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/asset/sendWithdrawNft",
+	txInfo, err := sdkWithdrawNftTxInfo(c.KeyManager, resultSdk.Transtion)
+	resp, err := http.PostForm(c.NftMarketUrl+"/api/v1/asset/sendWithdrawNft",
 		url.Values{
 			"asset_id":    {fmt.Sprintf("%d", AssetId)},
 			"transaction": {txInfo},
@@ -321,7 +347,7 @@ func (c *Client) WithdrawNft(AssetId int64) (*ResqSendWithdrawNft, error) {
 }
 
 func (c *Client) CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=true", c.accountName, AssetId, AssetType, AssetAmount))
+	respSdkTx, err := http.Get(c.NftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=true", c.AccountName, AssetId, AssetType, AssetAmount))
 	if err != nil {
 		return nil, err
 	}
@@ -337,15 +363,15 @@ func (c *Client) CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *bi
 		return nil, err
 	}
 
-	tx, err := sdkOfferTxInfo(c.keyManager, resultSdk.Transtion, true)
+	tx, err := sdkOfferTxInfo(c.KeyManager, resultSdk.Transtion, true)
 	if err != nil {
 		return nil, err
 	}
-	return c.Offer(c.accountName, tx)
+	return c.Offer(c.AccountName, tx)
 }
 
 func (c *Client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=false", c.accountName, AssetId, AssetType, AssetAmount))
+	respSdkTx, err := http.Get(c.NftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=false", c.AccountName, AssetId, AssetType, AssetAmount))
 	if err != nil {
 		return nil, err
 	}
@@ -360,15 +386,15 @@ func (c *Client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	tx, err := sdkOfferTxInfo(c.keyManager, resultSdk.Transtion, false)
+	tx, err := sdkOfferTxInfo(c.KeyManager, resultSdk.Transtion, false)
 	if err != nil {
 		return nil, err
 	}
-	return c.Offer(c.accountName, tx)
+	return c.Offer(c.AccountName, tx)
 }
 
 func (c *Client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkCancelOfferTxInfo?account_name=%s&offerId=%d", c.accountName, offerId))
+	respSdkTx, err := http.Get(c.NftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkCancelOfferTxInfo?account_name=%s&offerId=%d", c.AccountName, offerId))
 	if err != nil {
 		return nil, err
 	}
@@ -383,11 +409,11 @@ func (c *Client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	tx, err := sdkOfferTxInfo(c.keyManager, resultSdk.Transtion, false)
+	tx, err := sdkOfferTxInfo(c.KeyManager, resultSdk.Transtion, false)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/offer/cancelOffer",
+	resp, err := http.PostForm(c.NftMarketUrl+"/api/v1/offer/cancelOffer",
 		url.Values{
 			"id":          {fmt.Sprintf("%d", offerId)},
 			"transaction": {tx},
@@ -412,7 +438,7 @@ func (c *Client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
 }
 
 func (c *Client) Offer(accountName string, tx string) (*RespListOffer, error) {
-	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/offer/listOffer",
+	resp, err := http.PostForm(c.NftMarketUrl+"/api/v1/offer/listOffer",
 		url.Values{
 			"accountName": {accountName},
 			"transaction": {tx},
@@ -437,7 +463,7 @@ func (c *Client) Offer(accountName string, tx string) (*RespListOffer, error) {
 }
 
 func (c *Client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAtomicMatchWithTx?account_name=%s&offer_id=%d&money_id=%d&money_amount=%s&is_sell=%v", c.accountName, offerId, 0, AssetAmount.String(), isSell))
+	respSdkTx, err := http.Get(c.NftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAtomicMatchWithTx?account_name=%s&offer_id=%d&money_id=%d&money_amount=%s&is_sell=%v", c.AccountName, offerId, 0, AssetAmount.String(), isSell))
 	if err != nil {
 		return nil, err
 	}
@@ -453,11 +479,11 @@ func (c *Client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (
 		return nil, err
 	}
 
-	txInfo, err := sdkAtomicMatchWithTx(c.keyManager, resultSdk.Transtion, isSell, AssetAmount)
+	txInfo, err := sdkAtomicMatchWithTx(c.KeyManager, resultSdk.Transtion, isSell, AssetAmount)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/offer/acceptOffer",
+	resp, err := http.PostForm(c.NftMarketUrl+"/api/v1/offer/acceptOffer",
 		url.Values{
 			"id":          {fmt.Sprintf("%d", offerId)},
 			"transaction": {txInfo},
@@ -485,7 +511,7 @@ func (c *Client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (
 GetMyInfo accountName、l2pk、seed
 */
 func (c *Client) GetMyInfo() (accountName string, l2pk string, seed string) {
-	return c.accountName, c.l2pk, c.seed
+	return c.AccountName, c.L2pk, c.Seed
 }
 
 func sdkCreateCollectionTxInfo(key KeyManager, txInfoSdk, Description string) (string, error) {

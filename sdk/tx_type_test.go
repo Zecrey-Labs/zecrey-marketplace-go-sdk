@@ -3,10 +3,11 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
 	"math/big"
 	"testing"
 	"time"
+
+	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
 )
 
 func TestParseCreateCollectionTxInfo(t *testing.T) {
@@ -428,7 +429,7 @@ func TestApplyRegisterHost(t *testing.T) {
 }
 
 func TestUploadMeida(t *testing.T) {
-	filePath := "/Users/alice/Documents/20221112-142909.jpg"
+	filePath := "./xixi/collectionBanner.png"
 	result, err := UploadMedia(filePath)
 	if err != nil {
 		t.Fatal(err)
