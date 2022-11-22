@@ -85,7 +85,7 @@ func main() {
 					NftUrl:       "_",
 					Name:         nftfileName[:len(nftfileName)-4],
 					TreasuryRate: 30,
-					Description:  "",
+					Description:  "_",
 					Media:        nftImageResp.PublicId,
 					Properties:   string(_PropertiesByte),
 					Levels:       string(_LevelsByte),
