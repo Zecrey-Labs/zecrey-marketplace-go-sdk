@@ -402,29 +402,33 @@ func post2Hasura(data []byte) ([]byte, error) {
 
 func UploadMedia(filePath string) (*RespMediaUpload, error) {
 	uri := fmt.Sprintf(nftMarketUrl+"%s", "/api/v1/asset/media")
-	paramName := "image"
 	file, err := os.Open(filePath)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return nil, err
 	}
 	defer file.Close()
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile(paramName, filePath)
+	part, err := writer.CreateFormFile("image", filePath)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return nil, err
 	}
 	_, err = io.Copy(part, file)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return nil, err
 	}
 	err = writer.Close()
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return nil, err
 	}
 	request, err := http.NewRequest("POST", uri, body)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return nil, err
 	}
 	request.Header.Set("Content-Type", writer.FormDataContentType())
 	t := http.DefaultTransport.(*http.Transport).Clone()
@@ -441,14 +445,18 @@ func UploadMedia(filePath string) (*RespMediaUpload, error) {
 		res.Body.Close()
 	}()
 	if err != nil {
-		panic(fmt.Errorf("err is %s", err.Error()))
+		fmt.Println(fmt.Errorf("err is %s", err.Error()))
+		return nil, err
 	}
 	body1, err1 := ioutil.ReadAll(res.Body)
 	if err1 != nil {
-		panic(fmt.Errorf("ioutil.ReadAll  err is %s", err1.Error()))
+		fmt.Println(fmt.Errorf("ioutil.ReadAll  err is %s", err1.Error()))
+		return nil, err1
 	}
 	result := &RespMediaUpload{}
 	if err := json.Unmarshal(body1, &result); err != nil {
+		fmt.Println("read dir body1:", body1)
+		fmt.Println("read dir fail:", err)
 		return nil, err
 	}
 	return result, nil
