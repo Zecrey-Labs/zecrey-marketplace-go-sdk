@@ -220,18 +220,16 @@ func (c *Client) MintNft(nftInfo Mintnft) (*RespCreateAsset, error) {
 		fmt.Println("getSdkMintNftTxInfo err:", err)
 		return nil, err
 	}
-	fmt.Println("getSdkMintNftTxInfo respSdkTx:", respSdkTx)
-
+	body, err := ioutil.ReadAll(respSdkTx.Body)
+	if err != nil {
+		fmt.Println("ReadAll err:", err)
+		return nil, err
+	}
+	if respSdkTx.StatusCode != http.StatusOK {
+		fmt.Println("StatusCode err:", fmt.Errorf(string(body)))
+		return nil, fmt.Errorf(string(body))
+	}
 	/*
-		body, err := ioutil.ReadAll(respSdkTx.Body)
-		if err != nil {
-			fmt.Println("ReadAll err:", err)
-			return nil, err
-		}
-		if respSdkTx.StatusCode != http.StatusOK {
-			fmt.Println("StatusCode err:", err)
-			return nil, fmt.Errorf(string(body))
-		}
 		resultSdk := &RespetSdktxInfo{}
 		if err := json.Unmarshal(body, &resultSdk); err != nil {
 			fmt.Println("Unmarshal resultSdk err:", err)
