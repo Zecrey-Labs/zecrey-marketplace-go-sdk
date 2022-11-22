@@ -16,7 +16,7 @@ func main() {
 		return
 	}
 	filesName := []string{
-		"./Ball",
+		// "./Ball",
 		"./Blocks",
 		"./CG",
 		"./Comics",
