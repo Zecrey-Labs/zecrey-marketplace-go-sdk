@@ -233,46 +233,48 @@ func (c *Client) MintNft(nftInfo Mintnft) (*RespCreateAsset, error) {
 		fmt.Println("Unmarshal resultSdk err:", err)
 		return nil, err
 	}
-	tx, err := sdkMintNftTxInfo(c.KeyManager, resultSdk.Transtion)
-	if err != nil {
-		fmt.Println("sdkMintNftTxInfo err:", err)
-		return nil, err
-	}
+	/*
+		tx, err := sdkMintNftTxInfo(c.KeyManager, resultSdk.Transtion)
+		if err != nil {
+			fmt.Println("sdkMintNftTxInfo err:", err)
+			return nil, err
+		}
+		resp, err := http.PostForm(c.NftMarketUrl+"/api/v1/asset/createAsset",
+			url.Values{
+				"collection_id": {fmt.Sprintf("%d", nftInfo.CollectionId)},
+				"nft_url":       {nftInfo.NftUrl},
+				"name":          {nftInfo.Name},
+				"description":   {nftInfo.Description},
+				"media":         {nftInfo.Media},
+				"properties":    {nftInfo.Properties},
+				"levels":        {nftInfo.Levels},
+				"stats":         {nftInfo.Stats},
+				"transaction":   {tx},
+				"treasury_rate": {fmt.Sprintf("%d", nftInfo.TreasuryRate)},
+			},
+		)
+		if err != nil {
+			fmt.Println("PostForm err:", err)
+			return nil, err
+		}
 
-	resp, err := http.PostForm(c.NftMarketUrl+"/api/v1/asset/createAsset",
-		url.Values{
-			"collection_id": {fmt.Sprintf("%d", nftInfo.CollectionId)},
-			"nft_url":       {nftInfo.NftUrl},
-			"name":          {nftInfo.Name},
-			"description":   {nftInfo.Description},
-			"media":         {nftInfo.Media},
-			"properties":    {nftInfo.Properties},
-			"levels":        {nftInfo.Levels},
-			"stats":         {nftInfo.Stats},
-			"transaction":   {tx},
-			"treasury_rate": {fmt.Sprintf("%d", nftInfo.TreasuryRate)},
-		},
-	)
-	if err != nil {
-		fmt.Println("PostForm err:", err)
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-	body, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("body err:", err)
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		fmt.Println("StatusCode err:", err)
-		return nil, fmt.Errorf(string(body))
-	}
+		defer resp.Body.Close()
+		body, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Println("body err:", err)
+			return nil, err
+		}
+		if resp.StatusCode != http.StatusOK {
+			fmt.Println("StatusCode err:", err)
+			return nil, fmt.Errorf(string(body))
+		}
+	*/
 	result := &RespCreateAsset{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		fmt.Println("Unmarshal err:", err)
 		return nil, err
 	}
+
 	return result, nil
 }
 
