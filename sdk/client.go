@@ -248,9 +248,11 @@ func (c *Client) MintNft(nftInfo Mintnft) (*RespCreateAsset, error) {
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
+		fmt.Println("body err:", err)
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
+		fmt.Println("StatusCode err:", err)
 		return nil, fmt.Errorf(string(body))
 	}
 	result := &RespCreateAsset{}
