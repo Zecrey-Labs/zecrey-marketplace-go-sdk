@@ -30,11 +30,13 @@ func main() {
 		// 1. creat collection
 		collectionLogoFile, err := sdk.UploadMedia(collectionName + "/collection_icon.png")
 		if err != nil {
+			fmt.Println("UploadMedia err:", collectionName+"/collection_icon.png")
 			fmt.Println("UploadMedia err:", err)
 			return
 		}
 		collectionBannerFile, err := sdk.UploadMedia(collectionName + "/collection_cover.png")
 		if err != nil {
+			fmt.Println("UploadMedia err:", collectionName+"/collection_cover.png")
 			fmt.Println("UploadMedia err:", err)
 			return
 		}
