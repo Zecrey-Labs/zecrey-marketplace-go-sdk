@@ -4,28 +4,28 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
+	"io/ioutil"
 	"math/big"
+	"strings"
 	"testing"
-	"time"
 )
 
-func TestParseCreateCollectionTxInfo(t *testing.T) {
+func TestCreateCollection(t *testing.T) {
 	accountName := "amber1"
 	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
-	ShortName := fmt.Sprintf("amber1 %d", time.Now().Second())
+	ShortName := "MyNft"
 	CategoryId := "1"
-	CollectionUrl := "-"
-	ExternalLink := "-"
-	TwitterLink := "-"
-	InstagramLink := "-"
-	TelegramLink := "-"
-	DiscordLink := "-"
+	CollectionUrl := "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
+	ExternalLink := "https://weibo.com/alice"
+	TwitterLink := "https://twitter.com/alice"
+	InstagramLink := "https://www.instagram.com/alice/"
+	TelegramLink := "https://tgstat.com/channel/@alice"
+	DiscordLink := "https://discord.com/api/v10/applications/<aliceid>/commands"
 	LogoImage := "collection/tvbish3l1djoeqfgqjy9"
 	FeaturedImage := "collection/tvbish3l1djoeqfgqjy9"
 	BannerImage := "collection/tvbish3l1djoeqfgqjy9"
 	Description := "Description information"
 	CreatorEarningRate := "1000"
-	PaymentAssetIds := "[]"
 
 	c, err := NewClient(accountName, seed)
 	if err != nil {
@@ -41,8 +41,7 @@ func TestParseCreateCollectionTxInfo(t *testing.T) {
 		model.WithLogoImage(LogoImage),
 		model.WithFeaturedImage(FeaturedImage),
 		model.WithBannerImage(BannerImage),
-		model.WithDescription(Description),
-		model.WithPaymentAssetIds(PaymentAssetIds))
+		model.WithDescription(Description))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -169,61 +168,56 @@ func TestUpdateCollection(t *testing.T) {
 }
 
 func TestMintNft(t *testing.T) {
-	var CollectionId int64 = 10
-	accountName := "amber1"
-	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f "
-	c, err := NewClient(accountName, seed)
-	if err != nil {
-		t.Fatal(err)
+	nfts := map[string]string{
+
+		//"Lizard_34_Station":  "collection/fhqtogwwejr9ecpbzglt",
+		"Lizard_34_Broken": "collection/ukosklfy7zxiodcacqx8",
+		"collection_cover": "collection/dl4c13dewzsbwmjpqfk1",
+		"Lizard_34_Scape":  "collection/niphsjvc4wyvjed15srp",
+		"Lizard_34_Tidal":  "collection/kslbwhiwavoifvbapuot",
+		"Lizard_34_Sunset": "collection/emwbiowe1zfonhbs7us2",
+		"Lizard_34_Moon":   "collection/iyiffvmegjbxkxy63jtd",
+	}
+	for nftName, url := range nfts {
+		var CollectionId int64 = 12
+		accountName := "amber1"
+		seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f "
+		c, err := NewClient(accountName, seed)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		NftUrl := "-"
+		Name := nftName
+		Description := nftName
+		Media := url
+		// get content hash
+		_Properties := []Propertie{}
+		_Levels := []Level{}
+		_Stats := []Stat{}
+
+		_PropertiesByte, err := json.Marshal(_Properties)
+		_LevelsByte, err := json.Marshal(_Levels)
+		_StatsByte, err := json.Marshal(_Stats)
+
+		ret, err := c.MintNft(
+			CollectionId,
+			NftUrl, Name, 20,
+			Description, Media,
+			string(_PropertiesByte), string(_LevelsByte), string(_StatsByte))
+		if err != nil {
+			t.Fatal(err)
+		}
+		data, err := json.Marshal(ret)
+		fmt.Println("MintNft:", string(data))
+		result, err := GetNftById(ret.Asset.Id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		data, err = json.Marshal(result)
+		fmt.Println("GetNftById:", string(data))
 	}
 
-	NftUrl := "-"
-	Name := "-"
-	Description := "nft-sdk-Description"
-	Media := "collection/bwe4gk9vrk9vo4vf7csn"
-	key := fmt.Sprintf("zw:%s:%d", accountName, 2)
-	value := "red1"
-	assetProperty := Propertie{
-		Name:  key,
-		Value: value,
-	}
-	assetLevel := Level{
-		Name:     "assetLevel",
-		Value:    12,
-		MaxValue: 123,
-	}
-	assetStats := Stat{
-		Name:     "StatType",
-		Value:    456,
-		MaxValue: 456,
-	}
-	// get content hash
-
-	_Properties := []Propertie{assetProperty}
-	_Levels := []Level{assetLevel}
-	_Stats := []Stat{assetStats}
-
-	_PropertiesByte, err := json.Marshal(_Properties)
-	_LevelsByte, err := json.Marshal(_Levels)
-	_StatsByte, err := json.Marshal(_Stats)
-
-	ret, err := c.MintNft(
-		CollectionId,
-		NftUrl, Name, 20,
-		Description, Media,
-		string(_PropertiesByte), string(_LevelsByte), string(_StatsByte))
-	if err != nil {
-		t.Fatal(err)
-	}
-	data, err := json.Marshal(ret)
-	fmt.Println("MintNft:", string(data))
-
-	result, err := GetNftById(ret.Asset.Id)
-	if err != nil {
-		t.Fatal(err)
-	}
-	data, err = json.Marshal(result)
-	fmt.Println("GetNftById:", string(data))
 }
 
 func TestGetNftByNftId(t *testing.T) {
@@ -463,4 +457,128 @@ func TestGetListingOffers(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(string(data))
+}
+
+func TestUploadMediaInBatch(t *testing.T) {
+	paths := []string{
+		//"/Users/zhangwei/Documents/collection2222/Weather Map of Lizard-34",
+		"/Users/zhangwei/Documents/collection2222/Portrait",
+		//"/Users/zhangwei/Documents/collection2222/Piece",
+		//"/Users/zhangwei/Documents/collection2222/End of the World",
+		//"/Users/zhangwei/Documents/collection2222/Comics",
+		//"/Users/zhangwei/Documents/collection2222/CG",
+		//"/Users/zhangwei/Documents/collection2222/Blocks",
+		//"/Users/zhangwei/Documents/collection2222/Ball",
+		//"/Users/zhangwei/Documents/collection2222/8 Bits"
+	}
+	for p := 0; p < len(paths); p++ {
+		path := paths[p]
+		files, _ := ioutil.ReadDir(path)
+		for i := 0; i < len(files); i++ {
+			result, err := UploadMedia(path + "/" + files[i].Name())
+			if err == nil {
+				strs := strings.Split(path, "/")
+				cName := strs[len(strs)-1]
+				fn := files[i].Name()
+				fn1 := strings.TrimSuffix(fn, "_cover.png")
+				fn1 = strings.TrimSuffix(fn, "_icon.png")
+				fn1 = strings.TrimSuffix(fn, "_icon.jpg")
+				fn1 = strings.TrimSuffix(fn, "_icon.jpg")
+				fn1 = strings.TrimSuffix(fn, ".jpg")
+				fn1 = strings.TrimSuffix(fn, ".png")
+				//collection cover
+				if strings.Contains(fn, "_cover.png") {
+					fmt.Println(fmt.Sprintf("Collection Cover:\"%s\":{\"%s\",\"none\"},", cName, result.PublicId))
+					continue
+				}
+				//collection
+				if strings.Contains(fn, "_icon.png") {
+					fmt.Println(fmt.Sprintf("Collection Icon:\"%s\":{\"none\",\"%s\"},", cName, result.PublicId))
+					continue
+				}
+				//nft
+				fmt.Println(fmt.Sprintf("Collection:%s nft:\"%s\":\"%s\",", cName, fn1, result.PublicId))
+			}
+		}
+	}
+}
+
+func TestCreateCollectionInBatch(t *testing.T) {
+	collections := map[string][]string{
+		"Lizard_34_Broken": {"collection/ahykviwc0suhoyzusb5q", "collection/ahykviwc0suhoyzusb5q",
+			"There is a group of Lizardmen living on an abandoned mine planet. They are divided into three races, namely Zecrey, Komodoensis and Reptoids. The Lizardman is a highly civilized creature in the universe, but according to the current declassified data, no one can know where the Lizardman came from."},
+	}
+	for CName, Infos := range collections {
+		accountName := "amber1"
+		seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
+		ShortName := CName
+		CategoryId := "1"
+		LogoImage := Infos[0]
+		FeaturedImage := Infos[0]
+		BannerImage := Infos[1]
+		Description := Infos[2]
+		CreatorEarningRate := "1000"
+		c, err := NewClient(accountName, seed)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ret, err := c.CreateCollection(ShortName, CategoryId, CreatorEarningRate,
+			model.WithLogoImage(LogoImage),
+			model.WithFeaturedImage(FeaturedImage),
+			model.WithBannerImage(BannerImage),
+			model.WithDescription(Description))
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Println(fmt.Sprintf("%s ,%d", ShortName, ret.Collection.Id))
+	}
+}
+
+/*
+   End of the World,12
+*/
+func TestMintNftInBatch(t *testing.T) {
+	nfts := map[string]string{
+		//"End of the World":  "collection/fhqtogwwejr9ecpbzglt",
+	}
+	for nftName, url := range nfts {
+		var CollectionId int64 = 12
+		accountName := "amber1"
+		seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f "
+		c, err := NewClient(accountName, seed)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		NftUrl := "-"
+		Name := nftName
+		Description := nftName
+		Media := url
+		// get content hash
+		var _Properties []Propertie
+		var _Levels []Level
+		var _Stats []Stat
+
+		_PropertiesByte, err := json.Marshal(_Properties)
+		_LevelsByte, err := json.Marshal(_Levels)
+		_StatsByte, err := json.Marshal(_Stats)
+
+		ret, err := c.MintNft(
+			CollectionId,
+			NftUrl, Name, 20,
+			Description, Media,
+			string(_PropertiesByte), string(_LevelsByte), string(_StatsByte))
+		if err != nil {
+			t.Fatal(err)
+		}
+		data, err := json.Marshal(ret)
+		fmt.Println("MintNft:", string(data))
+		result, err := GetNftById(ret.Asset.Id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		data, err = json.Marshal(result)
+		fmt.Println("GetNftById:", string(data))
+	}
+
 }

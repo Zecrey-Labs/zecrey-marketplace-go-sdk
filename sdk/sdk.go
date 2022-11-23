@@ -406,7 +406,7 @@ func UploadMedia(filePath string) (*RespMediaUpload, error) {
 	paramName := "image"
 	file, err := os.Open(filePath)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf(fmt.Sprintf("open file err:%s", err.Error()))
 	}
 	defer file.Close()
 	body := &bytes.Buffer{}
@@ -417,15 +417,15 @@ func UploadMedia(filePath string) (*RespMediaUpload, error) {
 	}
 	_, err = io.Copy(part, file)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf(fmt.Sprintf("Copy file err:%s", err.Error()))
 	}
 	err = writer.Close()
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf(fmt.Sprintf("writer close err:%s", err.Error()))
 	}
 	request, err := http.NewRequest("POST", uri, body)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf(fmt.Sprintf("NewRequest err:%s", err.Error()))
 	}
 	request.Header.Set("Content-Type", writer.FormDataContentType())
 	t := http.DefaultTransport.(*http.Transport).Clone()
@@ -442,15 +442,16 @@ func UploadMedia(filePath string) (*RespMediaUpload, error) {
 		res.Body.Close()
 	}()
 	if err != nil {
-		panic(fmt.Errorf("err is %s", err.Error()))
+		return nil, fmt.Errorf(fmt.Sprintf("Do request err:%s", err.Error()))
 	}
 	body1, err1 := ioutil.ReadAll(res.Body)
 	if err1 != nil {
-		panic(fmt.Errorf("ioutil.ReadAll  err is %s", err1.Error()))
+		return nil, fmt.Errorf(fmt.Sprintf("Read Body err:%s", err1.Error()))
 	}
+
 	result := &RespMediaUpload{}
-	if err := json.Unmarshal(body1, &result); err != nil {
-		return nil, err
+	if err = json.Unmarshal(body1, &result); err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("result Unmarshal err:%s", err.Error()))
 	}
 	return result, nil
 }

@@ -77,7 +77,7 @@ func (c *Client) SetKeyManager(keyManager KeyManager) {
 }
 
 func (c *Client) CreateCollection(ShortName string, CategoryId string, CreatorEarningRate string, ops ...model.CollectionOption) (*RespCreateCollection, error) {
-	cp := &model.CollectionParams{}
+	cp := model.GetDefaultCollection()
 	for _, do := range ops {
 		do.F(cp)
 	}
@@ -98,12 +98,13 @@ func (c *Client) CreateCollection(ShortName string, CategoryId string, CreatorEa
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	tx, err := sdkCreateCollectionTxInfo(c.keyManager, resultSdk.Transtion, cp.Description)
+	tx, err := sdkCreateCollectionTxInfo(c.keyManager, resultSdk.Transtion, cp.Description, ShortName)
 	if err != nil {
 		return nil, err
 	}
 	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/collection/createCollection",
-		url.Values{"short_name": {ShortName},
+		url.Values{
+			"short_name":           {ShortName},
 			"category_id":          {CategoryId},
 			"collection_url":       {cp.CollectionUrl},
 			"external_link":        {cp.ExternalLink},
@@ -488,7 +489,7 @@ func (c *Client) GetMyInfo() (accountName string, l2pk string, seed string) {
 	return c.accountName, c.l2pk, c.seed
 }
 
-func sdkCreateCollectionTxInfo(key KeyManager, txInfoSdk, Description string) (string, error) {
+func sdkCreateCollectionTxInfo(key KeyManager, txInfoSdk, Description, ShortName string) (string, error) {
 	txInfo := &CreateCollectionTxInfo{}
 	err := json.Unmarshal([]byte(txInfoSdk), txInfo)
 	if err != nil {
@@ -497,6 +498,7 @@ func sdkCreateCollectionTxInfo(key KeyManager, txInfoSdk, Description string) (s
 	//reset
 	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
 	txInfo.Introduction = Description
+	txInfo.Name = ShortName
 	tx, err := constructCreateCollectionTx(key, txInfo) //sign tx message
 	if err != nil {
 		return "", err
@@ -510,7 +512,7 @@ func sdkMintNftTxInfo(key KeyManager, txInfoSdk string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
+	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000) //todo  getgasfee
 	tx, err := constructMintNftTx(key, txInfo)
 	if err != nil {
 		return "", err

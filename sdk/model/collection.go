@@ -17,6 +17,21 @@ type CollectionOption struct {
 	F func(*CollectionParams)
 }
 
+func GetDefaultCollection() *CollectionParams {
+	return &CollectionParams{
+		CollectionUrl:   "-",
+		ExternalLink:    "-",
+		TwitterLink:     "-",
+		InstagramLink:   "-",
+		TelegramLink:    "-",
+		DiscordLink:     "-",
+		LogoImage:       "-",
+		FeaturedImage:   "-",
+		BannerImage:     "-",
+		PaymentAssetIds: "[]",
+		Description:     "-",
+	}
+}
 func WithCollectionUrl(CollectionUrl string) CollectionOption {
 	return CollectionOption{func(mp *CollectionParams) {
 		mp.CollectionUrl = CollectionUrl
@@ -67,8 +82,8 @@ func WithPaymentAssetIds(PaymentAssetIds string) CollectionOption {
 		mp.PaymentAssetIds = PaymentAssetIds
 	}}
 }
-func WithDescription(PaymentAssetIds string) CollectionOption {
+func WithDescription(Description string) CollectionOption {
 	return CollectionOption{func(mp *CollectionParams) {
-		mp.PaymentAssetIds = PaymentAssetIds
+		mp.Description = Description
 	}}
 }
