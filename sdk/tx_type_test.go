@@ -1,13 +1,17 @@
 package sdk
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
+	vegeta "github.com/tsenart/vegeta/v12/lib"
 	"io/ioutil"
 	"math/big"
+	"net/http"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestCreateCollection(t *testing.T) {
@@ -580,5 +584,122 @@ func TestMintNftInBatch(t *testing.T) {
 		data, err = json.Marshal(result)
 		fmt.Println("GetNftById:", string(data))
 	}
+
+}
+
+func TestQueryEfficiency_getSellOffers(t *testing.T) {
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery {\n  offer(where: {status: {_eq: \"%d\"}, direction: {_eq: \"1\"}}) {\n    id\n    l2_offer_id\n    asset_id\n    counterpart_id\n    payment_asset_id\n    payment_asset_amount\n    signature\n    status\n    direction\n    expired_at\n   created_at\n    asset {\n      id\n      nft_index\n      name\n      collection_id\n      content_hash\n      create_tx_hash\n      creator_earning_rate\n      description\n      expired_at\n      image_thumb\n      l1_token_id\n      last_payment_asset_amount\n      last_payment_asset_id\n      media_detail {\n        url\n      }\n      nft_url\n      status\n      video_thumb\n      asset_stats {\n        max_value\n        key\n      }\n      asset_properties {\n        key\n        value\n      }\n      asset_levels {\n        key\n        max_value\n        value\n      }\n    }\n  }\n}\n","variables":{}}
+`, 1)
+	vegetaTest("getSellOffers", queryStr)
+}
+
+func TestQueryEfficiency_getAccountAssets(t *testing.T) {
+	accountIndex := 4
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery {\n  actionGetAccountAssets(account_index: %d) {\n    confirmedAssetIdList\n    pendingAssets {\n      account_name\n      audio_thumb\n      collection_id\n      content_hash\n      created_at\n      creator_earning_rate\n      description\n      expired_at\n      id\n      image_thumb\n      levels\n      media\n      name\n      nft_index\n      properties\n      stats\n      status\n      video_thumb\n    }\n  }\n}\n","variables":{}}
+`, accountIndex)
+	vegetaTest("getAccountAssets", queryStr)
+}
+func TestQueryEfficiency_getAccountCollections(t *testing.T) {
+	accountIndex := 4
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery {\n  actionGetAccountCollections(account_index: %d) {\n    confirmedCollectionIdList\n    pendingCollections {\n      status\n      account_name\n      banner_image\n      banner_thumb\n      browse_count\n      category_id\n      created_at\n      creator_earning_rate\n      description\n      discord_link\n      expired_at\n      external_link\n      featured_Thumb\n      featured_image\n      floor_price\n      id\n      instagram_link\n      item_count\n      l2_collection_id\n      logo_image\n      logo_thumb\n      name\n      one_day_trade_volume\n      short_name\n      telegram_link\n      total_trade_volume\n      twitter_link\n    }\n  }\n}\n","variables":{}}
+`, accountIndex)
+	vegetaTest("getAccountCollections", queryStr)
+}
+func TestQueryEfficiency_getAccountOffers(t *testing.T) {
+	accountIndex := 4
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery {\n  actionGetAccountOffers(account_index: %d) {\n    confirmedOfferIdList\n    pendingOffers {\n      account_name\n      asset_id\n      created_at\n      direction\n      expired_at\n      id\n      payment_asset_amount\n      payment_asset_id\n      signature\n      status\n    }\n  }\n}","variables":{}}
+`, accountIndex)
+	vegetaTest("getAccountOffers", queryStr)
+}
+func TestQueryEfficiency_getAssetByAssetId(t *testing.T) {
+	assetId := 3
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery {\n  actionGetAssetByAssetId(asset_id: %d) {\n    asset {\n      account_name\n      audio_thumb\n      collection_id\n      content_hash\n      created_at\n      creator_earning_rate\n      description\n      expired_at\n      id\n      image_thumb\n      levels\n      media\n      name\n      nft_index\n      properties\n      stats\n      status\n      video_thumb\n    }\n  }\n}\n","variables":{}}
+`, assetId)
+	vegetaTest("getAssetByAssetId", queryStr)
+}
+
+func TestQueryEfficiency_getAssetOffers(t *testing.T) {
+	assetId := 3
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery {\n  actionGetAssetOffers(asset_id: %d) {\n    confirmedOfferIdList\n    pendingOffers {\n      account_name\n      asset_id\n      created_at\n      direction\n      expired_at\n      id\n      payment_asset_amount\n      payment_asset_id\n      signature\n      status\n    }\n  }\n}","variables":{}}
+`, assetId)
+	vegetaTest("getAssetOffers", queryStr)
+}
+
+func TestQueryEfficiency_getCollectionAssets(t *testing.T) {
+	collectionId := 4
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery {\n  actionGetCollectionAssets(collection_id: %d) {\n    ConfirmedCollectionIdList\n    pendingAssets {\n      account_name\n      audio_thumb\n      collection_id\n      content_hash\n      created_at\n      creator_earning_rate\n      description\n      expired_at\n      id\n      image_thumb\n      levels\n      media\n      name\n      nft_index\n      properties\n      stats\n      status\n      video_thumb\n    }\n  }\n}","variables":{}}
+`, collectionId)
+	vegetaTest("getCollectionAssets", queryStr)
+}
+
+func TestQueryEfficiency_getCollectionById(t *testing.T) {
+	collectionId := 4
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery {\n  actionGetCollectionById(collection_id: %d) {\n    collection {\n      account_name\n      banner_image\n      banner_thumb\n      browse_count\n      category_id\n      created_at\n      creator_earning_rate\n      description\n      discord_link\n      expired_at\n      external_link\n      featured_Thumb\n      featured_image\n      floor_price\n      id\n      instagram_link\n      item_count\n      l2_collection_id\n      logo_image\n      logo_thumb\n      name\n      one_day_trade_volume\n      short_name\n      status\n      telegram_link\n      total_trade_volume\n      twitter_link\n    }\n  }\n}\n","variables":{}}
+`, collectionId)
+	vegetaTest("getCollectionById", queryStr)
+}
+
+func TestQueryEfficiency_getNftAccountCollectionSellOfferInfo(t *testing.T) {
+	assetID := 3
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery($_in: [bigint!] = %d) {\n  asset(where: {id: {_in: $_in}}) {\n    account {\n      account_index\n      account_name\n    }\n    collection {\n      account_id\n      account_index\n      collection_stats {\n        collection_id\n        day_growth_rate\n        day_trade_volume\n        floor_price\n        item_count\n        last_week_trade_volume\n        month_trade_volume\n        total_trade_volume\n        week_growth_rate\n        week_trade_volume\n        yesterday_trade_volume\n      }\n      collection_url\n      description\n      id\n      l2_collection_id\n    }\n    offers(limit: 1, offset: 0, where: {deleted_at: {_is_null: true}, expired_at: {_gt: \"123465\"}, direction: {_eq: \"1\"}}, order_by: {payment_asset_amount: desc_nulls_last}) {\n      payment_asset_amount\n    }\n  }\n}\n","variables":{}}
+`, assetID)
+	vegetaTest("getNftAccountCollectionSellOfferInfo", queryStr)
+}
+
+func TestQueryEfficiency_getTableAccountCollectionsInfo(t *testing.T) {
+	accountIndex := 3
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery($_in: [bigint!] = %d) {\n  collection(where: {account_index: {_eq: \"3\"}}) {\n    account_id\n    account_index\n    deleted_at\n    description\n    discord_link\n    expired_at\n  }\n}","variables":{}}
+`, accountIndex)
+	vegetaTest("getTableAccountCollections", queryStr)
+}
+
+func TestQueryEfficiency_hotNft(t *testing.T) {
+	assetID := 3
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery($_in: [bigint!] = %d) {\n  asset(offset: 100, limit: 100) {\n    account {\n      account_index\n      account_name\n      assets_aggregate(where: {status: {_in: \"1\", _nin: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]}}) {\n        aggregate {\n          count\n        }\n      }\n    }\n    collection {\n      l2_collection_id\n      id\n    }\n    offers_aggregate {\n      aggregate {\n        sum {\n          payment_asset_amount\n        }\n      }\n    }\n    offers(where: {status: {_in: \"1\"}, id: {_nin: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]}, direction: {_eq: \"1\"}, deleted_at: {_is_null: true}}, order_by: {created_at: desc_nulls_last}) {\n      id\n      l2_offer_id\n      payment_asset_id\n      payment_asset_amount\n      direction\n    }\n  }\n}\n","variables":{}}
+`, assetID)
+	vegetaTest("hotNft", queryStr)
+}
+
+func vegetaTest(apiPath, queryStr string) {
+	var metrics vegeta.Metrics
+	var Freq = 400
+	var duration = 60 * time.Second
+	for i := 1; i < 100; i++ {
+		var data = []byte(queryStr)
+		req, err := http.NewRequest(http.MethodPost, hasuraUrl, bytes.NewReader(data))
+		if err != nil {
+			panic(err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("x-hasura-access-key", hasuraAdminKey)
+		rate := vegeta.Rate{Freq: Freq, Per: time.Second}
+		targeter := vegeta.NewStaticTargeter(vegeta.Target{
+			Method: "POST",
+			URL:    hasuraUrl,
+			Body:   data,
+			Header: req.Header,
+		})
+		attacker := vegeta.NewAttacker()
+		for res := range attacker.Attack(targeter, rate, duration, apiPath) {
+			metrics.Add(res)
+		}
+		metrics.Close()
+		if metrics.Success < 1 {
+			break
+		}
+		Freq += 100
+	}
+	fmt.Println(fmt.Sprintf("API Path: %s Success: %f duration%d Freq%d 50th percentile: %s 95th percentile: %s 99th percentile: %s", apiPath, metrics.Success, duration, Freq, metrics.Latencies.P50, metrics.Latencies.P95, metrics.Latencies.P99))
 
 }
