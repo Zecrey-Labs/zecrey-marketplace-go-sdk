@@ -671,6 +671,37 @@ func TestQueryEfficiency_hotNft(t *testing.T) {
 	vegetaTest("hotNft", queryStr)
 }
 
+func TestQueryEfficiency_popularNftCollection(t *testing.T) {
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery {\n  collection(order_by: {collection_stat: {total_trade_volume: desc_nulls_last, day_trade_volume: desc_nulls_last, browse_count: desc_nulls_last, week_trade_volume: desc_nulls_first, month_trade_volume: desc_nulls_last}}, where: {status: {_eq: \"1\"}}, limit: 10, offset: 10) {\n    account {\n      account_index\n      account_name\n    }\n    id\n    name\n    logo_thumb\n    shortname\n    status\n    collection_stats {\n      day_growth_rate\n      day_trade_volume\n      floor_price\n      item_count\n      last_week_trade_volume\n      month_trade_volume\n      total_trade_volume\n      week_growth_rate\n      week_trade_volume\n      yesterday_trade_volume\n    }\n  }\n}\n","variables":{}}
+`)
+	vegetaTest("popularNftCollection", queryStr)
+}
+func TestQueryEfficiency_VolumeIncrease(t *testing.T) {
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery {\n  collection {\n    collection_stats(order_by: {week_growth_rate: asc}) {\n      browse_count\n      day_growth_rate\n      day_trade_volume\n      floor_price\n      item_count\n      last_week_trade_volume\n      month_trade_volume\n      total_trade_volume\n      week_growth_rate\n      week_trade_volume\n      yesterday_trade_volume\n    }\n    name\n    description\n    deleted_at\n    expired_at\n    discord_link\n    external_link\n    featured_image\n    featured_thumb\n    id\n  }\n}\n","variables":{}}
+`)
+	vegetaTest("VolumeIncrease(weekly)", queryStr)
+}
+func TestQueryEfficiency_RankIng(t *testing.T) {
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery {\n  collection {\n    collection_stats(order_by: {day_trade_volume: asc}) {\n      browse_count\n      day_growth_rate\n      day_trade_volume\n      floor_price\n      item_count\n      last_week_trade_volume\n      month_trade_volume\n      total_trade_volume\n      week_growth_rate\n      week_trade_volume\n      yesterday_trade_volume\n    }\n    name\n    description\n    deleted_at\n    expired_at\n    discord_link\n    external_link\n    featured_image\n    featured_thumb\n    id\n  }\n}\n","variables":{}}
+`)
+	vegetaTest("RankIng(day_trade_volume)", queryStr)
+}
+func TestQueryEfficiency_ReceiveOrSendOffer(t *testing.T) {
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery {\n  offer(where: {_or: {account: {account_index: {_eq: \"4\"}}, direction: {_eq: \"0\"}}}, order_by: {created_at: desc_nulls_last}) {\n    account {\n      account_index\n      account_name\n      banner_image\n      updated_at\n      twitter_link\n      status\n      pub_key\n    }\n    asset {\n      account_id\n      collection_id\n      content_hash\n      create_tx_hash\n      collection {\n        account_id\n        account_index\n        banner_thumb\n        category_id\n        banner_image\n      }\n    }\n    counterpart_id\n    created_at\n    direction\n    deleted_at\n    expired_at\n    l2_offer_id\n    id\n  }\n}\n","variables":{}}
+`)
+	vegetaTest("ReceiveOrSend", queryStr)
+}
+func TestQueryEfficiency_CollectionActivity(t *testing.T) {
+	queryStr := fmt.Sprintf(`
+{"query":"query MyQuery {\n  activity_tx(where: {nft_index: {_eq: \"3\"}}, order_by: {created_at: desc_nulls_last}) {\n    block_height\n    collection_id\n    created_at\n    deleted_at\n    from_account_index\n    from_account_name\n  }\n}","variables":{}}
+`)
+	vegetaTest("CollectionActivity", queryStr)
+}
+
 func vegetaTest(apiPath, queryStr string) {
 	var metrics vegeta.Metrics
 	var Freq = 400
@@ -700,6 +731,6 @@ func vegetaTest(apiPath, queryStr string) {
 		}
 		Freq += 100
 	}
-	fmt.Println(fmt.Sprintf("API Path: %s Success: %f duration%d Freq%d 50th percentile: %s 95th percentile: %s 99th percentile: %s", apiPath, metrics.Success, duration, Freq, metrics.Latencies.P50, metrics.Latencies.P95, metrics.Latencies.P99))
+	fmt.Println(fmt.Sprintf("API Path: %s Success: %f duration%d Freq%d 50th percentile: %s 95th percentile: %s 99th percentile: %s err %s", apiPath, metrics.Success, duration, Freq, metrics.Latencies.P50, metrics.Latencies.P95, metrics.Latencies.P99, metrics.Errors))
 
 }
