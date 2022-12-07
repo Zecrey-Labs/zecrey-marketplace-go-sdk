@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"io"
 	"io/ioutil"
 	"math/big"
@@ -499,6 +500,7 @@ func CreateL1Account() (l1Addr, privateKeyStr, l2pk, seed string, err error) {
 		return "", "", "", "", err
 	}
 	privateKeyStr = hex.EncodeToString(crypto.FromECDSA(privateKey))
+	fmt.Println(hexutil.Encode(crypto.FromECDSAPub(&privateKey.PublicKey)))
 	l1Addr, err = ecdsaHelper.GenerateL1Address(privateKey)
 	if err != nil {
 		logx.Errorf("[CreateL1Account] GenerateL1Address err: %s", err)

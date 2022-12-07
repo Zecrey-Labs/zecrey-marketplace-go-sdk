@@ -103,7 +103,6 @@ func main1() {
 	log.Info("create collection Info:", retCollection)
 	accountName, _, _ := _sdkA.GetMyInfo()
 	var CollectionId int64 = 54
-	var TreasuryRate int64 = 54
 	NftUrl := "-"
 	Name := "-"
 	DescriptionNft := "nft-sdk-Description"
@@ -136,7 +135,7 @@ func main1() {
 
 	retNft, err := _sdkA.MintNft(
 		CollectionId,
-		NftUrl, Name, TreasuryRate,
+		NftUrl, Name,
 		DescriptionNft, Media,
 		string(_PropertiesByte), string(_LevelsByte), string(_StatsByte))
 	log.Info("create nft Info:", retNft)

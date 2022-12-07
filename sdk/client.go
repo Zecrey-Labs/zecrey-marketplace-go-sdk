@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/zecrey-labs/zecrey-crypto/util/eddsaHelper"
+	"github.com/zecrey-labs/zecrey-crypto/wasm/zecrey-legend/legendTxTypes"
 	"io/ioutil"
 	"math/big"
 	"net/http"
@@ -22,20 +23,20 @@ import (
 const (
 	//nftMarketUrl = "http://localhost:9999"
 
-	nftMarketUrl   = "https://test-legend-nft.zecrey.com"
-	legendUrl      = "https://test-legend-app.zecrey.com"
-	hasuraUrl      = "https://legend-marketplace.hasura.app/v1/graphql"
-	hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
+	//nftMarketUrl   = "https://test-legend-nft.zecrey.com"
+	//legendUrl      = "https://test-legend-app.zecrey.com"
+	//hasuraUrl      = "https://legend-marketplace.hasura.app/v1/graphql"
+	//hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
 
 	//nftMarketUrl = "https://dev-legend-nft.zecrey.com"
 	//legendUrl = "https://dev-legend-app.zecrey.com"
 	//hasuraUrl = "https://legend-market-dev.hasura.app/v1/graphql"
-	//hasuraAdminKey     = "xxx"//dev
+	//hasuraAdminKey     = "kqWAsFWVvn61mFuiuQ5yqJkWpu5VS1B5FGTdFzlVlQJ9fMTr9yNIjOnN3hERC9ex"//dev
 
-	//nftMarketUrl = "https://qa-legend-nft.zecrey.com"
-	//legendUrl = "https://qa-legend-app.zecrey.com"
-	//hasuraUrl = "https://legend-market-qa.hasura.app/v1/graphql"
-	//hasuraAdminKey = "M5tpo0dWWjYdW0erD0mHqwcRSObUowSprpS7Q3K33SNQ0dcXkPeL63tpoka9dTBw" //qa
+	nftMarketUrl   = "https://qa-legend-nft.zecrey.com"
+	legendUrl      = "https://qa-legend-app.zecrey.com"
+	hasuraUrl      = "https://legend-market-qa.hasura.app/v1/graphql"
+	hasuraAdminKey = "M5tpo0dWWjYdW0erD0mHqwcRSObUowSprpS7Q3K33SNQ0dcXkPeL63tpoka9dTBw" //qa
 
 	hasuraTimeDeadline = 15 //15s
 	chainRpcUrl        = "https://data-seed-prebsc-1-s1.binance.org:8545"
@@ -184,10 +185,11 @@ func (c *Client) UpdateCollection(Id string, Name string, ops ...model.Collectio
 	return result, nil
 }
 
-func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, TreasuryRate int64, Description string, Media string, Properties string, Levels string, Stats string) (*RespCreateAsset, error) {
+func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, Description string, Media string, Properties string, Levels string, Stats string) (*RespCreateAsset, error) {
 
 	ContentHash, err := calculateContentHash(c.accountName, CollectionId, Name, Properties, Levels, Stats)
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s&treasury_rate=%d", c.accountName, CollectionId, Name, ContentHash, TreasuryRate))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?treasury_rate=20&account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionId, Name, ContentHash))
+	//fmt.Println(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionId, Name, ContentHash))
 	if err != nil {
 		return nil, err
 	}
@@ -340,7 +342,7 @@ func (c *Client) CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *bi
 		return nil, err
 	}
 
-	tx, err := sdkOfferTxInfo(c.keyManager, resultSdk.Transtion, true)
+	tx, err := sdkOfferTxInfo(c.keyManager, resultSdk.Transtion, AssetAmount, true)
 	if err != nil {
 		return nil, err
 	}
@@ -363,7 +365,7 @@ func (c *Client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	tx, err := sdkOfferTxInfo(c.keyManager, resultSdk.Transtion, false)
+	tx, err := sdkOfferTxInfo(c.keyManager, resultSdk.Transtion, AssetAmount, false)
 	if err != nil {
 		return nil, err
 	}
@@ -371,7 +373,7 @@ func (c *Client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big
 }
 
 func (c *Client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkCancelOfferTxInfo?account_name=%s&offerId=%d", c.accountName, offerId))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkCancelOfferTxInfo?account_name=%s&offer_id=%d", c.accountName, offerId))
 	if err != nil {
 		return nil, err
 	}
@@ -386,7 +388,7 @@ func (c *Client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	tx, err := sdkOfferTxInfo(c.keyManager, resultSdk.Transtion, false)
+	tx, err := sdkCancelOfferTxInfo(c.keyManager, resultSdk.Transtion)
 	if err != nil {
 		return nil, err
 	}
@@ -466,6 +468,7 @@ func (c *Client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (
 			"transaction": {txInfo},
 		},
 	)
+	fmt.Println("=== txInfo === ", txInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -543,24 +546,26 @@ func sdkAtomicMatchWithTx(key KeyManager, txInfoSdk string, isSell bool, AssetAm
 		return "", err
 	}
 	if !isSell {
+		txInfo.BuyOffer.AssetAmount = AssetAmount
 		signedTx, err := constructOfferTx(key, txInfo.BuyOffer)
 		if err != nil {
 			return "", err
 		}
 		signedOffer, _ := parseOfferTxInfo(signedTx)
 		txInfo.BuyOffer = signedOffer
-		txInfo.BuyOffer.AssetAmount = AssetAmount
+
 	}
 	if isSell {
+		txInfo.SellOffer.AssetAmount = AssetAmount
 		signedTx, err := constructOfferTx(key, txInfo.SellOffer)
 		if err != nil {
 			return "", err
 		}
 		signedOffer, _ := parseOfferTxInfo(signedTx)
 		txInfo.SellOffer = signedOffer
-		txInfo.SellOffer.AssetAmount = AssetAmount
-	}
 
+	}
+	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
 	tx, err := constructAtomicMatchTx(key, txInfo)
 	if err != nil {
 		return "", err
@@ -582,7 +587,7 @@ func sdkWithdrawNftTxInfo(key KeyManager, txInfoSdk string) (string, error) {
 	return tx, err
 }
 
-func sdkOfferTxInfo(key KeyManager, txInfoSdk string, isSell bool) (string, error) {
+func sdkOfferTxInfo(key KeyManager, txInfoSdk string, AssetAmount *big.Int, isSell bool) (string, error) {
 	txInfo := &OfferTxInfo{}
 	err := json.Unmarshal([]byte(txInfoSdk), txInfo)
 	if err != nil {
@@ -592,11 +597,37 @@ func sdkOfferTxInfo(key KeyManager, txInfoSdk string, isSell bool) (string, erro
 	if isSell {
 		txInfo.Type = 1
 	}
+	txInfo.AssetAmount = AssetAmount
 	tx, err := constructOfferTx(key, txInfo)
 	if err != nil {
 		return "", err
 	}
 	return tx, err
+}
+
+func sdkCancelOfferTxInfo(key KeyManager, tx string) (string, error) {
+	txInfo := &CancelOfferTxInfo{}
+	err := json.Unmarshal([]byte(tx), txInfo)
+	if err != nil {
+		return "", err
+	}
+	convertedTx := ConvertCancelOfferTxInfo(txInfo)
+	hFunc := mimc.NewMiMC()
+	msgHash, err := legendTxTypes.ComputeCancelOfferMsgHash(convertedTx, hFunc)
+	if err != nil {
+		return "", err
+	}
+	hFunc.Reset()
+	signature, err := key.Sign(msgHash, hFunc)
+	if err != nil {
+		return "", err
+	}
+	convertedTx.Sig = signature
+	txInfoBytes, err := json.Marshal(convertedTx)
+	if err != nil {
+		return "", err
+	}
+	return string(txInfoBytes), nil
 }
 
 func calculateContentHash(accountName string, collectionId int64, name string, _properties string, _levels string, _stats string) (string, error) {

@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"encoding/json"
-
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
 	"github.com/zecrey-labs/zecrey-crypto/wasm/zecrey-legend/legendTxTypes"
 )
@@ -179,7 +178,18 @@ func convertOfferTxInfo(tx *OfferTxInfo) *legendTxTypes.OfferTxInfo {
 		Sig:          tx.Sig,
 	}
 }
-
+func ConvertCancelOfferTxInfo(tx *CancelOfferTxInfo) *legendTxTypes.CancelOfferTxInfo {
+	return &legendTxTypes.CancelOfferTxInfo{
+		AccountIndex:      tx.AccountIndex,
+		OfferId:           tx.OfferId,
+		GasAccountIndex:   tx.GasAccountIndex,
+		GasFeeAssetId:     tx.GasFeeAssetId,
+		GasFeeAssetAmount: tx.GasFeeAssetAmount,
+		ExpiredAt:         tx.ExpiredAt,
+		Nonce:             tx.Nonce,
+		Sig:               tx.Sig,
+	}
+}
 func convertMintNftTxInfo(tx *MintNftTxInfo) *legendTxTypes.MintNftTxInfo {
 	return &legendTxTypes.MintNftTxInfo{
 		CreatorAccountIndex: tx.CreatorAccountIndex,

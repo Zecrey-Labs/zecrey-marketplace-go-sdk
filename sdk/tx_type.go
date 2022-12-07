@@ -83,6 +83,16 @@ type OfferTxInfo struct {
 	TreasuryRate int64
 	Sig          []byte
 }
+type CancelOfferTxInfo struct {
+	AccountIndex      int64
+	OfferId           int64
+	GasAccountIndex   int64
+	GasFeeAssetId     int64
+	GasFeeAssetAmount *big.Int
+	ExpiredAt         int64
+	Nonce             int64
+	Sig               []byte
+}
 
 func parseOfferTxInfo(txInfoStr string) (txInfo *OfferTxInfo, err error) {
 	err = json.Unmarshal([]byte(txInfoStr), &txInfo)
