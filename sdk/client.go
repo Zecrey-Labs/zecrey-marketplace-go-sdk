@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	//nftMarketUrl = "http://localhost:9999"
+	nftMarketUrl = "http://localhost:9999"
 
 	//nftMarketUrl   = "https://test-legend-nft.zecrey.com"
 	//legendUrl      = "https://test-legend-app.zecrey.com"
@@ -33,7 +33,7 @@ const (
 	//hasuraUrl = "https://legend-market-dev.hasura.app/v1/graphql"
 	//hasuraAdminKey     = "kqWAsFWVvn61mFuiuQ5yqJkWpu5VS1B5FGTdFzlVlQJ9fMTr9yNIjOnN3hERC9ex"//dev
 
-	nftMarketUrl   = "https://qa-legend-nft.zecrey.com"
+	//nftMarketUrl   = "https://qa-legend-nft.zecrey.com"
 	legendUrl      = "https://qa-legend-app.zecrey.com"
 	hasuraUrl      = "https://legend-market-qa.hasura.app/v1/graphql"
 	hasuraAdminKey = "M5tpo0dWWjYdW0erD0mHqwcRSObUowSprpS7Q3K33SNQ0dcXkPeL63tpoka9dTBw" //qa

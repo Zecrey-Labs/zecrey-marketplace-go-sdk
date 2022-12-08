@@ -83,7 +83,7 @@ func GetLayer2BasicInfo() (*RespGetLayer2BasicInfo, error) {
 }
 
 func GetAccountByAccountName(accountName string) (*RespGetAccountByAccountName, error) {
-	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/account/getAccountByAccountName?account_name=%s", accountName))
+	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/account/getAccountByAccountName?account_name=%s", fmt.Sprintf("%s%s", accountName, NameSuffix)))
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func GetNextNonce(accountIdx int64) (int64, error) {
 }
 
 func GetAccountIndex(accountName string) (int64, error) {
-	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/account/getAccountByAccountName?account_name=%s", accountName))
+	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/account/getAccountByAccountName?account_name=%s", fmt.Sprintf("%s%s", accountName, NameSuffix)))
 	if err != nil {
 		return 0, err
 	}
@@ -221,6 +221,7 @@ func GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetSdkAccountCollect
 	if err != nil {
 		return nil, err
 	}
+	//http://localhost:9999/api/v1/sdk/getSdkAccountCollections?account_index=4
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -301,7 +302,7 @@ func GetNftOffers(NftId int64) (*RespGetSdkAssetOffers, error) {
 }
 
 func GetNftById(nftId int64) (*RespGetSdkAssetById, error) {
-	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAssetByAssetId?asset_id=%d", nftId))
+	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAssetById?asset_id=%d", nftId))
 	if err != nil {
 		return nil, err
 	}

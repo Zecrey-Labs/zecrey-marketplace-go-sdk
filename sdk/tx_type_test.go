@@ -61,7 +61,7 @@ func TestCreateCollection(t *testing.T) {
 }
 
 func TestGetCollectionById(t *testing.T) {
-	var collectionId int64 = 209
+	var collectionId int64 = 7
 	result, err := GetCollectionById(collectionId)
 	if err != nil {
 		t.Fatal(err)
@@ -113,7 +113,7 @@ func TestGetAccountOffers(t *testing.T) {
 }
 
 func TestGetNftOffers(t *testing.T) {
-	var nftId int64 = 7
+	var nftId int64 = 3
 	result, err := GetNftOffers(nftId)
 	if err != nil {
 		t.Fatal(err)
@@ -180,7 +180,7 @@ func TestMintNft(t *testing.T) {
 		t.Fatal(err)
 	}
 	NftUrl := "-"
-	Name := fmt.Sprintf("nftName1:%s", accountName)
+	Name := fmt.Sprintf("nftName1231:%s", accountName)
 	Description := fmt.Sprintf("%s `s nft", accountName)
 	Media := "collection/pfbmwbg2ampznqrwgco2"
 	// get content hash
@@ -202,11 +202,10 @@ func TestMintNft(t *testing.T) {
 	}
 	data, err := json.Marshal(ret)
 	fmt.Println("MintNft:", string(data))
-
 }
 
 func TestGetNftByNftId(t *testing.T) {
-	var nftId int64 = 24
+	var nftId int64 = 2
 	result, err := GetNftById(nftId)
 	if err != nil {
 		t.Fatal(err)
@@ -219,7 +218,7 @@ func TestGetNftByNftId(t *testing.T) {
 }
 
 func TestGetOfferById(t *testing.T) {
-	var OfferId int64 = 5
+	var OfferId int64 = 1
 	result, err := GetOfferById(OfferId)
 	if err != nil {
 		t.Fatal(err)
@@ -375,7 +374,7 @@ func TestRegisterAccountWithPrivateKey(t *testing.T) {
 }
 
 func TestGetAccountIsRegistered(t *testing.T) {
-	accountName := "6633332"
+	accountName := "amber1"
 	result, err := IfAccountRegistered(accountName)
 	if err != nil {
 		t.Fatal(err)
@@ -385,7 +384,7 @@ func TestGetAccountIsRegistered(t *testing.T) {
 }
 
 func TestGetAccountByAccountName(t *testing.T) {
-	accountName := "alice"
+	accountName := "amber1"
 	accountInfo, err := GetAccountByAccountName(accountName)
 	if err != nil {
 		t.Fatal(err)
@@ -393,7 +392,15 @@ func TestGetAccountByAccountName(t *testing.T) {
 	data, err := json.Marshal(accountInfo)
 	fmt.Println(string(data))
 }
-
+func TestGetAccountIndex(t *testing.T) {
+	accountName := "amber1"
+	accountInfo, err := GetAccountIndex(accountName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := json.Marshal(accountInfo)
+	fmt.Println(string(data))
+}
 func TestApplyRegisterHost(t *testing.T) {
 	l1Addr := "0x805e286D05388911cCdB10E3c7b9713415607c72"
 	l2pk := "22fc6f5d74c8639245462a0af6b5c931bd209c04034b28421a60336635ab85950a3163e68ec29319ca200fac009408369b0a1f75200a118aded920cd240e1358"
