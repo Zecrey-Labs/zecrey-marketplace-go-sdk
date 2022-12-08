@@ -392,6 +392,7 @@ func TestGetAccountByAccountName(t *testing.T) {
 	data, err := json.Marshal(accountInfo)
 	fmt.Println(string(data))
 }
+
 func TestGetAccountIndex(t *testing.T) {
 	accountName := "amber1"
 	accountInfo, err := GetAccountIndex(accountName)
@@ -401,6 +402,7 @@ func TestGetAccountIndex(t *testing.T) {
 	data, err := json.Marshal(accountInfo)
 	fmt.Println(string(data))
 }
+
 func TestApplyRegisterHost(t *testing.T) {
 	l1Addr := "0x805e286D05388911cCdB10E3c7b9713415607c72"
 	l2pk := "22fc6f5d74c8639245462a0af6b5c931bd209c04034b28421a60336635ab85950a3163e68ec29319ca200fac009408369b0a1f75200a118aded920cd240e1358"
@@ -486,10 +488,13 @@ func TestUploadMediaInBatch(t *testing.T) {
 				fn := files[i].Name()
 				fn1 := strings.TrimSuffix(fn, "_cover.png")
 				fn1 = strings.TrimSuffix(fn, "_icon.png")
+				fn1 = strings.TrimSuffix(fn, "_cover.jpg")
+				fn1 = strings.TrimSuffix(fn, "_icon.jpg")
 				fn1 = strings.TrimSuffix(fn, "_icon")
 				fn1 = strings.TrimSuffix(fn, "_icon")
 				fn1 = strings.TrimSuffix(fn, "")
 				fn1 = strings.TrimSuffix(fn, ".png")
+				fn1 = strings.TrimSuffix(fn, ".jpg")
 				//collection cover
 				if strings.Contains(fn, "_cover.png") {
 					fmt.Println(fmt.Sprintf("Collection Cover:\"%s\":{\"%s\",\"none\"},", cName, result.PublicId))
@@ -527,7 +532,7 @@ func TestCreateCollectionInBatch(t *testing.T) {
 		FeaturedImage := Infos[0]
 		BannerImage := Infos[1]
 		Description := Infos[2]
-		CreatorEarningRate := "1000"
+		CreatorEarningRate := "200"
 		c, err := NewClient(accountName, seed)
 		if err != nil {
 			t.Fatal(err)
@@ -583,14 +588,7 @@ func TestMintNftInBatch(t *testing.T) {
 		}
 		data, err := json.Marshal(ret)
 		fmt.Println("MintNft:", string(data))
-		//result, err := GetNftById(ret.Asset.Id)
-		//if err != nil {
-		//	t.Fatal(err)
-		//}
-		//data, err = json.Marshal(result)
-		//fmt.Println("GetNftById:", string(data))
 	}
-
 }
 
 func TestQueryEfficiency_getSellOffers(t *testing.T) {
