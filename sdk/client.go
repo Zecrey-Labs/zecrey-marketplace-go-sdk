@@ -21,27 +21,29 @@ import (
 )
 
 const (
-	nftMarketUrl = "http://localhost:9999"
+	//nftMarketUrl = "http://localhost:9999"
 
 	//nftMarketUrl   = "https://test-legend-nft.zecrey.com"
 	//legendUrl      = "https://test-legend-app.zecrey.com"
 	//hasuraUrl      = "https://legend-marketplace.hasura.app/v1/graphql"
 	//hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
 
-	//nftMarketUrl = "https://dev-legend-nft.zecrey.com"
-	//legendUrl = "https://dev-legend-app.zecrey.com"
-	//hasuraUrl = "https://legend-market-dev.hasura.app/v1/graphql"
-	//hasuraAdminKey     = "kqWAsFWVvn61mFuiuQ5yqJkWpu5VS1B5FGTdFzlVlQJ9fMTr9yNIjOnN3hERC9ex"//dev
+	nftMarketUrl   = "https://dev-legend-nft.zecrey.com"
+	legendUrl      = "https://dev-legend-app.zecrey.com"
+	hasuraUrl      = "https://legend-market-dev.hasura.app/v1/graphql"
+	hasuraAdminKey = "kqWAsFWVvn61mFuiuQ5yqJkWpu5VS1B5FGTdFzlVlQJ9fMTr9yNIjOnN3hERC9ex" //dev
 
 	//nftMarketUrl   = "https://qa-legend-nft.zecrey.com"
-	legendUrl      = "https://qa-legend-app.zecrey.com"
-	hasuraUrl      = "https://legend-market-qa.hasura.app/v1/graphql"
-	hasuraAdminKey = "M5tpo0dWWjYdW0erD0mHqwcRSObUowSprpS7Q3K33SNQ0dcXkPeL63tpoka9dTBw" //qa
+	//legendUrl      = "https://qa-legend-app.zecrey.com"
+	//hasuraUrl      = "https://legend-market-qa.hasura.app/v1/graphql"
+	//hasuraAdminKey = "M5tpo0dWWjYdW0erD0mHqwcRSObUowSprpS7Q3K33SNQ0dcXkPeL63tpoka9dTBw" //qa
 
 	hasuraTimeDeadline = 15 //15s
 	chainRpcUrl        = "https://data-seed-prebsc-1-s1.binance.org:8545"
 	DefaultGasLimit    = 5000000
 	NameSuffix         = ".zec"
+	MinGasFee          = 100000000000000 // 0.0001BNB
+
 )
 
 type Client struct {
@@ -501,7 +503,7 @@ func sdkCreateCollectionTxInfo(key KeyManager, txInfoSdk, Description, ShortName
 		return "", err
 	}
 	//reset
-	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
+	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	txInfo.Introduction = Description
 	txInfo.Name = ShortName
 	tx, err := constructCreateCollectionTx(key, txInfo) //sign tx message
@@ -517,7 +519,7 @@ func sdkMintNftTxInfo(key KeyManager, txInfoSdk string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000) //todo  getgasfee
+	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	tx, err := constructMintNftTx(key, txInfo)
 	if err != nil {
 		return "", err
@@ -531,7 +533,7 @@ func sdkTransferNftTxInfo(key KeyManager, txInfoSdk string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
+	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	tx, err := constructTransferNftTx(key, txInfo)
 	if err != nil {
 		return "", err
@@ -565,7 +567,7 @@ func sdkAtomicMatchWithTx(key KeyManager, txInfoSdk string, isSell bool, AssetAm
 		txInfo.SellOffer = signedOffer
 
 	}
-	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
+	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	tx, err := constructAtomicMatchTx(key, txInfo)
 	if err != nil {
 		return "", err
@@ -579,7 +581,7 @@ func sdkWithdrawNftTxInfo(key KeyManager, txInfoSdk string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	txInfo.GasFeeAssetAmount = big.NewInt(1000000000000000)
+	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	tx, err := constructWithdrawNftTx(key, txInfo)
 	if err != nil {
 		return "", err

@@ -277,6 +277,7 @@ type RespGetLayer2BasicInfo struct {
 	DauYesterday               int64    `json:"dau_yesterday"`
 	DauToday                   int64    `json:"dau_today"`
 	ContractAddresses          []string `json:"contract_addresses"`
+	NftOfferTreasuryRate       int64    `json:"nft_offer_treasury_rate"`
 }
 
 type RespGetAccountByAccountName struct {

@@ -17,7 +17,7 @@ import (
 func TestCreateCollection(t *testing.T) {
 	accountName := "amber1"
 	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
-	ShortName := "MyNft"
+	ShortName := "MyNft1"
 	CategoryId := "1"
 	CollectionUrl := "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
 	ExternalLink := "https://weibo.com/alice"
@@ -25,11 +25,11 @@ func TestCreateCollection(t *testing.T) {
 	InstagramLink := "https://www.instagram.com/alice/"
 	TelegramLink := "https://tgstat.com/channel/@alice"
 	DiscordLink := "https://discord.com/api/v10/applications/<aliceid>/commands"
-	LogoImage := "collection/tvbish3l1djoeqfgqjy9"
-	FeaturedImage := "collection/tvbish3l1djoeqfgqjy9"
-	BannerImage := "collection/tvbish3l1djoeqfgqjy9"
+	LogoImage := "collection/aug788rsfbsnj3i7leqf"
+	FeaturedImage := "collection/aug788rsfbsnj3i7leqf"
+	BannerImage := "collection/aug788rsfbsnj3i7leqf"
 	Description := "Description information"
-	CreatorEarningRate := "1000"
+	CreatorEarningRate := "200"
 
 	c, err := NewClient(accountName, seed)
 	if err != nil {
@@ -182,7 +182,7 @@ func TestMintNft(t *testing.T) {
 	NftUrl := "-"
 	Name := fmt.Sprintf("nftName1231:%s", accountName)
 	Description := fmt.Sprintf("%s `s nft", accountName)
-	Media := "collection/pfbmwbg2ampznqrwgco2"
+	Media := "collection/aug788rsfbsnj3i7leqf"
 	// get content hash
 	_Properties := []Propertie{}
 	_Levels := []Level{}
@@ -440,6 +440,18 @@ func TestGetCategories(t *testing.T) {
 func TestGetListingOffers(t *testing.T) {
 	var isSell int64 = 1
 	result, err := GetListingOffers(isSell)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := json.Marshal(result)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(string(data))
+}
+
+func TestGetGetLayer2BasicInfo(t *testing.T) {
+	result, err := GetLayer2BasicInfo()
 	if err != nil {
 		t.Fatal(err)
 	}
