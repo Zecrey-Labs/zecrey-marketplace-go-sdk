@@ -23,63 +23,120 @@ type marketCreateCollectionTxInfo struct {
 	ops                []model.CollectionOption
 }
 
+var (
+	CollectionUrl      = "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
+	ExternalLink       = "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
+	TwitterLink        = "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
+	InstagramLink      = "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
+	TelegramLink       = "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
+	DiscordLink        = "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
+	LogoImage          = "collection/haxiuyotbowltzv5ubok"
+	FeaturedImage      = "collection/haxiuyotbowltzv5ubok"
+	BannerImage        = "collection/haxiuyotbowltzv5ubok"
+	Description        = "Description information"
+	CreatorEarningRate = "200"
+)
+var (
+	//len([]byte(boundaryStr))  = 164
+	boundaryStr = "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
+		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
+	//len([]byte(boundaryStr))  = 1148
+	boundaryStr2 = "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
+		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
+		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
+		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
+		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
+		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
+		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
+		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
+		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
+		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
+		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
+		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
+		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
+		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
+)
 var createCollectionTestCase = []struct {
 	txinfo   *marketCreateCollectionTxInfo
 	expected bool
 }{
 	{
 		txinfo: &marketCreateCollectionTxInfo{
-			//AccountIndex:      0,
-			//CollectionId:      0,
-			//Name:              ";DROP TABLE account;",
-			//Introduction:      ";DROP TABLE account;",
-			//GasAccountIndex:   0,
-			//GasFeeAssetId:     0,
-			//GasFeeAssetAmount: big.NewInt(0),
-			//ExpiredAt:         0,
-			//Nonce:             0,
+			CollectionId:       1,
+			ShortName:          "ShortName",
+			CategoryId:         "1",
+			CreatorEarningRate: "200",
+			ops: []model.CollectionOption{
+				model.WithCollectionUrl(CollectionUrl),
+				model.WithExternalLink(ExternalLink),
+				model.WithTwitterLink(TwitterLink),
+				model.WithInstagramLink(InstagramLink),
+				model.WithTelegramLink(TelegramLink),
+				model.WithDiscordLink(DiscordLink),
+				model.WithLogoImage(LogoImage),
+				model.WithFeaturedImage(FeaturedImage),
+				model.WithBannerImage(BannerImage),
+				model.WithDescription(boundaryStr2)},
 		},
 		expected: false,
 	},
 	{
 		txinfo: &marketCreateCollectionTxInfo{
-			//AccountIndex:      0,
-			//CollectionId:      0,
-			//Name:              string([]byte{math.MaxUint8, math.MaxUint8}),
-			//Introduction:      ";DROP TABLE account;",
-			//GasAccountIndex:   0,
-			//GasFeeAssetId:     0,
-			//GasFeeAssetAmount: big.NewInt(0),
-			//ExpiredAt:         0,
-			//Nonce:             0,
+			CollectionId:       1,
+			ShortName:          "ShortName",
+			CategoryId:         "1",
+			CreatorEarningRate: "2000000000000000000000000000",
+			ops: []model.CollectionOption{
+				model.WithCollectionUrl(CollectionUrl),
+				model.WithExternalLink(ExternalLink),
+				model.WithTwitterLink(TwitterLink),
+				model.WithInstagramLink(InstagramLink),
+				model.WithTelegramLink(TelegramLink),
+				model.WithDiscordLink(DiscordLink),
+				model.WithLogoImage(LogoImage),
+				model.WithFeaturedImage(FeaturedImage),
+				model.WithBannerImage(BannerImage),
+				model.WithDescription(Description)},
 		},
 		expected: false,
 	},
 	{
 		txinfo: &marketCreateCollectionTxInfo{
-			//AccountIndex:      -1,
-			//CollectionId:      -1,
-			//Name:              string([]byte{math.MaxUint8, math.MaxUint8}),
-			//Introduction:      ";DROP TABLE account;",
-			//GasAccountIndex:   0,
-			//GasFeeAssetId:     0,
-			//GasFeeAssetAmount: big.NewInt(0).Mul(big.NewInt(math.MaxInt64), big.NewInt(1000000000000000000)),
-			//ExpiredAt:         0,
-			//Nonce:             -1,
+			CollectionId:       -1,
+			ShortName:          "ShortName",
+			CategoryId:         "-1",
+			CreatorEarningRate: "200",
+			ops: []model.CollectionOption{
+				model.WithCollectionUrl(CollectionUrl),
+				model.WithExternalLink(ExternalLink),
+				model.WithTwitterLink(TwitterLink),
+				model.WithInstagramLink(InstagramLink),
+				model.WithTelegramLink(TelegramLink),
+				model.WithDiscordLink(DiscordLink),
+				model.WithLogoImage(LogoImage),
+				model.WithFeaturedImage(FeaturedImage),
+				model.WithBannerImage(BannerImage),
+				model.WithDescription(Description)},
 		},
 		expected: false,
 	},
 	{
 		txinfo: &marketCreateCollectionTxInfo{
-			//AccountIndex:      math.MaxInt64,
-			//CollectionId:      -1,
-			//Name:              string([]byte{math.MaxUint8, math.MaxUint8}),
-			//Introduction:      ";DROP TABLE account;",
-			//GasAccountIndex:   0,
-			//GasFeeAssetId:     0,
-			//GasFeeAssetAmount: big.NewInt(0).Mul(big.NewInt(math.MaxInt64), big.NewInt(1000000000000000000)),
-			//ExpiredAt:         0,
-			//Nonce:             -1,
+			CollectionId:       -1,
+			ShortName:          "ShortName",
+			CategoryId:         "-1",
+			CreatorEarningRate: "200",
+			ops: []model.CollectionOption{
+				model.WithCollectionUrl(CollectionUrl),
+				model.WithExternalLink(ExternalLink),
+				model.WithTwitterLink(TwitterLink),
+				model.WithInstagramLink(InstagramLink),
+				model.WithTelegramLink(TelegramLink),
+				model.WithDiscordLink(DiscordLink),
+				model.WithLogoImage(LogoImage),
+				model.WithFeaturedImage(FeaturedImage),
+				model.WithBannerImage(BannerImage),
+				model.WithDescription(Description)},
 		},
 		expected: false,
 	},
@@ -93,11 +150,14 @@ func TestCreateCollection(t *testing.T) {
 	//assert.Greater(t, nonce, int64(0), "nonce should be greater than 0")
 	txInfoSdk, err := getPreCollectionTx(accountName)
 	assert.Nil(t, err, "SignAndSendCreateCollectionTx should not return an error, err: %v", err)
+
 	txInfo := &sdk.CreateCollectionTxInfo{}
 	err = json.Unmarshal([]byte(txInfoSdk.Transtion), txInfo)
 	if err != nil {
 		t.Fatal(err)
 	}
+	assert.Greater(t, txInfo.Nonce, 0, "pre collection tx Nonce should Greater 0")
+	assert.GreaterOrEqual(t, txInfo.AccountIndex, 0, "collection AccountIndex should GreaterOrEqual 0")
 	//reset
 	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	t.Log(txInfo)

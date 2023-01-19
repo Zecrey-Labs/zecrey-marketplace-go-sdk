@@ -373,12 +373,12 @@ func TestBoundary_WithdrawNft(t *testing.T) {
 	var AssetId int64 = 4
 	seed := "17673b9a9fdec6dc90c7cc1eb1c939134dfb659d2f08edbe071e5c45f343d008"
 	accountName := "gavin"
-
+	tol1Address := "0x< a l1 address you want to withdraw nft>"
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := c.WithdrawNft(AssetId)
+	result, err := c.WithdrawNft(AssetId, tol1Address)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -15,8 +15,8 @@ import (
 )
 
 func TestCreateCollection(t *testing.T) {
-	accountName := "amber1"
-	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
+	accountName := "alice"
+	seed := "asdfasdfasdf98fd05c70sdafasdfasdffdasdfsadfsdfsfdasdf30383efcb3954631"
 	ShortName := "MyNft1"
 	CategoryId := "1"
 	CollectionUrl := "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
@@ -127,7 +127,7 @@ func TestGetNftOffers(t *testing.T) {
 
 func TestUpdateCollection(t *testing.T) {
 	Id := "54"
-	accountName := "sher"
+	accountName := "jarry"
 	Name := "zw-sdk--collection-update"
 	CollectionUrl := "-"
 	Description := "-"
@@ -172,17 +172,17 @@ func TestUpdateCollection(t *testing.T) {
 }
 
 func TestMintNft(t *testing.T) {
-	var CollectionId int64 = 11
-	accountName := "amber1"
-	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
+	var CollectionId int64 = 93
+	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
+	accountName := "bob"
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
 	NftUrl := "-"
-	Name := fmt.Sprintf("nftName1231:%s", accountName)
+	Name := fmt.Sprintf("nftName2:%s", accountName)
 	Description := fmt.Sprintf("%s `s nft", accountName)
-	Media := "collection/aug788rsfbsnj3i7leqf"
+	Media := "collection/dz5hwqaszpwtflg0sfz4"
 	// get content hash
 	_Properties := []Propertie{}
 	_Levels := []Level{}
@@ -228,10 +228,13 @@ func TestGetOfferById(t *testing.T) {
 }
 
 func TestTransferNft(t *testing.T) {
-	var nftId int64 = 4
-	accountName := "amber1"
-	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
-	toAccountName := "gavin"
+	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
+	accountName := "bob"
+
+	var nftId int64 = 277
+	//accountName := "alice"
+	//seed := "asdfasdfasdf98fd05c70sdafasdfasdffdasdfsadfsdfsfdasdf30383efcb3954631"
+	toAccountName := "alice"
 
 	c, err := NewClient(accountName, seed)
 	if err != nil {
@@ -246,15 +249,15 @@ func TestTransferNft(t *testing.T) {
 }
 
 func TestWithdrawNft(t *testing.T) {
-	var AssetId int64 = 4
-	seed := "17673b9a9fdec6dc90c7cc1eb1c939134dfb659d2f08edbe071e5c45f343d008"
-	accountName := "gavin"
-
+	var AssetId int64 = 277
+	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
+	accountName := "bob"
+	tol1Address := "0x< a l1 address you want to withdraw nft>"
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := c.WithdrawNft(AssetId)
+	result, err := c.WithdrawNft(AssetId, tol1Address)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -264,8 +267,8 @@ func TestWithdrawNft(t *testing.T) {
 
 func TestSellOffer(t *testing.T) {
 	var AssetId int64 = 3
-	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
-	accountName := "amber1"
+	seed := "asdfasdfasdf98fd05c70sdafasdfasdffdasdfsadfsdfsfdasdf30383efcb3954631"
+	accountName := "alice"
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
@@ -280,8 +283,8 @@ func TestSellOffer(t *testing.T) {
 
 func TestBuyOffer(t *testing.T) {
 	var AssetId int64 = 3
-	seed := "17673b9a9fdec6dc90c7cc1eb1c939134dfb659d2f08edbe071e5c45f343d008"
-	accountName := "gavin"
+	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
+	accountName := "bob"
 
 	c, err := NewClient(accountName, seed)
 	if err != nil {
@@ -298,8 +301,8 @@ func TestBuyOffer(t *testing.T) {
 
 func TestCancelOffer(t *testing.T) {
 	var OfferId int64 = 4
-	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
-	accountName := "amber1"
+	seed := "asdfasdfasdf98fd05c70sdafasdfasdffdasdfsadfsdfsfdasdf30383efcb3954631"
+	accountName := "alice"
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
@@ -314,8 +317,8 @@ func TestCancelOffer(t *testing.T) {
 
 func TestAcceptOffer(t *testing.T) {
 	var offerId int64 = 6
-	seed := "17673b9a9fdec6dc90c7cc1eb1c939134dfb659d2f08edbe071e5c45f343d008"
-	accountName := "gavin"
+	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
+	accountName := "bob"
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
@@ -360,7 +363,7 @@ func TestGetSeedAndL2Pk(t *testing.T) {
 }
 
 func TestRegisterAccountWithPrivateKey(t *testing.T) {
-	accountName := "zhangwei1111"
+	accountName := "alice"
 	l1Addr := "0x805e286D05388911cCdB10E3c7b9713415607c72"
 	//seed := "0x7ea589236ac7e6034a40ad31f27a6ea1bbaeb7746ba5e8d3408a3abb480a8688"
 	//l2pk := "22fc6f5d74c8639245462a0af6b5c931bd209c04034b28421a60336635ab85950a3163e68ec29319ca200fac009408369b0a1f75200a118aded920cd240e1358"
@@ -374,7 +377,7 @@ func TestRegisterAccountWithPrivateKey(t *testing.T) {
 }
 
 func TestGetAccountIsRegistered(t *testing.T) {
-	accountName := "amber1"
+	accountName := "alice"
 	result, err := IfAccountRegistered(accountName)
 	if err != nil {
 		t.Fatal(err)
@@ -384,7 +387,7 @@ func TestGetAccountIsRegistered(t *testing.T) {
 }
 
 func TestGetAccountByAccountName(t *testing.T) {
-	accountName := "amber1"
+	accountName := "alice"
 	accountInfo, err := GetAccountByAccountName(accountName)
 	if err != nil {
 		t.Fatal(err)
@@ -394,7 +397,7 @@ func TestGetAccountByAccountName(t *testing.T) {
 }
 
 func TestGetAccountIndex(t *testing.T) {
-	accountName := "amber1"
+	accountName := "alice"
 	accountInfo, err := GetAccountIndex(accountName)
 	if err != nil {
 		t.Fatal(err)
@@ -415,7 +418,7 @@ func TestApplyRegisterHost(t *testing.T) {
 }
 
 func TestUploadMeida(t *testing.T) {
-	filePath := "/Users/zhangwei/Documents/collection2222/8 Bits/8_Bit_Komo_Shooter.png"
+	filePath := "/Users/user0/Documents/collection2222/8 Bits/8_Bit_Komo_Shooter.png"
 	result, err := UploadMedia(filePath)
 	if err != nil {
 		t.Fatal(err)
@@ -467,15 +470,15 @@ func TestGetGetLayer2BasicInfo(t *testing.T) {
 /* batch create nft  */
 func TestUploadMediaInBatch(t *testing.T) {
 	paths := []string{
-		//"/Users/zhangwei/Documents/collection2222/Weather Map of Lizard-34",
-		"/Users/zhangwei/Documents/collection2222/Portrait",
-		"/Users/zhangwei/Documents/collection2222/Piece",
-		"/Users/zhangwei/Documents/collection2222/End of the World",
-		"/Users/zhangwei/Documents/collection2222/Comics",
-		"/Users/zhangwei/Documents/collection2222/CG",
-		"/Users/zhangwei/Documents/collection2222/Blocks",
-		"/Users/zhangwei/Documents/collection2222/Ball",
-		"/Users/zhangwei/Documents/collection2222/8 Bits",
+		//"/Users/user0/Documents/collection2222/Weather Map of Lizard-34",
+		"/Users/user0/Documents/collection2222/Portrait",
+		"/Users/user0/Documents/collection2222/Piece",
+		"/Users/user0/Documents/collection2222/End of the World",
+		"/Users/user0/Documents/collection2222/Comics",
+		"/Users/user0/Documents/collection2222/CG",
+		"/Users/user0/Documents/collection2222/Blocks",
+		"/Users/user0/Documents/collection2222/Ball",
+		"/Users/user0/Documents/collection2222/8 Bits",
 	}
 	for p := 0; p < len(paths); p++ {
 		path := paths[p]
@@ -524,8 +527,8 @@ func TestCreateCollectionInBatch(t *testing.T) {
 		"8 Bits":           {"collection/mlxhzfn1ee5nfvoc2dzt", "collection/uelcwluwxbap4vlggixf", "In the Zecrey world, the Lizardmen will develop Anamite Ore resources on this planet. Each race has deployed its most excellent fighters in face of the imminent battle."},
 	}
 	for CName, Infos := range collections {
-		accountName := "amber1"
-		seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
+		accountName := "alice"
+		seed := "asdfasdfasdf98fd05c70sdafasdfasdffdasdfsadfsdfsfdasdf30383efcb3954631"
 		ShortName := CName
 		CategoryId := "1"
 		LogoImage := Infos[0]
@@ -560,8 +563,8 @@ func TestMintNftInBatch(t *testing.T) {
 	}
 	for nftName, url := range nfts {
 		var CollectionId int64 = 7
-		accountName := "amber1"
-		seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f "
+		accountName := "alice"
+		seed := "asdfasdfasdf98fd05c70sdafasdfasdffdasdfsadfsdfsfdasdf30383efcb3954631 "
 		c, err := NewClient(accountName, seed)
 		if err != nil {
 			t.Fatal(err)
