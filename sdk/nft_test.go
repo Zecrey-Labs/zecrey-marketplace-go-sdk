@@ -184,9 +184,9 @@ func TestMintNft(t *testing.T) {
 	Description := fmt.Sprintf("%s `s nft", accountName)
 	Media := "collection/dz5hwqaszpwtflg0sfz4"
 	// get content hash
-	_Properties := []Propertie{}
-	_Levels := []Level{}
-	_Stats := []Stat{}
+	var _Properties []Propertie
+	var _Levels []Level
+	var _Stats []Stat
 
 	_PropertiesByte, err := json.Marshal(_Properties)
 	_LevelsByte, err := json.Marshal(_Levels)

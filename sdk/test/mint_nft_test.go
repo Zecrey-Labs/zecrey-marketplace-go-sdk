@@ -18,9 +18,9 @@ type MintNftTxInfo struct {
 	Name         string
 	Description  string
 	Media        string
-	Properties   string
-	Levels       string
-	Stats        string
+	Properties   []sdk.Propertie
+	Levels       []sdk.Level
+	Stats        []sdk.Stat
 }
 
 var mintNftTestCase = []struct {
@@ -29,137 +29,66 @@ var mintNftTestCase = []struct {
 }{
 	{
 		txinfo: &MintNftTxInfo{
-			//CreatorAccountIndex: 1,
-			//ToAccountIndex:      1,
-			//ToAccountNameHash:   "0x0000000000000000000000000000000000000000000000000000000000000000",
-			//NftIndex:            0,
-			//NftContentHash:      "0x000",
-			//NftCollectionId:     1,
-			//CreatorTreasuryRate: 1,
-			//GasAccountIndex:     1,
-			//GasFeeAssetId:       0,
-			//GasFeeAssetAmount:   big.NewInt(100),
-			//ExpiredAt:           time.Now().Add(24 * time.Hour).UnixMilli(),
-			//Nonce:               1,
+			CollectionId: "123456789",
+			NftUrl:       "-",
+			Name:         fmt.Sprintf("nftName2:%s", "accountName"),
+			Description:  fmt.Sprintf("%s `s nft", "accountName"),
+			Media:        "collection/dz5hwqaszpwtflg0sfz4",
+			Properties:   []sdk.Propertie{},
+			Levels:       []sdk.Level{},
+			Stats:        []sdk.Stat{},
 		},
 		expected: false,
 	},
 	{
 		txinfo: &MintNftTxInfo{
-			//CreatorAccountIndex: -1,
-			//ToAccountIndex:      -1,
-			//ToAccountNameHash:   "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-			//NftIndex:            0,
-			//NftContentHash:      "0x000",
-			//NftCollectionId:     math.MinInt64,
-			//CreatorTreasuryRate: math.MinInt64,
-			//GasAccountIndex:     1,
-			//GasFeeAssetId:       0,
-			//GasFeeAssetAmount:   big.NewInt(0).Add(big.NewInt(math.MaxInt64), big.NewInt(1)),
-			//ExpiredAt:           time.Now().Add(24 * time.Hour).UnixMilli(),
-			//Nonce:               1,
+			CollectionId: "1",
+			NftUrl:       "-",
+			Name:         fmt.Sprintf("nftName2:%s", "accountName"),
+			Description:  fmt.Sprintf("%s `s nft", "accountName"),
+			Media:        "xxxxxxxxxxxxxxxx",
+			Properties:   []sdk.Propertie{},
+			Levels:       []sdk.Level{},
+			Stats:        []sdk.Stat{},
 		},
 		expected: false,
 	},
 	{
 		txinfo: &MintNftTxInfo{
-			//CreatorAccountIndex: math.MaxInt64,
-			//ToAccountIndex:      math.MaxInt64,
-			//ToAccountNameHash:   "0x@@@@@@@!*#@^%!*@@^%#*~@*&^!@%#(",
-			//NftIndex:            -1,
-			//NftContentHash:      "0x000",
-			//NftCollectionId:     -1,
-			//CreatorTreasuryRate: -1,
-			//GasAccountIndex:     -1,
-			//GasFeeAssetId:       -1,
-			//GasFeeAssetAmount:   big.NewInt(-1),
-			//ExpiredAt:           time.Now().Add(24 * time.Hour).UnixMilli(),
-			//Nonce:               1,
+			CollectionId: "1",
+			NftUrl:       boundaryStr,
+			Name:         fmt.Sprintf("nftName2:%s", "accountName"),
+			Description:  fmt.Sprintf("%s `s nft", "accountName"),
+			Media:        "collection/dz5hwqaszpwtflg0sfz4",
+			Properties:   []sdk.Propertie{},
+			Levels:       []sdk.Level{},
+			Stats:        []sdk.Stat{},
 		},
 		expected: false,
 	},
 	{
 		txinfo: &MintNftTxInfo{
-			//CreatorAccountIndex: 100,
-			//ToAccountIndex:      0,
-			//ToAccountNameHash:   string([]byte{math.MaxUint8}),
-			//NftIndex:            math.MinInt64,
-			//NftContentHash:      "0x000",
-			//NftCollectionId:     -1,
-			//CreatorTreasuryRate: -1,
-			//GasAccountIndex:     0,
-			//GasFeeAssetId:       0,
-			//GasFeeAssetAmount:   big.NewInt(100),
-			//ExpiredAt:           time.Now().Add(24 * time.Hour).UnixMilli(),
-			//Nonce:               1,
+			CollectionId: "1",
+			NftUrl:       "-",
+			Name:         fmt.Sprintf("nftName2:%s", "accountName"),
+			Description:  boundaryStr2,
+			Media:        "collection/dz5hwqaszpwtflg0sfz4",
+			Properties:   []sdk.Propertie{},
+			Levels:       []sdk.Level{},
+			Stats:        []sdk.Stat{},
 		},
 		expected: false,
 	},
 	{
 		txinfo: &MintNftTxInfo{
-			//CreatorAccountIndex: -1,
-			//ToAccountIndex:      1,
-			//ToAccountNameHash:   "",
-			//NftIndex:            0,
-			//NftContentHash:      "0x000",
-			//NftCollectionId:     1,
-			//CreatorTreasuryRate: 1,
-			//GasAccountIndex:     1,
-			//GasFeeAssetId:       0,
-			//GasFeeAssetAmount:   big.NewInt(100),
-			//ExpiredAt:           time.Now().Add(24 * time.Hour).UnixMilli(),
-			//Nonce:               -1,
-		},
-		expected: false,
-	},
-	{
-		txinfo: &MintNftTxInfo{
-			//CreatorAccountIndex: 1,
-			//ToAccountIndex:      1,
-			//ToAccountNameHash:   string([]byte{math.MaxUint8, math.MaxUint8, math.MaxUint8}),
-			//NftIndex:            0,
-			//NftContentHash:      "EOF",
-			//NftCollectionId:     1,
-			//CreatorTreasuryRate: 1,
-			//GasAccountIndex:     1,
-			//GasFeeAssetId:       0,
-			//GasFeeAssetAmount:   big.NewInt(100),
-			//ExpiredAt:           time.Now().Add(24 * time.Hour).UnixMilli(),
-			//Nonce:               1,
-		},
-		expected: false,
-	},
-	{
-		txinfo: &MintNftTxInfo{
-			//CreatorAccountIndex: 1,
-			//ToAccountIndex:      1,
-			//ToAccountNameHash:   "qzzzz",
-			//NftIndex:            0,
-			//NftContentHash:      "0x000",
-			//NftCollectionId:     1,
-			//CreatorTreasuryRate: 1,
-			//GasAccountIndex:     1,
-			//GasFeeAssetId:       0,
-			//GasFeeAssetAmount:   big.NewInt(100),
-			//ExpiredAt:           time.Now().Add(24 * time.Hour).UnixMilli(),
-			//Nonce:               1,
-		},
-		expected: false,
-	},
-	{
-		txinfo: &MintNftTxInfo{
-			//CreatorAccountIndex: int64(math.NaN()),
-			//ToAccountIndex:      -1,
-			//ToAccountNameHash:   "<<<<<<<<<<<<<<<",
-			//NftIndex:            1,
-			//NftContentHash:      "0x000102",
-			//NftCollectionId:     -1,
-			//CreatorTreasuryRate: math.MaxInt64,
-			//GasAccountIndex:     1,
-			//GasFeeAssetId:       0,
-			//GasFeeAssetAmount:   big.NewInt(100),
-			//ExpiredAt:           time.Now().Add(24 * time.Hour).UnixMilli(),
-			//Nonce:               1,
+			CollectionId: "1",
+			NftUrl:       boundaryStr2,
+			Name:         fmt.Sprintf("nftName2:%s", "accountName"),
+			Description:  fmt.Sprintf("%s `s nft", "accountName"),
+			Media:        "collection/dz5hwqaszpwtflg0sfz4",
+			Properties:   []sdk.Propertie{},
+			Levels:       []sdk.Level{},
+			Stats:        []sdk.Stat{},
 		},
 		expected: false,
 	},
@@ -169,19 +98,6 @@ func TestMintNft(t *testing.T) {
 	tc := getTestingAccountClient(t)
 	oAccountClient := tc.oAccountClient
 	accountName, _, _ := oAccountClient.GetMyInfo()
-	//assert.Nil(t, err, "GetNextNonce should not return an error, err: %v", err)
-	//assert.Greater(t, nonce, int64(0), "nonce should be greater than 0")
-	//assert.Nil(t, err, "GetGasFeeByAssetIdAndAccountIndex should not return an error, err: %v", err)
-	//assert.Greater(t, gasFee, int64(0), "gasFee should be greater than 0")
-
-	//assert.Nil(t, err, "SignAndSendCreateCollectionTx should not return an error, err: %v", err)
-	//
-	//gasFee, err = oAccountClient.GetGasFee(0, sdk.TxTypeMintNft)
-	//assert.Nil(t, err, "GetGasFee failed")
-	//nonce, err = oAccountClient.GetNextNonce(oAccountInfo.AccountIndex)
-	//assert.Nil(t, err, "GetNextNonce failed")
-
-	//assert.Nil(t, err, "SignAndSendMintNftTx failed")
 	for _, test := range mintNftTestCase {
 		resultSdk, err := getPreMintNftTx(accountName, test.txinfo.CollectionId, test.txinfo.Name, "test.txinfo.ContentHash")
 		txInfo := &sdk.MintNftTxInfo{}
@@ -193,7 +109,10 @@ func TestMintNft(t *testing.T) {
 		//txInfo.CreatorTreasuryRate = -1
 		txInfo.CreatorTreasuryRate = 1000000000 //65535
 		data, err := json.Marshal(txInfo)
-		_, err = SignAndSendMintNftTx(test.txinfo.CollectionId, test.txinfo.NftUrl, test.txinfo.Name, test.txinfo.Description, test.txinfo.Media, test.txinfo.Properties, test.txinfo.Levels, test.txinfo.Stats, string(data))
+		_PropertiesByte, err := json.Marshal(test.txinfo.Properties)
+		_LevelsByte, err := json.Marshal(test.txinfo.Levels)
+		_StatsByte, err := json.Marshal(test.txinfo.Stats)
+		_, err = SignAndSendMintNftTx(test.txinfo.CollectionId, test.txinfo.NftUrl, test.txinfo.Name, test.txinfo.Description, test.txinfo.Media, string(_PropertiesByte), string(_LevelsByte), string(_StatsByte), string(data))
 		if test.expected {
 			assert.Nil(t, err, "SignAndSendMintNftTx failed")
 		} else {
@@ -210,9 +129,9 @@ func SignAndSendMintNftTx(CollectionId, NftUrl, Name, Description, Media, _Prope
 			"name":          {Name},
 			"description":   {Description},
 			"media":         {Media},
-			"properties":    {string(_PropertiesByte)},
-			"levels":        {string(_LevelsByte)},
-			"stats":         {string(_StatsByte)},
+			"properties":    {_PropertiesByte},
+			"levels":        {_LevelsByte},
+			"stats":         {_StatsByte},
 			"transaction":   {tx},
 		},
 	)

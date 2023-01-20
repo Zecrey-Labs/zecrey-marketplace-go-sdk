@@ -35,8 +35,6 @@ var (
 	BannerImage        = "collection/haxiuyotbowltzv5ubok"
 	Description        = "Description information"
 	CreatorEarningRate = "200"
-)
-var (
 	//len([]byte(boundaryStr))  = 164
 	boundaryStr = "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg" +
 		"https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"

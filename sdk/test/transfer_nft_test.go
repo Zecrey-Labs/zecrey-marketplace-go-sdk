@@ -15,7 +15,8 @@ import (
 )
 
 type TransferNftTxInfo struct {
-	AccountName, ToAccountName, AssetId string
+	ToAccountName,
+	AssetId string
 }
 
 var transferNftTestCase = []struct {
@@ -24,91 +25,8 @@ var transferNftTestCase = []struct {
 }{
 	{
 		txinfo: &TransferNftTxInfo{
-			//FromAccountIndex:  0,
-			//ToAccountIndex:    0,
-			//ToAccountNameHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
-			//NftIndex:          0,
-			//GasAccountIndex:   0,
-			//GasFeeAssetId:     0,
-			//GasFeeAssetAmount: big.NewInt(0),
-			//CallData:          ";DROP TABLE account;",
-			//ExpiredAt:         time.Now().Add(24 * time.Hour).UnixMilli(),
-			//Nonce:             0,
-		},
-		expected: false,
-	},
-	{
-		txinfo: &TransferNftTxInfo{
-			//FromAccountIndex:  -1,
-			//ToAccountIndex:    -1,
-			//ToAccountNameHash: ";DROP TABLE account;",
-			//NftIndex:          -1,
-			//GasAccountIndex:   -1,
-			//GasFeeAssetId:     -1,
-			//GasFeeAssetAmount: big.NewInt(-1),
-			//CallData:          ";DROP TABLE account;",
-			//ExpiredAt:         time.Now().Add(24 * time.Hour).UnixMilli(),
-			//Nonce:             0,
-		},
-		expected: false,
-	},
-	{
-		txinfo: &TransferNftTxInfo{
-			//FromAccountIndex:  math.MaxInt64,
-			//ToAccountIndex:    math.MaxInt64,
-			//ToAccountNameHash: string([]byte{math.MaxUint8}),
-			//NftIndex:          math.MaxInt64,
-			//GasAccountIndex:   math.MaxInt64,
-			//GasFeeAssetId:     math.MaxInt64,
-			//GasFeeAssetAmount: big.NewInt(0).Mul(big.NewInt(math.MaxInt64), big.NewInt(math.MaxInt64)),
-			//CallData:          ";DROP TABLE account;",
-			//ExpiredAt:         time.Now().Add(24 * time.Hour).UnixMilli(),
-			//Nonce:             0,
-		},
-		expected: false,
-	},
-	{
-		txinfo: &TransferNftTxInfo{
-			//FromAccountIndex:  math.MinInt64,
-			//ToAccountIndex:    math.MinInt64,
-			//ToAccountNameHash: uuid.New().String(),
-			//NftIndex:          math.MinInt64,
-			//GasAccountIndex:   math.MinInt64,
-			//GasFeeAssetId:     math.MinInt64,
-			//GasFeeAssetAmount: big.NewInt(0),
-			//CallData:          ";DROP TABLE account;",
-			//ExpiredAt:         time.Now().Add(24 * time.Hour).UnixMilli(),
-			//Nonce:             0,
-		},
-		expected: false,
-	},
-	{
-		txinfo: &TransferNftTxInfo{
-			//FromAccountIndex:  143363,
-			//ToAccountIndex:    58701,
-			//ToAccountNameHash: "18e0b84767aa85d642f191710f662b4e8e4a3586502a97345c24bcc92f530a9a",
-			//NftIndex:          -1,
-			//GasAccountIndex:   -1,
-			//GasFeeAssetId:     -1,
-			//GasFeeAssetAmount: big.NewInt(-1),
-			//CallData:          ";DROP TABLE account;",
-			//ExpiredAt:         time.Now().Add(24 * time.Hour).UnixMilli(),
-			//Nonce:             0,
-		},
-		expected: false,
-	},
-	{
-		txinfo: &TransferNftTxInfo{
-			//FromAccountIndex:  56706,
-			//ToAccountIndex:    14332,
-			//ToAccountNameHash: "<<<<<<<" + string([]byte{math.MaxUint8}),
-			//NftIndex:          -1,
-			//GasAccountIndex:   -1,
-			//GasFeeAssetId:     -1,
-			//GasFeeAssetAmount: big.NewInt(-1),
-			//CallData:          ";DROP TABLE account;",
-			//ExpiredAt:         time.Now().Add(24 * time.Hour).UnixMilli(),
-			//Nonce:             0,
+			ToAccountName: "123",
+			AssetId:       "123",
 		},
 		expected: false,
 	},
@@ -118,43 +36,9 @@ func TestTransferNft(t *testing.T) {
 	// transfer nft
 	tc := getTestingAccountClient(t)
 	oAccountClient := tc.oAccountClient
-
-	//nonce, err := oAccountClient.GetNextNonce(oAccountInfo.AccountIndex)
-	//assert.Nil(t, err, "GetNextNonce should not return an error, err: %v", err)
-	//assert.Greater(t, nonce, int64(0), "nonce should be greater than 0")
-	//gasFee, err := oAccountClient.GetGasFee(0, sdk.TxTypeCreateCollection)
-	//assert.Nil(t, err, "GetGasFeeByAssetIdAndAccountIndex should not return an error, err: %v", err)
-	//assert.Greater(t, gasFee, int64(0), "gasFee should be greater than 0")
-
-	//nfts, err = oAccountClient.GetAccountNftList(uint32(nAccountInfo.AccountIndex), 0, 100)
-	//assert.Nil(t, err, "GetAccountNftList failed")
-	//found := false
-	//for _, nft := range nfts.Nfts {
-	//	if nft.NftIndex == transferNft.NftIndex {
-	//		found = true
-	//		break
-	//	}
-	//}
-	//if !found && nfts.Total > 100 {
-	//	nfts, err = oAccountClient.GetAccountNftList(uint32(nAccountInfo.AccountIndex), 100, uint32(nfts.Total))
-	//	assert.Nil(t, err, "GetAccountNftList failed")
-	//	for _, nft := range nfts.Nfts {
-	//		if nft.NftIndex == transferNft.NftIndex {
-	//			found = true
-	//			break
-	//		}
-	//	}
-	//}
-	//assert.Equal(t, true, found, "nft should be found")
-
+	accountName, _, _ := oAccountClient.GetMyInfo()
 	for _, test := range transferNftTestCase {
-		//nonce, err = oAccountClient.GetNextNonce(oAccountInfo.AccountIndex)
-		//assert.Nil(t, err, "GetNextNonce should not return an error, err: %v", err)
-		//assert.Greater(t, nonce, int64(0), "nonce should be greater than 0")
-		//gasFee, err = oAccountClient.GetGasFee(0, sdk.TxTypeTransferNft)
-		//assert.Nil(t, err, "GetGasFeeByAssetIdAndAccountIndex should not return an error, err: %v", err)
-		//assert.Greater(t, gasFee, int64(0), "gasFee should be greater than 0")
-		resultSdk, err := getPreTransferNftTx(test.txinfo.AccountName, test.txinfo.ToAccountName, test.txinfo.AssetId)
+		resultSdk, err := getPreTransferNftTx(accountName, test.txinfo.ToAccountName, test.txinfo.AssetId)
 		_, err = SignAndSendTransferNftTx(oAccountClient.GetKeyManager(), test.txinfo.AssetId, resultSdk.Transtion)
 		if test.expected {
 			assert.Nil(t, err, "SignAndSendTransferNftTx should not return an error")
