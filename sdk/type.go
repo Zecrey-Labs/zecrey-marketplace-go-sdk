@@ -177,16 +177,20 @@ type RespMediaUpload struct {
 	Url      string `json:"url,omitempty"`
 }
 
-type ResqGetCollectionOwnerNum struct {
+type RespGetCollectionOwnerNum struct {
 	OwnerNum int64 `json:"owner_num"`
 }
 
-type ResqSendTransferNft struct {
+type RespSendTransferNft struct {
 	Success bool `json:"success"`
 }
 
-type ResqSendWithdrawNft struct {
+type RespSendWithdrawNft struct {
 	Success bool `json:"success"`
+}
+
+type RespSendWithdrawTx struct {
+	TxId string `json:"tx_id"`
 }
 
 type RespGetNextOfferId struct {

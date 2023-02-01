@@ -48,7 +48,7 @@ func TestTransferNft(t *testing.T) {
 	}
 }
 
-func SignAndSendTransferNftTx(keyManager sdk.KeyManager, txInfoSdk, AssetId string) (*sdk.ResqSendTransferNft, error) {
+func SignAndSendTransferNftTx(keyManager sdk.KeyManager, txInfoSdk, AssetId string) (*sdk.RespSendTransferNft, error) {
 	txInfo, err := sdkTransferNftTxInfo(keyManager, txInfoSdk)
 
 	resp, err := http.PostForm(nftMarketUrl+"/api/v1/asset/sendTransferNft",
@@ -68,7 +68,7 @@ func SignAndSendTransferNftTx(keyManager sdk.KeyManager, txInfoSdk, AssetId stri
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	result := &sdk.ResqSendTransferNft{}
+	result := &sdk.RespSendTransferNft{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}

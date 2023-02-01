@@ -266,6 +266,23 @@ func TestWithdrawNft(t *testing.T) {
 	fmt.Println("WithdrawNft:", string(data))
 }
 
+func TestWithdraw(t *testing.T) {
+	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
+	accountName := "bob"
+	tol1Address := "0x< a l1 address you want to withdraw>"
+	assetAmount := int64(100000)
+	c, err := NewClient(accountName, seed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := c.Withdraw(tol1Address, assetAmount)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := json.Marshal(result)
+	fmt.Println("Withdraw:", string(data))
+}
+
 func TestSellOffer(t *testing.T) {
 	var AssetId int64 = 3
 	seed := "asdfasdfasdf98fd05c70sdafasdfasdffdasdfsadfsdfsfdasdf30383efcb3954631"
@@ -389,10 +406,10 @@ func TestDepositNft(t *testing.T) {
 	}
 	fmt.Println(depositNftTransaction)
 }
-func TestDepositBNB(t *testing.T) {
+func TestDeposit(t *testing.T) {
 	accountName := "alice"
 	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
-	depositBnbTransaction, err := DepositBNB(accountName, privateKey)
+	depositBnbTransaction, err := Deposit(accountName, privateKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -417,19 +434,6 @@ func TestFullExitNft(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(fullExitNftTransaction)
-}
-func TestWithdraw(t *testing.T) {
-	accountName := "alice"
-	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
-	_owner := common.HexToAddress("0x805e286D05388911cCdB10E3c7b9713415607c72")
-	_token := common.HexToAddress("0x805e286D05388911cCdB10E3c7b9713415607c72")
-	_amount := big.NewInt(10000)
-
-	withdrawTransaction, err := Withdraw(accountName, privateKey, _owner, _token, _amount)
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println(withdrawTransaction)
 }
 
 func TestGetAccountIsRegistered(t *testing.T) {

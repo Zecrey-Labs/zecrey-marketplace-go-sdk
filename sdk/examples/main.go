@@ -158,17 +158,17 @@ func main() {
 	log.Info("retGetNftByNftId", retGetNftByNftId.Asset.AccountName)
 
 	////6.Transfer your nft
-	//ResqSendTransferNft, err := _sdkA.TransferNft(assetId, "B_Account")
+	//RespSendTransferNft, err := _sdkA.TransferNft(assetId, "B_Account")
 	//if err != nil {
 	//	panic(err)
 	//}
-	//log.Info("retGetNftByNftId", ResqSendTransferNft.Success)
+	//log.Info("retGetNftByNftId", RespSendTransferNft.Success)
 	//
 	////7.Withdraw your nft
-	//ResqSendWithdrawNft, err := _sdkA.WithdrawNft(assetId)
+	//RespSendWithdrawNft, err := _sdkA.WithdrawNft(assetId)
 	//if err != nil {
 	//	panic(err)
 	//}
-	//log.Info("ResqSendWithdrawNft", ResqSendWithdrawNft.Success)
+	//log.Info("RespSendWithdrawNft", RespSendWithdrawNft.Success)
 
 }

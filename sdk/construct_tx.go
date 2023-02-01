@@ -65,7 +65,25 @@ func constructWithdrawNftTx(key KeyManager, tx *WithdrawNftTxInfo) (string, erro
 	}
 	return string(txInfoBytes), nil
 }
-
+func constructWithdrawTx(key KeyManager, tx *WithdrawTxInfo) (string, error) {
+	convertedTx := convertWithdrawTxInfo(tx)
+	hFunc := mimc.NewMiMC()
+	msgHash, err := legendTxTypes.ComputeWithdrawMsgHash(convertedTx, hFunc)
+	if err != nil {
+		return "", err
+	}
+	hFunc.Reset()
+	signature, err := key.Sign(msgHash, hFunc)
+	if err != nil {
+		return "", err
+	}
+	convertedTx.Sig = signature
+	txInfoBytes, err := json.Marshal(convertedTx)
+	if err != nil {
+		return "", err
+	}
+	return string(txInfoBytes), nil
+}
 func constructOfferTx(key KeyManager, tx *OfferTxInfo) (string, error) {
 	convertedTx := convertOfferTxInfo(tx)
 	hFunc := mimc.NewMiMC()
@@ -161,6 +179,21 @@ func convertWithdrawNftTxInfo(tx *WithdrawNftTxInfo) *legendTxTypes.WithdrawNftT
 		ExpiredAt:              tx.ExpiredAt,
 		Nonce:                  tx.Nonce,
 		Sig:                    tx.Sig,
+	}
+}
+
+func convertWithdrawTxInfo(tx *WithdrawTxInfo) *legendTxTypes.WithdrawTxInfo {
+	return &legendTxTypes.WithdrawTxInfo{
+		FromAccountIndex:  tx.FromAccountIndex,
+		AssetId:           tx.AssetId,
+		AssetAmount:       tx.AssetAmount,
+		ToAddress:         tx.ToAddress,
+		GasAccountIndex:   tx.GasAccountIndex,
+		GasFeeAssetId:     tx.GasFeeAssetId,
+		GasFeeAssetAmount: tx.GasFeeAssetAmount,
+		ExpiredAt:         tx.ExpiredAt,
+		Nonce:             tx.Nonce,
+		Sig:               tx.Sig,
 	}
 }
 

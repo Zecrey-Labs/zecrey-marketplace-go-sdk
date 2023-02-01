@@ -44,6 +44,7 @@ const (
 	NameSuffix         = ".zec"
 	MinGasFee          = 100000000000000 // 0.0001BNB
 
+	BNBAssetId = 0
 )
 
 type Client struct {
@@ -242,7 +243,7 @@ func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, Descrip
 
 func (c *Client) TransferNft(
 	AssetId int64,
-	toAccountName string) (*ResqSendTransferNft, error) {
+	toAccountName string) (*RespSendTransferNft, error) {
 	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkTransferNftTxInfo?account_name=%s&to_account_name=%s%s&nft_id=%d", c.accountName, toAccountName, NameSuffix, AssetId))
 	if err != nil {
 		return nil, err
@@ -278,14 +279,14 @@ func (c *Client) TransferNft(
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	result := &ResqSendTransferNft{}
+	result := &RespSendTransferNft{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
 	return result, nil
 }
 
-func (c *Client) WithdrawNft(AssetId int64, tol1Address string) (*ResqSendWithdrawNft, error) {
+func (c *Client) WithdrawNft(AssetId int64, tol1Address string) (*RespSendWithdrawNft, error) {
 	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkWithdrawNftTxInfo?account_name=%s&nft_id=%d", c.accountName, AssetId))
 	if err != nil {
 		return nil, err
@@ -320,7 +321,48 @@ func (c *Client) WithdrawNft(AssetId int64, tol1Address string) (*ResqSendWithdr
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(string(body))
 	}
-	result := &ResqSendWithdrawNft{}
+	result := &RespSendWithdrawNft{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *Client) Withdraw(tol1Address string, assetAmount int64) (*RespSendWithdrawTx, error) {
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkWithdrawTxInfo?account_name=%s", c.accountName))
+	if err != nil {
+		return nil, err
+	}
+	body, err := ioutil.ReadAll(respSdkTx.Body)
+	if err != nil {
+		return nil, err
+	}
+	if respSdkTx.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	resultSdk := &RespetSdktxInfo{}
+	if err := json.Unmarshal(body, &resultSdk); err != nil {
+		return nil, err
+	}
+
+	txInfo, err := sdkWithdrawTxInfo(c.keyManager, resultSdk.Transtion, tol1Address, assetAmount)
+	resp, err := http.PostForm(c.legendUrl+"/api/v1/tx/sendWithdrawTx",
+		url.Values{
+			"tx_info": {txInfo},
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespSendWithdrawTx{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
@@ -587,6 +629,22 @@ func sdkWithdrawNftTxInfo(key KeyManager, txInfoSdk string, tol1Address string) 
 	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	txInfo.ToAddress = tol1Address
 	tx, err := constructWithdrawNftTx(key, txInfo)
+	if err != nil {
+		return "", err
+	}
+	return tx, err
+}
+func sdkWithdrawTxInfo(key KeyManager, txInfoSdk string, tol1Address string, assetAmount int64) (string, error) {
+	txInfo := &WithdrawTxInfo{}
+	err := json.Unmarshal([]byte(txInfoSdk), txInfo)
+	if err != nil {
+		return "", err
+	}
+	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
+	txInfo.AssetId = BNBAssetId
+	txInfo.AssetAmount = big.NewInt(assetAmount)
+	txInfo.ToAddress = tol1Address
+	tx, err := constructWithdrawTx(key, txInfo)
 	if err != nil {
 		return "", err
 	}
