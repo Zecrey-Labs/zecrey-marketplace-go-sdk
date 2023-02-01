@@ -23,15 +23,15 @@ import (
 const (
 	//nftMarketUrl = "http://localhost:9999"
 
-	//nftMarketUrl   = "https://test-legend-nft.zecrey.com"
-	//legendUrl      = "https://test-legend-app.zecrey.com"
-	//hasuraUrl      = "https://legend-marketplace.hasura.app/v1/graphql"
-	//hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
+	nftMarketUrl   = "https://test-legend-nft.zecrey.com"
+	legendUrl      = "https://test-legend-app.zecrey.com"
+	hasuraUrl      = "https://legend-marketplace.hasura.app/v1/graphql"
+	hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
 
-	nftMarketUrl   = "https://dev-legend-nft.zecrey.com"
-	legendUrl      = "https://dev-legend-app.zecrey.com"
-	hasuraUrl      = "https://legend-market-dev.hasura.app/v1/graphql"
-	hasuraAdminKey = "kqWAsFWVvn61mFuiuQ5yqJkWpu5VS1B5FGTdFzlVlQJ9fMTr9yNIjOnN3hERC9ex" //dev
+	//nftMarketUrl   = "https://dev-legend-nft.zecrey.com"
+	//legendUrl      = "https://dev-legend-app.zecrey.com"
+	//hasuraUrl      = "https://legend-market-dev.hasura.app/v1/graphql"
+	//hasuraAdminKey = "kqWAsFWVvn61mFuiuQ5yqJkWpu5VS1B5FGTdFzlVlQJ9fMTr9yNIjOnN3hERC9ex" //dev
 
 	//nftMarketUrl   = "https://qa-legend-nft.zecrey.com"
 	//legendUrl      = "https://qa-legend-app.zecrey.com"

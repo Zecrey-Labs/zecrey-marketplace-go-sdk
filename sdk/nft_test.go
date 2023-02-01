@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
+	"github.com/ethereum/go-ethereum/common"
 	vegeta "github.com/tsenart/vegeta/v12/lib"
 	"io/ioutil"
 	"math/big"
@@ -374,6 +375,61 @@ func TestRegisterAccountWithPrivateKey(t *testing.T) {
 	}
 	accountName, l2pk, seed := client.GetMyInfo()
 	fmt.Println(fmt.Sprintf("registerAccountRet:\naccountName=%s\nl2pk=%s\nseed=%s", accountName, l2pk, seed))
+}
+
+func TestDepositNft(t *testing.T) {
+	accountName := "alice"
+	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
+	_nftL1Address := common.HexToAddress("0x805e286D05388911cCdB10E3c7b9713415607c72")
+	_nftL1TokenId := big.NewInt(511)
+
+	depositNftTransaction, err := DepositNft(accountName, privateKey, _nftL1Address, _nftL1TokenId)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(depositNftTransaction)
+}
+func TestDepositBNB(t *testing.T) {
+	accountName := "alice"
+	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
+	depositBnbTransaction, err := DepositBNB(accountName, privateKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(depositBnbTransaction)
+}
+func TestFullExit(t *testing.T) {
+	accountName := "alice"
+	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
+	_asset := common.HexToAddress("0x805e286D05388911cCdB10E3c7b9713415607c72")
+	fullExitTransaction, err := FullExit(accountName, privateKey, _asset)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(fullExitTransaction)
+}
+func TestFullExitNft(t *testing.T) {
+	accountName := "alice"
+	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
+	_nftIndex := uint32(511)
+	fullExitNftTransaction, err := FullExitNft(accountName, privateKey, _nftIndex)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(fullExitNftTransaction)
+}
+func TestWithdraw(t *testing.T) {
+	accountName := "alice"
+	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
+	_owner := common.HexToAddress("0x805e286D05388911cCdB10E3c7b9713415607c72")
+	_token := common.HexToAddress("0x805e286D05388911cCdB10E3c7b9713415607c72")
+	_amount := big.NewInt(10000)
+
+	withdrawTransaction, err := Withdraw(accountName, privateKey, _owner, _token, _amount)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(withdrawTransaction)
 }
 
 func TestGetAccountIsRegistered(t *testing.T) {

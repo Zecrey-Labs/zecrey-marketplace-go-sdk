@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
 	"io"
 	"io/ioutil"
 	"math/big"
@@ -583,6 +584,323 @@ func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (*Cli
 		return nil, err
 	}
 	return NewClient(accountName, seed)
+}
+
+func DepositNft(accountName, privateKey string, _nftL1Address common.Address, _nftL1TokenId *big.Int) (*types.Transaction, error) {
+	_, seed, err := GetSeedAndL2Pk(privateKey)
+	if err != nil {
+		return nil, err
+	}
+	c, err := newZecreyMarketplaceClientWithSeed(accountName, seed)
+	if err != nil {
+		return nil, err
+	}
+	if ok, err := IfAccountRegistered(accountName); ok {
+		if err != nil {
+			return nil, err
+		}
+		c, err = NewClient(accountName, seed)
+		if err != nil {
+			return nil, err
+		}
+	}
+	var chainId *big.Int
+	chainId, err = c.providerClient.ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	authCli, err := _rpc.NewAuthClient(c.providerClient, privateKey, chainId)
+	if err != nil {
+		return nil, err
+	}
+	//get base contract address
+	resp, err := GetLayer2BasicInfo()
+	if err != nil {
+		return nil, err
+	}
+	ZecreyLegendContract := resp.ContractAddresses[0]
+	ZnsPriceOracle := resp.ContractAddresses[1]
+
+	gasPrice, err := c.providerClient.SuggestGasPrice(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
+	if err != nil {
+		return nil, err
+	}
+
+	priceOracleInstance, err := zecreyLegendRpc.LoadStablePriceOracleInstance(c.providerClient, ZnsPriceOracle)
+	if err != nil {
+		return nil, err
+	}
+
+	amount, err := zecreyLegendRpc.Price(priceOracleInstance, accountName)
+	if err != nil {
+		return nil, err
+	}
+	transactOpts, err := zecreyLegendRpc.ConstructTransactOptsWithValue(c.providerClient, authCli, gasPrice, DefaultGasLimit, amount.Int64())
+	if err != nil {
+		return nil, err
+	}
+	depositNftTransaction, err := zecreyInstance.DepositNft(transactOpts, accountName, _nftL1Address, _nftL1TokenId)
+	if err != nil {
+		return nil, err
+	}
+	return depositNftTransaction, nil
+}
+func DepositBNB(accountName, privateKey string) (*types.Transaction, error) {
+	_, seed, err := GetSeedAndL2Pk(privateKey)
+	if err != nil {
+		return nil, err
+	}
+	c, err := newZecreyMarketplaceClientWithSeed(accountName, seed)
+	if err != nil {
+		return nil, err
+	}
+	if ok, err := IfAccountRegistered(accountName); ok {
+		if err != nil {
+			return nil, err
+		}
+		c, err = NewClient(accountName, seed)
+		if err != nil {
+			return nil, err
+		}
+	}
+	var chainId *big.Int
+	chainId, err = c.providerClient.ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	authCli, err := _rpc.NewAuthClient(c.providerClient, privateKey, chainId)
+	if err != nil {
+		return nil, err
+	}
+	//get base contract address
+	resp, err := GetLayer2BasicInfo()
+	if err != nil {
+		return nil, err
+	}
+	ZecreyLegendContract := resp.ContractAddresses[0]
+	ZnsPriceOracle := resp.ContractAddresses[1]
+
+	gasPrice, err := c.providerClient.SuggestGasPrice(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
+	if err != nil {
+		return nil, err
+	}
+
+	priceOracleInstance, err := zecreyLegendRpc.LoadStablePriceOracleInstance(c.providerClient, ZnsPriceOracle)
+	if err != nil {
+		return nil, err
+	}
+
+	amount, err := zecreyLegendRpc.Price(priceOracleInstance, accountName)
+	if err != nil {
+		return nil, err
+	}
+	transactOpts, err := zecreyLegendRpc.ConstructTransactOptsWithValue(c.providerClient, authCli, gasPrice, DefaultGasLimit, amount.Int64())
+	if err != nil {
+		return nil, err
+	}
+	depositTransaction, err := zecreyInstance.DepositBNB(transactOpts, accountName)
+	if err != nil {
+		return nil, err
+	}
+	return depositTransaction, nil
+}
+func FullExit(accountName, privateKey string, _asset common.Address) (*types.Transaction, error) {
+	_, seed, err := GetSeedAndL2Pk(privateKey)
+	if err != nil {
+		return nil, err
+	}
+	c, err := newZecreyMarketplaceClientWithSeed(accountName, seed)
+	if err != nil {
+		return nil, err
+	}
+	if ok, err := IfAccountRegistered(accountName); ok {
+		if err != nil {
+			return nil, err
+		}
+		c, err = NewClient(accountName, seed)
+		if err != nil {
+			return nil, err
+		}
+	}
+	var chainId *big.Int
+	chainId, err = c.providerClient.ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	authCli, err := _rpc.NewAuthClient(c.providerClient, privateKey, chainId)
+	if err != nil {
+		return nil, err
+	}
+	//get base contract address
+	resp, err := GetLayer2BasicInfo()
+	if err != nil {
+		return nil, err
+	}
+	ZecreyLegendContract := resp.ContractAddresses[0]
+	ZnsPriceOracle := resp.ContractAddresses[1]
+
+	gasPrice, err := c.providerClient.SuggestGasPrice(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
+	if err != nil {
+		return nil, err
+	}
+
+	priceOracleInstance, err := zecreyLegendRpc.LoadStablePriceOracleInstance(c.providerClient, ZnsPriceOracle)
+	if err != nil {
+		return nil, err
+	}
+
+	amount, err := zecreyLegendRpc.Price(priceOracleInstance, accountName)
+	if err != nil {
+		return nil, err
+	}
+	transactOpts, err := zecreyLegendRpc.ConstructTransactOptsWithValue(c.providerClient, authCli, gasPrice, DefaultGasLimit, amount.Int64())
+	if err != nil {
+		return nil, err
+	}
+	fullExitTransaction, err := zecreyInstance.RequestFullExit(transactOpts, accountName, _asset)
+	if err != nil {
+		return nil, err
+	}
+	return fullExitTransaction, nil
+}
+func FullExitNft(accountName, privateKey string, _nftIndex uint32) (*types.Transaction, error) {
+	_, seed, err := GetSeedAndL2Pk(privateKey)
+	if err != nil {
+		return nil, err
+	}
+	c, err := newZecreyMarketplaceClientWithSeed(accountName, seed)
+	if err != nil {
+		return nil, err
+	}
+	if ok, err := IfAccountRegistered(accountName); ok {
+		if err != nil {
+			return nil, err
+		}
+		c, err = NewClient(accountName, seed)
+		if err != nil {
+			return nil, err
+		}
+	}
+	var chainId *big.Int
+	chainId, err = c.providerClient.ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	authCli, err := _rpc.NewAuthClient(c.providerClient, privateKey, chainId)
+	if err != nil {
+		return nil, err
+	}
+	//get base contract address
+	resp, err := GetLayer2BasicInfo()
+	if err != nil {
+		return nil, err
+	}
+	ZecreyLegendContract := resp.ContractAddresses[0]
+	ZnsPriceOracle := resp.ContractAddresses[1]
+
+	gasPrice, err := c.providerClient.SuggestGasPrice(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
+	if err != nil {
+		return nil, err
+	}
+
+	priceOracleInstance, err := zecreyLegendRpc.LoadStablePriceOracleInstance(c.providerClient, ZnsPriceOracle)
+	if err != nil {
+		return nil, err
+	}
+
+	amount, err := zecreyLegendRpc.Price(priceOracleInstance, accountName)
+	if err != nil {
+		return nil, err
+	}
+	transactOpts, err := zecreyLegendRpc.ConstructTransactOptsWithValue(c.providerClient, authCli, gasPrice, DefaultGasLimit, amount.Int64())
+	if err != nil {
+		return nil, err
+	}
+
+	fullExitNftTransaction, err := zecreyInstance.RequestFullExitNft(transactOpts, accountName, _nftIndex)
+	if err != nil {
+		return nil, err
+	}
+	return fullExitNftTransaction, nil
+}
+func Withdraw(accountName, privateKey string, _owner common.Address, _token common.Address, _amount *big.Int) (*types.Transaction, error) {
+	_, seed, err := GetSeedAndL2Pk(privateKey)
+	if err != nil {
+		return nil, err
+	}
+	c, err := newZecreyMarketplaceClientWithSeed(accountName, seed)
+	if err != nil {
+		return nil, err
+	}
+	if ok, err := IfAccountRegistered(accountName); ok {
+		if err != nil {
+			return nil, err
+		}
+		c, err = NewClient(accountName, seed)
+		if err != nil {
+			return nil, err
+		}
+	}
+	var chainId *big.Int
+	chainId, err = c.providerClient.ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	authCli, err := _rpc.NewAuthClient(c.providerClient, privateKey, chainId)
+	if err != nil {
+		return nil, err
+	}
+	//get base contract address
+	resp, err := GetLayer2BasicInfo()
+	if err != nil {
+		return nil, err
+	}
+	ZecreyLegendContract := resp.ContractAddresses[0]
+	ZnsPriceOracle := resp.ContractAddresses[1]
+
+	gasPrice, err := c.providerClient.SuggestGasPrice(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	zecreyInstance, err := zecreyLegendRpc.LoadZecreyLegendInstance(c.providerClient, ZecreyLegendContract)
+	if err != nil {
+		return nil, err
+	}
+
+	priceOracleInstance, err := zecreyLegendRpc.LoadStablePriceOracleInstance(c.providerClient, ZnsPriceOracle)
+	if err != nil {
+		return nil, err
+	}
+
+	amount, err := zecreyLegendRpc.Price(priceOracleInstance, accountName)
+	if err != nil {
+		return nil, err
+	}
+	transactOpts, err := zecreyLegendRpc.ConstructTransactOptsWithValue(c.providerClient, authCli, gasPrice, DefaultGasLimit, amount.Int64())
+	if err != nil {
+		return nil, err
+	}
+	withdrawTransaction, err := zecreyInstance.WithdrawPendingBalance(transactOpts, _owner, _token, _amount)
+	if err != nil {
+		return nil, err
+	}
+	return withdrawTransaction, nil
 }
 
 func ApplyRegisterHost(
