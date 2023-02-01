@@ -48,6 +48,8 @@ const (
 	MinGasFee          = 100000000000000 // 0.0001BNB
 
 	BNBAssetId = 0
+	LEGAssetId = 1
+	REYAssetId = 2
 )
 
 type Client struct {
@@ -331,7 +333,7 @@ func (c *Client) WithdrawNft(AssetId int64, tol1Address string) (*RespSendWithdr
 	return result, nil
 }
 
-func (c *Client) Withdraw(tol1Address string, assetAmount int64) (*RespSendWithdrawTx, error) {
+func (c *Client) Withdraw(tol1Address string, assetId, assetAmount int64) (*RespSendWithdrawTx, error) {
 	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkWithdrawTxInfo?account_name=%s", c.accountName))
 	if err != nil {
 		return nil, err
@@ -348,7 +350,7 @@ func (c *Client) Withdraw(tol1Address string, assetAmount int64) (*RespSendWithd
 		return nil, err
 	}
 
-	txInfo, err := sdkWithdrawTxInfo(c.keyManager, resultSdk.Transtion, tol1Address, assetAmount)
+	txInfo, err := sdkWithdrawTxInfo(c.keyManager, resultSdk.Transtion, tol1Address, assetAmount, assetId)
 	resp, err := http.PostForm(c.legendUrl+"/api/v1/tx/sendWithdrawTx",
 		url.Values{
 			"tx_info": {txInfo},
@@ -488,8 +490,8 @@ func (c *Client) Offer(accountName string, tx string) (*RespListOffer, error) {
 	return result, nil
 }
 
-func (c *Client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (*RespAcceptOffer, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAtomicMatchWithTx?account_name=%s&offer_id=%d&money_id=%d&money_amount=%s&is_sell=%v", c.accountName, offerId, 0, AssetAmount.String(), isSell))
+func (c *Client) AcceptOffer(offerId int64, isSell bool, assetAmount *big.Int) (*RespAcceptOffer, error) {
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAtomicMatchWithTx?account_name=%s&offer_id=%d&money_id=%d&money_amount=%s&is_sell=%v", c.accountName, offerId, 0, assetAmount.String(), isSell))
 	if err != nil {
 		return nil, err
 	}
@@ -505,7 +507,7 @@ func (c *Client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (
 		return nil, err
 	}
 
-	txInfo, err := sdkAtomicMatchWithTx(c.keyManager, resultSdk.Transtion, isSell, AssetAmount)
+	txInfo, err := sdkAtomicMatchWithTx(c.keyManager, resultSdk.Transtion, isSell, assetAmount)
 	if err != nil {
 		return nil, err
 	}
@@ -534,7 +536,7 @@ func (c *Client) AcceptOffer(offerId int64, isSell bool, AssetAmount *big.Int) (
 	return result, nil
 }
 
-func (c *Client) Deposit(accountName, privateKey string) (*types.Transaction, error) {
+func (c *Client) Deposit(accountName, privateKey string, assetId, assetAmount int64, BEP20token common.Address) (*types.Transaction, error) {
 	var chainId *big.Int
 	chainId, err := c.providerClient.ChainID(context.Background())
 	if err != nil {
@@ -550,7 +552,6 @@ func (c *Client) Deposit(accountName, privateKey string) (*types.Transaction, er
 		return nil, err
 	}
 	ZecreyLegendContract := resp.ContractAddresses[0]
-	ZnsPriceOracle := resp.ContractAddresses[1]
 
 	gasPrice, err := c.providerClient.SuggestGasPrice(context.Background())
 	if err != nil {
@@ -561,23 +562,24 @@ func (c *Client) Deposit(accountName, privateKey string) (*types.Transaction, er
 		return nil, err
 	}
 
-	priceOracleInstance, err := zecreyLegendRpc.LoadStablePriceOracleInstance(c.providerClient, ZnsPriceOracle)
+	transactOpts, err := zecreyLegendRpc.ConstructTransactOptsWithValue(c.providerClient, authCli, gasPrice, DefaultGasLimit, assetAmount)
 	if err != nil {
 		return nil, err
+	}
+	var depositTransaction *types.Transaction
+	if assetId == BNBAssetId {
+		depositTransaction, err = zecreyInstance.DepositBNB(transactOpts, accountName)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if assetId != BNBAssetId {
+		depositTransaction, err = zecreyInstance.DepositBEP20(transactOpts, BEP20token, big.NewInt(assetAmount), accountName)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	amount, err := zecreyLegendRpc.Price(priceOracleInstance, accountName)
-	if err != nil {
-		return nil, err
-	}
-	transactOpts, err := zecreyLegendRpc.ConstructTransactOptsWithValue(c.providerClient, authCli, gasPrice, DefaultGasLimit, amount.Int64())
-	if err != nil {
-		return nil, err
-	}
-	depositTransaction, err := zecreyInstance.DepositBNB(transactOpts, accountName)
-	if err != nil {
-		return nil, err
-	}
 	return depositTransaction, nil
 }
 func (c *Client) DepositNft(accountName, privateKey string, _nftL1Address common.Address, _nftL1TokenId *big.Int) (*types.Transaction, error) {
@@ -823,14 +825,14 @@ func sdkWithdrawNftTxInfo(key KeyManager, txInfoSdk string, tol1Address string) 
 	}
 	return tx, err
 }
-func sdkWithdrawTxInfo(key KeyManager, txInfoSdk string, tol1Address string, assetAmount int64) (string, error) {
+func sdkWithdrawTxInfo(key KeyManager, txInfoSdk string, tol1Address string, assetAmount, assetId int64) (string, error) {
 	txInfo := &WithdrawTxInfo{}
 	err := json.Unmarshal([]byte(txInfoSdk), txInfo)
 	if err != nil {
 		return "", err
 	}
 	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
-	txInfo.AssetId = BNBAssetId
+	txInfo.AssetId = assetId
 	txInfo.AssetAmount = big.NewInt(assetAmount)
 	txInfo.ToAddress = tol1Address
 	tx, err := constructWithdrawTx(key, txInfo)

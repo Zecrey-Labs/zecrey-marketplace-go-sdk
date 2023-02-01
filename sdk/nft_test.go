@@ -275,7 +275,7 @@ func TestWithdraw(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := c.Withdraw(tol1Address, assetAmount)
+	result, err := c.Withdraw(tol1Address, BNBAssetId, assetAmount)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -397,37 +397,40 @@ func TestRegisterAccountWithPrivateKey(t *testing.T) {
 func TestDepositNft(t *testing.T) {
 	accountName := "alice"
 	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
-	_nftL1Address := common.HexToAddress("0x805e286D05388911cCdB10E3c7b9713415607c72")
-	_nftL1TokenId := big.NewInt(511)
+	nftL1Address := common.HexToAddress("0x805e286D05388911cCdB10E3c7b9713415607c72")
+	nftL1TokenId := big.NewInt(511)
 	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
-	depositNftTransaction, err := c.DepositNft(accountName, privateKey, _nftL1Address, _nftL1TokenId)
+	depositNftTransaction, err := c.DepositNft(accountName, privateKey, nftL1Address, nftL1TokenId)
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println(depositNftTransaction)
 }
+
 func TestDeposit(t *testing.T) {
 	accountName := "alice"
 	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
 	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
+	var assetAmount int64 = 10000
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
-	depositBnbTransaction, err := c.Deposit(accountName, privateKey)
+	depositBnbTransaction, err := c.Deposit(accountName, privateKey, BNBAssetId, assetAmount, common.HexToAddress(""))
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println(depositBnbTransaction)
 }
+
 func TestFullExit(t *testing.T) {
 	accountName := "alice"
 	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
-	_asset := common.HexToAddress("0x805e286D05388911cCdB10E3c7b9713415607c72")
+	_asset := common.HexToAddress("") //_asset Token address, 0 address for BNB
 	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
 	c, err := NewClient(accountName, seed)
 	if err != nil {
@@ -439,10 +442,11 @@ func TestFullExit(t *testing.T) {
 	}
 	fmt.Println(fullExitTransaction)
 }
+
 func TestFullExitNft(t *testing.T) {
 	accountName := "alice"
 	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
-	_nftIndex := uint32(511)
+	_nftIndex := uint32(130)
 	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
 	c, err := NewClient(accountName, seed)
 	if err != nil {
