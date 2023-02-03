@@ -3,8 +3,10 @@ package sdk
 import "io"
 
 type Asset struct {
-	Id         uint32
-	BalanceEnc string
+	AssetId                  uint32 `json:"asset_id"`
+	Balance                  string `json:"balance"`
+	LpAmount                 string `json:"lp_amount"`
+	OfferCanceledOrFinalized string `json:"offer_canceled_or_finalized"`
 }
 
 type AccountInfo struct {
@@ -15,6 +17,18 @@ type AccountInfo struct {
 	Assets    []*Asset `json:"assets"`
 }
 
+type RespGetAssetsList struct {
+	Assets []*AssetInfo `json:"assets"`
+}
+
+type AssetInfo struct {
+	AssetId       uint32 `json:"asset_id"`
+	AssetName     string `json:"asset_name"`
+	AssetDecimals uint32 `json:"asset_decimals"`
+	AssetSymbol   string `json:"asset_symbol"`
+	AssetAddress  string `json:"asset_address"`
+	IsGasAsset    uint32 `json:"is_gas_asset"`
+}
 type TxDetail struct {
 	TxId            int64  `json:"tx_id"`
 	AssetId         int64  `json:"asset_id"`
@@ -317,7 +331,7 @@ type RespGetCollectionCategories struct {
 	Categories []*Categorie `json:"categories"`
 }
 
-//=========================  hasura struct ============================
+// =========================  hasura struct ============================
 type MediaDetail struct {
 	Url string `json:"url"`
 }
@@ -369,7 +383,7 @@ type RespGetNftBeingBuy struct {
 	Data *HasuraDataOffer `json:"data"`
 }
 
-//=======================   sdk ======================================
+// =======================   sdk ======================================
 type ReqGetSdkCreateCollectionTxInfo struct {
 	AccountName string `form:"account_name"`
 }

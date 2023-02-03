@@ -396,67 +396,69 @@ func TestRegisterAccountWithPrivateKey(t *testing.T) {
 
 func TestDepositNft(t *testing.T) {
 	accountName := "alice"
-	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
-	nftL1Address := common.HexToAddress("0x805e286D05388911cCdB10E3c7b9713415607c72")
-	nftL1TokenId := big.NewInt(511)
+	privateKey := "0xe89bb76433b2865a89bb789bb764333276007ece8f114a47a4e9581ec3567asa"
+	nftL1Address := common.HexToAddress("0x< a l1 Nft address>")
 	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
+	nftIndex := big.NewInt(511)
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
-	depositNftTransaction, err := c.DepositNft(accountName, privateKey, nftL1Address, nftL1TokenId)
+	depositNftTransaction, err := c.DepositNft(accountName, privateKey, nftL1Address, nftIndex)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(depositNftTransaction)
+	fmt.Println("tx hash: ", depositNftTransaction.Hash())
 }
 
 func TestDeposit(t *testing.T) {
 	accountName := "alice"
-	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
+	privateKey := "0xe89bb76433b2865a89bb789bb764333276007ece8f114a47a4e9581ec3567asa"
 	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
-	var assetAmount int64 = 10000
+	var assetAmount int64 = 1000000000
+	var tokenAddress = common.HexToAddress("")
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
-	depositBnbTransaction, err := c.Deposit(accountName, privateKey, BNBAssetId, assetAmount, common.HexToAddress(""))
+	depositBnbTransaction, err := c.Deposit(accountName, privateKey, BNBAssetId, assetAmount, tokenAddress)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(depositBnbTransaction)
+	fmt.Println("tx hash:", depositBnbTransaction.Hash())
 }
 
 func TestFullExit(t *testing.T) {
 	accountName := "alice"
-	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
-	_asset := common.HexToAddress("") //_asset Token address, 0 address for BNB
+	privateKey := "0xe89bb76433b2865a89bb789bb764333276007ece8f114a47a4e9581ec3567asa"
+	assetAddress := common.HexToAddress("") //_asset Token address, 0 address for BNB
 	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
 	c, err := NewClient(accountName, seed)
+	var amount int64 = 10000000
 	if err != nil {
 		t.Fatal(err)
 	}
-	fullExitTransaction, err := c.FullExit(accountName, privateKey, _asset)
+	fullExitTransaction, err := c.FullExit(accountName, privateKey, assetAddress, amount)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(fullExitTransaction)
+	fmt.Println("tx hash:", fullExitTransaction.Hash())
 }
 
 func TestFullExitNft(t *testing.T) {
 	accountName := "alice"
-	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
-	_nftIndex := uint32(130)
+	privateKey := "0xe89bb76433b2865a89bb789bb764333276007ece8f114a47a4e9581ec3567asa"
+	nftIndex := uint32(81)
 	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fullExitNftTransaction, err := c.FullExitNft(accountName, privateKey, _nftIndex)
+	fullExitNftTransaction, err := c.FullExitNft(accountName, privateKey, nftIndex)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(fullExitNftTransaction)
+	fmt.Println("tx hash:", fullExitNftTransaction.Hash())
 }
 
 func TestGetAccountIsRegistered(t *testing.T) {
@@ -476,6 +478,25 @@ func TestGetAccountByAccountName(t *testing.T) {
 		t.Fatal(err)
 	}
 	data, err := json.Marshal(accountInfo)
+	fmt.Println(string(data))
+}
+
+func TestGetAccountAssetsInfoByAccountName(t *testing.T) {
+	accountName := "amber1"
+	accountInfo, err := GetAccountAssetsInfoByAccountName(accountName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := json.Marshal(accountInfo)
+	fmt.Println(string(data))
+}
+
+func TestGetAssetsList(t *testing.T) {
+	assetsList, err := GetAssetsList()
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := json.Marshal(assetsList)
 	fmt.Println(string(data))
 }
 

@@ -102,6 +102,45 @@ func GetAccountByAccountName(accountName string) (*RespGetAccountByAccountName, 
 	return result, nil
 }
 
+func GetAccountAssetsInfoByAccountName(accountName string) ([]*Asset, error) {
+	resp, err := http.Get(legendUrl + "/api/v1/account/getAccountInfoByAccountName?account_name=" + fmt.Sprintf("%s%s", accountName, NameSuffix))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	account := &AccountInfo{}
+	if err := json.Unmarshal(body, &account); err != nil {
+		return nil, err
+	}
+	return account.Assets, nil
+}
+
+func GetAssetsList() (*RespGetAssetsList, error) {
+	resp, err := http.Get(legendUrl + "/api/v1/info/getAssetsList")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(string(body))
+	}
+	result := &RespGetAssetsList{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
 func GetNextNonce(accountIdx int64) (int64, error) {
 	resp, err := http.Get(legendUrl +
 		fmt.Sprintf("/api/v1/tx/getNextNonce?account_index=%d", accountIdx))
@@ -458,7 +497,7 @@ func UploadMedia(filePath string) (*RespMediaUpload, error) {
 	return result, nil
 }
 
-//newZecreyMarketplaceClientDefault private
+// newZecreyMarketplaceClientDefault private
 func newZecreyMarketplaceClientWithSeed(accountName, seed string) (*Client, error) {
 	keyManager, err := NewSeedKeyManager(seed)
 	if err != nil {
@@ -480,7 +519,7 @@ func newZecreyMarketplaceClientWithSeed(accountName, seed string) (*Client, erro
 	}, nil
 }
 
-//newZecreyMarketplaceClientDefault private
+// newZecreyMarketplaceClientDefault private
 func newZecreyMarketplaceClientDefault(accountName string) (*Client, error) {
 	connEth, err := _rpc.NewClient(chainRpcUrl)
 	if err != nil {

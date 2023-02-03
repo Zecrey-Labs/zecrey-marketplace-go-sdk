@@ -537,6 +537,7 @@ func (c *Client) AcceptOffer(offerId int64, isSell bool, assetAmount *big.Int) (
 }
 
 func (c *Client) Deposit(accountName, privateKey string, assetId, assetAmount int64, BEP20token common.Address) (*types.Transaction, error) {
+	accountName = fmt.Sprintf("%s%s", accountName, NameSuffix)
 	var chainId *big.Int
 	chainId, err := c.providerClient.ChainID(context.Background())
 	if err != nil {
@@ -628,7 +629,8 @@ func (c *Client) DepositNft(accountName, privateKey string, _nftL1Address common
 	}
 	return depositNftTransaction, nil
 }
-func (c *Client) FullExit(accountName, privateKey string, _asset common.Address) (*types.Transaction, error) {
+func (c *Client) FullExit(accountName, privateKey string, assetAddress common.Address, amount int64) (*types.Transaction, error) {
+	accountName = fmt.Sprintf("%s%s", accountName, NameSuffix)
 	var chainId *big.Int
 	chainId, err := c.providerClient.ChainID(context.Background())
 	if err != nil {
@@ -644,7 +646,7 @@ func (c *Client) FullExit(accountName, privateKey string, _asset common.Address)
 		return nil, err
 	}
 	ZecreyLegendContract := resp.ContractAddresses[0]
-	ZnsPriceOracle := resp.ContractAddresses[1]
+	//ZnsPriceOracle := resp.ContractAddresses[1]
 
 	gasPrice, err := c.providerClient.SuggestGasPrice(context.Background())
 	if err != nil {
@@ -655,26 +657,27 @@ func (c *Client) FullExit(accountName, privateKey string, _asset common.Address)
 		return nil, err
 	}
 
-	priceOracleInstance, err := zecreyLegendRpc.LoadStablePriceOracleInstance(c.providerClient, ZnsPriceOracle)
-	if err != nil {
-		return nil, err
-	}
+	//priceOracleInstance, err := zecreyLegendRpc.LoadStablePriceOracleInstance(c.providerClient, ZnsPriceOracle)
+	//if err != nil {
+	//	return nil, err
+	//}
 
-	amount, err := zecreyLegendRpc.Price(priceOracleInstance, accountName)
+	//amount, err := zecreyLegendRpc.Price(priceOracleInstance, accountName)
+	//if err != nil {
+	//	return nil, err
+	//}
+	transactOpts, err := zecreyLegendRpc.ConstructTransactOptsWithValue(c.providerClient, authCli, gasPrice, DefaultGasLimit, amount)
 	if err != nil {
 		return nil, err
 	}
-	transactOpts, err := zecreyLegendRpc.ConstructTransactOptsWithValue(c.providerClient, authCli, gasPrice, DefaultGasLimit, amount.Int64())
-	if err != nil {
-		return nil, err
-	}
-	fullExitTransaction, err := zecreyInstance.RequestFullExit(transactOpts, accountName, _asset)
+	fullExitTransaction, err := zecreyInstance.RequestFullExit(transactOpts, accountName, assetAddress)
 	if err != nil {
 		return nil, err
 	}
 	return fullExitTransaction, nil
 }
 func (c *Client) FullExitNft(accountName, privateKey string, _nftIndex uint32) (*types.Transaction, error) {
+	//accountName = fmt.Sprintf("%s%s", accountName, NameSuffix)
 	var chainId *big.Int
 	chainId, err := c.providerClient.ChainID(context.Background())
 	if err != nil {
