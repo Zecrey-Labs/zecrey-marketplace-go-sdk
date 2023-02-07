@@ -1,0 +1,64 @@
+AccountName: "alice"
+ShortName: "test(2023/2/7/12:07)"
+Seed: "asdfasdfasdf98fd05c70sdafasdfasdffdasdfsadfsdfsfdasdf30383efcb3954631"
+CategoryId: 1
+CollectionUrl: "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
+ExternalLink: "https://weibo.com/alice"
+TwitterLink: "https://twitter.com/alice"
+InstagramLink: "https://www.instagram.com/alice/"
+TelegramLink: "https://tgstat.com/channel/@alice"
+DiscordLink: "https://discord.com/api/v10/applications/<aliceid>/commands"
+LogoImage: "collection/aug788rsfbsnj3i7leqf"
+FeaturedImage: "collection/aug788rsfbsnj3i7leqf"
+BannerImage: "collection/aug788rsfbsnj3i7leqf"
+Description: "Description information"
+CreatorEarningRate: "200"
+
+BoundaryStr: "len([]byte(boundaryStr))  = 164
+               https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg
+               https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
+
+BoundaryStr2: "len([]byte(boundaryStr))  = 1148
+                https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg
+                https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg
+                https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg
+                https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg
+                https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg
+                https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg
+                https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg
+                https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg
+                https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg
+                https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg
+                https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg
+                https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg
+                https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg
+                https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
+BoundaryStr3: "DELETE FROM activity_tx WHERE block_height > 68627;
+DELETE FROM activity_tx WHERE nft_index > 4290;
+DELETE FROM l2_monitor_tx WHERE status =13 or status =10;
+DELETE FROM l2_monitor_blocks WHERE height >68627;
+DELETE FROM offer WHERE status =10;
+DELETE FROM asset_properties WHERE deleted_at is NOT NULL;
+DELETE FROM asset_levels WHERE deleted_at is NOT NULL;
+DELETE FROM asset_stats WHERE deleted_at is NOT NULL;
+DELETE FROM asset WHERE nft_index =-1;
+DELETE FROM asset WHERE deleted_at is NOT NULL;
+DELETE FROM collection WHERE deleted_at is NOT NULL;"
+
+
+NftDescription: "NftDescription information"
+Propertie: "[]"
+Level: "[]"
+Stat: "[]"
+CollectionId: 1
+NftName: "testNftName"
+NftUrl: "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
+NftMedia: "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
+
+SellAssetId: 1
+BuyAssetId: 2
+WithdrawAssetId: 3
+TransferAssetId: 4
+Tol1Address: "0x13146a314sdf31as3df1a3s2df13adsf21"
+ToAccountName: "bob"
+AssetAmount: 132321321321
