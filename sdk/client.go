@@ -517,7 +517,6 @@ func (c *Client) AcceptOffer(offerId int64, isSell bool, assetAmount *big.Int) (
 			"transaction": {txInfo},
 		},
 	)
-	fmt.Println("=== txInfo === ", txInfo)
 	if err != nil {
 		return nil, err
 	}
