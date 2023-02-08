@@ -8,12 +8,10 @@ import (
 )
 
 func makeOfferWrongBatch(index int) {
-	for i := 0; i < index; i++ {
-		for j := 0; j < i*10000; j++ {
-			go makeSellOffeSellAssetIdWrong(index)
-			go makeSellOfferAssetTypeWrong(index)
-			go makeSellOfferAssetAmountWrong(index)
-		}
+	for j := 0; j < index*10000; j++ {
+		go makeSellOffeSellAssetIdWrong(index)
+		go makeSellOfferAssetTypeWrong(index)
+		go makeSellOfferAssetAmountWrong(index)
 	}
 }
 

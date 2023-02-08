@@ -4,11 +4,9 @@ import (
 	"fmt"
 )
 
-func transferNftCorrectBetch(index int) {
-	for i := 0; i < index; i++ {
-		for j := 0; j < i*10000; j++ {
-			go transferNftCorrect(index)
-		}
+func transferNftCorrectBatch(index int) {
+	for j := 0; j < index*10000; j++ {
+		go transferNftCorrect(index)
 	}
 }
 

@@ -31,11 +31,9 @@ var transferNftTestCase = []struct {
 	},
 }
 
-func transferNftWrongBetch(index int) {
-	for i := 0; i < index; i++ {
-		for j := 0; j < i*10000; j++ {
-			go transferNftWrong(index)
-		}
+func transferNftWrongBatch(index int) {
+	for j := 0; j < index*10000; j++ {
+		go transferNftWrong(index)
 	}
 }
 

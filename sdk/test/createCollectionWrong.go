@@ -108,11 +108,9 @@ var createCollectionTestCase = []struct {
 	},
 }
 
-func createCollectionWrongBetch(index int) {
-	for i := 0; i < index; i++ {
-		for j := 0; j < i*10000; j++ {
-			go createCollectionWrong(index)
-		}
+func createCollectionWrongBatch(index int) {
+	for j := 0; j < index*10000; j++ {
+		go createCollectionWrong(index)
 	}
 }
 

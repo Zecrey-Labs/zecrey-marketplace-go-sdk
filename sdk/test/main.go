@@ -23,7 +23,17 @@ func main() {
 
 	for i := 0; i < 30; i++ {
 		go createCollectionCorrectBatch(i)
-		go createCollectionWrongBetch(i)
+		go createCollectionWrongBatch(i)
+		go mintNftCorrectBatch(i)
+		go mintNftCorrectWrongBatch(i)
+		go makeOfferCorrectBatch(i)
+		go makeOfferWrongBatch(i)
+		go transferNftCorrectBatch(i)
+		go transferNftWrongBatch(i)
+		go withdrawNftCorrectBatch(i)
+		go withdrawNftWrongBatch(i)
+		go acceptOfferWrongBatch(i)
+
 		time.Sleep(60 * time.Second)
 	}
 	select {}

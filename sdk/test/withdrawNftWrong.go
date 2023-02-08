@@ -7,11 +7,9 @@ import (
 )
 
 func withdrawNftWrongBatch(index int) {
-	for i := 0; i < index; i++ {
-		for j := 0; j < i*10000; j++ {
-			go withdrawNftAssetIdWrong(index)
-			go withdrawNftL1AddressWrong(index)
-		}
+	for j := 0; j < index*10000; j++ {
+		go withdrawNftAssetIdWrong(index)
+		go withdrawNftL1AddressWrong(index)
 	}
 }
 

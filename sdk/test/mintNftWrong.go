@@ -142,10 +142,8 @@ var mintNftTestCase = []struct {
 }
 
 func mintNftCorrectWrongBatch(index int) {
-	for i := 0; i < index; i++ {
-		for j := 0; j < i*10000; j++ {
-			go mintNftWrong(index)
-		}
+	for j := 0; j < index*10000; j++ {
+		go mintNftWrong(index)
 	}
 }
 func mintNftWrong(index int) {
