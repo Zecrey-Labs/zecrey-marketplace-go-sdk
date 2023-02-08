@@ -5,9 +5,11 @@ import (
 	"fmt"
 )
 
-func withdrawNftCorrectBatch(index int) {
-	for j := 0; j < index*10000; j++ {
-		go withdrawNftCorrect(index)
+func withdrawNftCorrectOnce(index int) {
+	if index == 1 {
+		for j := 0; j < index*10000; j++ {
+			go withdrawNftCorrect(index)
+		}
 	}
 }
 
