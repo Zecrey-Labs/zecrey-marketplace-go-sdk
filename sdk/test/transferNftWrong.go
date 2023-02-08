@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type TransferNftTxInfo struct {
@@ -21,6 +22,7 @@ type TransferNftTxInfo struct {
 func transferNftWrongBatch(index int) {
 	for j := 0; j < index*PerMinute; j++ {
 		go transferNftWrong(index)
+		time.Sleep(time.Millisecond)
 	}
 }
 

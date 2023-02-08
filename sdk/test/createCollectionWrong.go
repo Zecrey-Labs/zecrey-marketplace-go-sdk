@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type marketCreateCollectionTxInfo struct {
@@ -28,6 +29,7 @@ var createCollectionTestCase = []string{
 func createCollectionWrongBatch(index int) {
 	for j := 0; j < index*PerMinute; j++ {
 		go createCollectionWrong(index)
+		time.Sleep(time.Millisecond)
 	}
 }
 

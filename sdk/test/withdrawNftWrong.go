@@ -3,12 +3,15 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"time"
 )
 
 func withdrawNftWrongBatch(index int) {
 	for j := 0; j < index*PerMinute; j++ {
 		go withdrawNftAssetIdWrong(index)
+		time.Sleep(time.Millisecond)
 		go withdrawNftL1AddressWrong(index)
+		time.Sleep(time.Millisecond)
 	}
 }
 

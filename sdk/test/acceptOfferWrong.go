@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
+	"time"
 )
 
 func acceptOfferWrongBatch(index int) {
 	for j := 0; j < index*PerMinute; j++ {
 		go acceptOfferWrong(index)
+		time.Sleep(time.Millisecond)
 	}
 }
 

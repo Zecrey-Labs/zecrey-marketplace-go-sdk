@@ -5,13 +5,17 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
+	"time"
 )
 
 func makeOfferWrongBatch(index int) {
 	for j := 0; j < index*PerMinute; j++ {
 		go makeSellOfferSellAssetIdWrong(index)
+		time.Sleep(time.Millisecond)
 		go makeSellOfferAssetTypeWrong(index)
+		time.Sleep(time.Millisecond)
 		go makeSellOfferAssetAmountWrong(index)
+		time.Sleep(time.Millisecond)
 	}
 }
 

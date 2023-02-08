@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
 
 func transferNftCorrectOnce(index int) {
 	if index == 1 {
 		for j := 0; j < index*PerMinute; j++ {
 			go transferNftCorrect(index)
+			time.Sleep(time.Millisecond)
 		}
 	}
 }

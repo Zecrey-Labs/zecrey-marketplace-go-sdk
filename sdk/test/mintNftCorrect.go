@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"time"
 )
 
 //nft media just once chance
@@ -10,6 +11,7 @@ func mintNftCorrectOnce(index int) {
 	if index == 1 {
 		for j := 0; j < index*PerMinute; j++ {
 			go mintNftCorrect(index)
+			time.Sleep(time.Millisecond)
 		}
 	}
 }

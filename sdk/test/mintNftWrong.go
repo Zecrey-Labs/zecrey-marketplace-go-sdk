@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type MintNftTxInfo struct {
@@ -31,6 +32,7 @@ var mintNftTestCase = []string{
 func mintNftCorrectWrongBatch(index int) {
 	for j := 0; j < index*PerMinute; j++ {
 		go mintNftWrong(index)
+		time.Sleep(time.Millisecond)
 	}
 }
 func mintNftWrong(index int) {

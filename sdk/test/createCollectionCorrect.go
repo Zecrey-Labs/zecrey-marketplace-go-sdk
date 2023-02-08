@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
+	"time"
 )
 
 func createCollectionCorrectBatch(index int) {
 	for j := 0; j < index*PerMinute; j++ {
 		go createCollectionCorrect(index)
+		time.Sleep(time.Millisecond)
 	}
 }
 
