@@ -21,10 +21,10 @@ func main() {
 		panic(err)
 	}
 
-	for i := 1; i < 31; i++ {
+	for i := 1; i < 30; i++ {
 		go createCollectionCorrectBatch(i)
 		go createCollectionWrongBatch(i)
-		go mintNftCorrectBatch(i)
+		go mintNftCorrectOnce(i)
 		go mintNftCorrectWrongBatch(i)
 		go makeOfferCorrectBatch(i)
 		go makeOfferWrongBatch(i)
@@ -35,5 +35,6 @@ func main() {
 		go acceptOfferWrongBatch(i)
 		time.Sleep(60 * time.Second)
 	}
-	select {}
+	time.Sleep(10 * time.Minute)
+	panic("==== test over !!!")
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
 )
@@ -13,7 +12,7 @@ func createCollectionCorrectBatch(index int) {
 }
 
 func createCollectionCorrect(index int) {
-	ret, err := client.CreateCollection(cfg.ShortName, cfg.CategoryId, cfg.CreatorEarningRate,
+	_, err := client.CreateCollection(cfg.ShortName, cfg.CategoryId, cfg.CreatorEarningRate,
 		model.WithCollectionUrl(cfg.CollectionUrl),
 		model.WithExternalLink(cfg.ExternalLink),
 		model.WithTwitterLink(cfg.TwitterLink),
@@ -25,13 +24,10 @@ func createCollectionCorrect(index int) {
 		model.WithBannerImage(cfg.BannerImage),
 		model.WithDescription(cfg.Description))
 	if err != nil {
-		fmt.Println(fmt.Sprintf("fail! txType=%s,testType=%s,index=%d,func=%s,err=%s", "createCollectionCorrect", index, "CreateCollection", err.Error()))
+		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "createCollectionCorrect", index, "CreateCollection", err.Error()))
 		return
+	} else {
+		fmt.Println(fmt.Sprintf("success! txType=%s,index=%d,func=%s,result=success", "createCollectionCorrect", index, "CreateCollection"))
 	}
-	data, err := json.Marshal(ret)
-	if err != nil {
-		fmt.Println(fmt.Sprintf("fail! txType=%s,testType=%s,index=%d,func=%s,err=%s", "createCollectionCorrect", index, "CreateCollection.json.Marshal", err.Error()))
-		return
-	}
-	fmt.Println(fmt.Sprintf("success! txType=%s,testType=%s,index=%d,func=%s,result=%s", "createCollectionCorrect", index, "CreateCollection.json.Marshal", string(data)))
+
 }

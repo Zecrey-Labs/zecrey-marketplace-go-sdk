@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
@@ -14,14 +13,10 @@ func withdrawNftCorrectOnce(index int) {
 }
 
 func withdrawNftCorrect(index int) {
-	result, err := client.WithdrawNft(cfg.WithdrawAssetId, cfg.Tol1Address)
+	_, err := client.WithdrawNft(cfg.WithdrawAssetId, cfg.Tol1Address)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("success! txType=%s,index=%d,func=%s,err=%s", "withdrawNftAssetIdWrong", index, "WithdrawNft", err.Error()))
-		return
-	}
-	_, err = json.Marshal(result)
-	if err != nil {
-		fmt.Println(fmt.Sprintf("success! txType=%s,index=%d,func=%s,err=%s", "withdrawNftL1AddressWrong", index, " json.Marshal", err.Error()))
-		return
+	} else {
+		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "withdrawNftAssetIdWrong", index, "WithdrawNft", err.Error()))
 	}
 }

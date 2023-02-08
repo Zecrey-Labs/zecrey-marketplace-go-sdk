@@ -18,19 +18,6 @@ type TransferNftTxInfo struct {
 	AssetId string
 }
 
-var transferNftTestCase = []struct {
-	txinfo   *TransferNftTxInfo
-	expected bool
-}{
-	{
-		txinfo: &TransferNftTxInfo{
-			ToAccountName: cfg.BoundaryStr2,
-			AssetId:       "",
-		},
-		expected: false,
-	},
-}
-
 func transferNftWrongBatch(index int) {
 	for j := 0; j < index*10000; j++ {
 		go transferNftWrong(index)
@@ -39,18 +26,17 @@ func transferNftWrongBatch(index int) {
 
 func transferNftWrong(index int) {
 	accountName, _, _ := client.GetMyInfo()
-	for _, test := range transferNftTestCase {
-		test.txinfo.AssetId = fmt.Sprintf("%d", rand.Intn(10000))
-		resultSdk, err := getPreTransferNftTx(accountName, test.txinfo.ToAccountName, test.txinfo.AssetId)
-		_, err = SignAndSendTransferNftTx(client.GetKeyManager(), test.txinfo.AssetId, resultSdk.Transtion)
-		if test.expected {
-			fmt.Println(fmt.Sprintf("fail %t! txType=%s,index=%d,func=%s,err=%s", test.expected, "transferNftWrong", index, "MintNft", err.Error()))
-			return
-		} else {
-			fmt.Println(fmt.Sprintf("fail %t! txType=%s,index=%d,func=%s,err=%s", test.expected, "transferNftWrong", index, "MintNft", err.Error()))
-			return
-		}
+	assetId := fmt.Sprintf("%d", rand.Intn(1000000000000))
+	ToAccountName := cfg.BoundaryStr2
+	resultSdk, err := getPreTransferNftTx(accountName, ToAccountName, assetId)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "transferNftWrong", index, "getPreTransferNftTx", err.Error()))
 	}
+	_, err = SignAndSendTransferNftTx(client.GetKeyManager(), assetId, resultSdk.Transtion)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "transferNftWrong", index, "MintNft", err.Error()))
+	}
+
 }
 
 func SignAndSendTransferNftTx(keyManager sdk.KeyManager, AssetId, txInfoSdk string) (*sdk.RespSendTransferNft, error) {
@@ -80,7 +66,7 @@ func SignAndSendTransferNftTx(keyManager sdk.KeyManager, AssetId, txInfoSdk stri
 }
 
 func getPreTransferNftTx(accountName, toAccountName, AssetId string) (*sdk.RespetSdktxInfo, error) {
-	respSdkTx, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkTransferNftTxInfo?account_name=%s&to_account_name=%s%s&nft_id=%d", accountName, toAccountName, NameSuffix, AssetId))
+	respSdkTx, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkTransferNftTxInfo?account_name=%s&to_account_name=%s%s&nft_id=%s", accountName, toAccountName, NameSuffix, AssetId))
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +82,7 @@ func getPreTransferNftTx(accountName, toAccountName, AssetId string) (*sdk.Respe
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	return nil, err
+	return resultSdk, err
 }
 func sdkTransferNftTxInfo(key sdk.KeyManager, txInfoSdk string) (string, error) {
 	txInfo := &sdk.TransferNftTxInfo{}

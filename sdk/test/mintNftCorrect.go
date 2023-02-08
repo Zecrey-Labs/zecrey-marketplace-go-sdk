@@ -1,30 +1,30 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"math/rand"
 )
 
-func mintNftCorrectBatch(index int) {
-	for j := 0; j < index*10000; j++ {
-		go mintNftCorrect(index)
+//nft media just once chance
+func mintNftCorrectOnce(index int) {
+	if index == 1 {
+		for j := 0; j < index*10000; j++ {
+			go mintNftCorrect(index)
+		}
 	}
 }
 func mintNftCorrect(index int) {
-	Name := fmt.Sprintf("nftName:%s", cfg.AccountName)
-	Description := fmt.Sprintf("nft Description %s", cfg.NftDescription)
-	ret, err := client.MintNft(
+	Name := fmt.Sprintf("nftName%s%d", cfg.NftName, rand.Int())
+	Description := fmt.Sprintf("nft Description%s%d", cfg.NftDescription, rand.Int())
+	_, err := client.MintNft(
 		cfg.CollectionId,
 		cfg.NftUrl, Name,
 		Description, cfg.NftMedia,
 		cfg.Properties, cfg.Levels, cfg.Stats)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "mintNftCorrect", index, "MintNft", err.Error()))
-		return
+	} else {
+		fmt.Println(fmt.Sprintf("success! txType=%s,index=%d,func=%s,result=success", "mintNftCorrect", index, "MintNft"))
 	}
-	_, err = json.Marshal(ret)
-	if err != nil {
-		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "mintNftCorrect", index, "MintNft.json.Marshal", err.Error()))
-		return
-	}
+
 }

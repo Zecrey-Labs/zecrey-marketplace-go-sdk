@@ -27,6 +27,7 @@ type Config struct {
 	NftName            string
 	NftUrl             string
 	NftMedia           string
+	NftMediaWrong      string
 	SellAssetId        int64
 	BuyAssetId         int64
 	WithdrawAssetId    int64

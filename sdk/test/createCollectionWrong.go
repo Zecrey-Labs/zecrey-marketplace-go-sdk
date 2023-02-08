@@ -15,97 +15,14 @@ import (
 )
 
 type marketCreateCollectionTxInfo struct {
-	WrongCase          string
 	ShortName          string
 	CategoryId         string
 	CreatorEarningRate string
 	ops                []model.CollectionOption
 }
 
-var createCollectionTestCase = []struct {
-	txinfo   *marketCreateCollectionTxInfo
-	expected bool
-}{
-	{
-		txinfo: &marketCreateCollectionTxInfo{
-			WrongCase:          "ShortName",
-			ShortName:          cfg.ShortName,
-			CategoryId:         cfg.CategoryId,
-			CreatorEarningRate: cfg.CreatorEarningRate,
-			ops: []model.CollectionOption{
-				model.WithCollectionUrl(cfg.CollectionUrl),
-				model.WithExternalLink(cfg.ExternalLink),
-				model.WithTwitterLink(cfg.TwitterLink),
-				model.WithInstagramLink(cfg.InstagramLink),
-				model.WithTelegramLink(cfg.TelegramLink),
-				model.WithDiscordLink(cfg.DiscordLink),
-				model.WithLogoImage(cfg.LogoImage),
-				model.WithFeaturedImage(cfg.FeaturedImage),
-				model.WithBannerImage(cfg.BannerImage),
-				model.WithDescription(cfg.Description)},
-		},
-		expected: false,
-	},
-	{
-		txinfo: &marketCreateCollectionTxInfo{
-			WrongCase:          "Link",
-			ShortName:          cfg.ShortName,
-			CategoryId:         cfg.CategoryId,
-			CreatorEarningRate: cfg.CreatorEarningRate,
-			ops: []model.CollectionOption{
-				model.WithCollectionUrl(cfg.CollectionUrl),
-				model.WithExternalLink(cfg.ExternalLink),
-				model.WithTwitterLink(cfg.TwitterLink),
-				model.WithInstagramLink(cfg.InstagramLink),
-				model.WithTelegramLink(cfg.TelegramLink),
-				model.WithDiscordLink(cfg.DiscordLink),
-				model.WithLogoImage(cfg.LogoImage),
-				model.WithFeaturedImage(cfg.FeaturedImage),
-				model.WithBannerImage(cfg.BannerImage),
-				model.WithDescription(cfg.Description)},
-		},
-		expected: false,
-	},
-	{
-		txinfo: &marketCreateCollectionTxInfo{
-			WrongCase:          "CreatorEarningRate",
-			ShortName:          cfg.ShortName,
-			CategoryId:         cfg.CategoryId,
-			CreatorEarningRate: cfg.CreatorEarningRate,
-			ops: []model.CollectionOption{
-				model.WithCollectionUrl(cfg.CollectionUrl),
-				model.WithExternalLink(cfg.ExternalLink),
-				model.WithTwitterLink(cfg.TwitterLink),
-				model.WithInstagramLink(cfg.InstagramLink),
-				model.WithTelegramLink(cfg.TelegramLink),
-				model.WithDiscordLink(cfg.DiscordLink),
-				model.WithLogoImage(cfg.LogoImage),
-				model.WithFeaturedImage(cfg.FeaturedImage),
-				model.WithBannerImage(cfg.BannerImage),
-				model.WithDescription(cfg.Description)},
-		},
-		expected: false,
-	},
-	{
-		txinfo: &marketCreateCollectionTxInfo{
-			WrongCase:          "CategoryId",
-			ShortName:          cfg.ShortName,
-			CategoryId:         cfg.CategoryId,
-			CreatorEarningRate: cfg.CreatorEarningRate,
-			ops: []model.CollectionOption{
-				model.WithCollectionUrl(cfg.CollectionUrl),
-				model.WithExternalLink(cfg.ExternalLink),
-				model.WithTwitterLink(cfg.TwitterLink),
-				model.WithInstagramLink(cfg.InstagramLink),
-				model.WithTelegramLink(cfg.TelegramLink),
-				model.WithDiscordLink(cfg.DiscordLink),
-				model.WithLogoImage(cfg.LogoImage),
-				model.WithFeaturedImage(cfg.FeaturedImage),
-				model.WithBannerImage(cfg.BannerImage),
-				model.WithDescription(cfg.Description)},
-		},
-		expected: false,
-	},
+var createCollectionTestCase = []string{
+	"ShortName", "Link", "CreatorEarningRate", "CategoryId",
 }
 
 func createCollectionWrongBatch(index int) {
@@ -118,24 +35,41 @@ func createCollectionWrong(index int) {
 	accountName, _, _ := client.GetMyInfo()
 	txInfoSdk, err := getPreCollectionTx(accountName)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("fail! txType=%s,testType=%s,index=%d,func=%s,err=%s", "createCollection", "Wrong", index, "createCollectionWrong", err.Error()))
+		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "createCollectionWrong", index, "createCollectionWrong", err.Error()))
 		return
 	}
 	txInfo := &sdk.CreateCollectionTxInfo{}
 	err = json.Unmarshal([]byte(txInfoSdk.Transtion), txInfo)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("fail! txType=%s,testType=%s,index=%d,func=%s,err=%s", "createCollection", "Wrong", index, "createCollectionWrong.json.Unmarshal", err.Error()))
+		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "createCollectionWrong", index, "createCollectionWrong.json.Unmarshal", err.Error()))
 		return
 	}
 	//reset
 	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
-
-	for _, test := range createCollectionTestCase {
-		switch test.txinfo.WrongCase {
+	txCaseDefaultInfo := &marketCreateCollectionTxInfo{
+		ShortName:          cfg.ShortName,
+		CategoryId:         cfg.CategoryId,
+		CreatorEarningRate: cfg.CreatorEarningRate,
+		ops: []model.CollectionOption{
+			model.WithCollectionUrl(cfg.CollectionUrl),
+			model.WithExternalLink(cfg.ExternalLink),
+			model.WithTwitterLink(cfg.TwitterLink),
+			model.WithInstagramLink(cfg.InstagramLink),
+			model.WithTelegramLink(cfg.TelegramLink),
+			model.WithDiscordLink(cfg.DiscordLink),
+			model.WithLogoImage(cfg.LogoImage),
+			model.WithFeaturedImage(cfg.FeaturedImage),
+			model.WithBannerImage(cfg.BannerImage),
+			model.WithDescription(cfg.Description)},
+	}
+	for _, testCase := range createCollectionTestCase {
+		txCaseInfo := *txCaseDefaultInfo
+		txCaseInfo.ShortName = fmt.Sprintf("txCaseInfo.ShortName#%d", rand.Int())
+		switch testCase {
 		case "ShortName":
-			test.txinfo.ShortName = cfg.BoundaryStr
+			txCaseInfo.ShortName = cfg.BoundaryStr
 		case "Link":
-			l := len(test.txinfo.ops)
+			l := len(txCaseInfo.ops)
 			r := rand.Intn(l)
 			for _index, do := range []model.CollectionOption{
 				model.WithCollectionUrl(cfg.BoundaryStr2),
@@ -150,26 +84,22 @@ func createCollectionWrong(index int) {
 				model.WithDescription(cfg.BoundaryStr3),
 			} {
 				if _index == r {
-					test.txinfo.ops = append(test.txinfo.ops, do)
+					txCaseInfo.ops = append(txCaseInfo.ops, do)
 					break
 				}
 			}
 		case "CreatorEarningRate":
 			r := rand.Intn(100000000) + 100000
-			test.txinfo.CreatorEarningRate = fmt.Sprintf("%d", r)
+			txCaseInfo.CreatorEarningRate = fmt.Sprintf("%d", r)
 		case "CategoryId":
 			r := rand.Intn(10000) + 10
-			test.txinfo.CategoryId = fmt.Sprintf("%d", r)
+			txCaseInfo.CategoryId = fmt.Sprintf("%d", r)
 		}
 
-		_, err := SignAndSendCreateCollectionTx(client.GetKeyManager(), txInfo, test.txinfo.ShortName, test.txinfo.CategoryId, test.txinfo.CreatorEarningRate, test.txinfo.ops...)
-		if test.expected {
-			fmt.Println(fmt.Sprintf("Hope to fail=%t ! txType=%s,testType=%s,index=%d,func=%s,err=%s", test.expected, "SignAndSendCreateCollectionTx", "Correct", index, "CreateCollection.json.Marshal", err.Error()))
-			return
-		} else {
-			fmt.Println(fmt.Sprintf("Hope to fail=%t! txType=%s,testType=%s,index=%d,func=%s,err=%s", test.expected, "SignAndSendCreateCollectionTx", "Correct", index, "CreateCollection.json.Marshal", err.Error()))
-			return
-		}
+		_, err := SignAndSendCreateCollectionTx(client.GetKeyManager(), txInfo, txCaseInfo.ShortName, txCaseInfo.CategoryId, txCaseInfo.CreatorEarningRate, txCaseInfo.ops...)
+
+		fmt.Println(fmt.Sprintf("Hope to fail ,txType=%s,testType=%s,index=%d,func=%s,err=%s", "CreateCollection", "Wrong", index, "SignAndSendCreateCollectionTx2", err.Error()))
+
 	}
 }
 func getPreCollectionTx(accountName string) (*sdk.RespetSdktxInfo, error) {
