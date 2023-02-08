@@ -21,7 +21,7 @@ func makeSellOfferCorrect(index int) {
 	if err != nil {
 		fmt.Println(fmt.Sprintf("success! txType=%s,index=%d,func=%s,err=%s", "makeSellOfferCorrect", index, "CreateSellOffer", err.Error()))
 	} else {
-		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "makeSellOfferCorrect", index, "CreateSellOffer", err.Error()))
+		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s", "makeSellOfferCorrect", index, "CreateSellOffer"))
 	}
 }
 func makeBuyOfferCorrect(index int) {
@@ -29,6 +29,6 @@ func makeBuyOfferCorrect(index int) {
 	if err != nil {
 		fmt.Println(fmt.Sprintf("success! txType=%s,index=%d,func=%s,err=%s", "makeBuyOfferCorrect", index, "CreateBuyOffer", err.Error()))
 	} else {
-		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "makeBuyOfferCorrect", index, "CreateBuyOffer", err.Error()))
+		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s", "makeBuyOfferCorrect", index, "CreateBuyOffer"))
 	}
 }
