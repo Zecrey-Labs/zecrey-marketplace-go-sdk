@@ -67,7 +67,7 @@ func NewClient(accountName, seed string) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong seed:%s", seed))
 	}
-	l2pk := eddsaHelper.GetEddsaPublicKey(seed[2:])
+	l2pk := eddsaHelper.GetEddsaPrivateKey(seed[2:])
 	connEth, err := _rpc.NewClient(chainRpcUrl)
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))

@@ -17,6 +17,7 @@ func transferNftCorrect(index int) {
 	resultSdk, err := getPreTransferNftTx(accountName, cfg.ToAccountName, fmt.Sprintf("%d", cfg.TransferAssetId))
 	if err != nil {
 		fmt.Println(fmt.Sprintf("success ! txType=%s,index=%d,func=%s,err=%s", "transferNftCorrect", index, "getPreTransferNftTx", err.Error()))
+		return
 	}
 	_, err = SignAndSendTransferNftTx(client.GetKeyManager(), fmt.Sprintf("%d", cfg.TransferAssetId), resultSdk.Transtion)
 	if err != nil {
