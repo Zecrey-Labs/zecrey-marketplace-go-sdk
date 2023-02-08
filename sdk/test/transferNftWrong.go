@@ -19,7 +19,7 @@ type TransferNftTxInfo struct {
 }
 
 func transferNftWrongBatch(index int) {
-	for j := 0; j < index*PerMinute;; j++ {
+	for j := 0; j < index*PerMinute; j++ {
 		go transferNftWrong(index)
 	}
 }

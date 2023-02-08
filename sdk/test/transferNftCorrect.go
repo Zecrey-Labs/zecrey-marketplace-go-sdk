@@ -6,7 +6,7 @@ import (
 
 func transferNftCorrectOnce(index int) {
 	if index == 1 {
-		for j := 0; j < index*PerMinute;; j++ {
+		for j := 0; j < index*PerMinute; j++ {
 			go transferNftCorrect(index)
 		}
 	}

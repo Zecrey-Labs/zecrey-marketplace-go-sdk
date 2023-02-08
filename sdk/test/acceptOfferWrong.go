@@ -7,7 +7,7 @@ import (
 )
 
 func acceptOfferWrongBatch(index int) {
-	for j := 0; j < index*PerMinute;; j++ {
+	for j := 0; j < index*PerMinute; j++ {
 		go acceptOfferWrong(index)
 	}
 }

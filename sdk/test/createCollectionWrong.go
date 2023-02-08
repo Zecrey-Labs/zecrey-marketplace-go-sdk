@@ -26,7 +26,7 @@ var createCollectionTestCase = []string{
 }
 
 func createCollectionWrongBatch(index int) {
-	for j := 0; j < index*PerMinute;; j++ {
+	for j := 0; j < index*PerMinute; j++ {
 		go createCollectionWrong(index)
 	}
 }

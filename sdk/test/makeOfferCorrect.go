@@ -7,7 +7,7 @@ import (
 )
 
 func makeOfferCorrectBatch(index int) {
-	for j := 0; j < index*PerMinute;; j++ {
+	for j := 0; j < index*PerMinute; j++ {
 		go makeSellOfferCorrect(index)
 		go makeBuyOfferCorrect(index)
 	}
