@@ -1,6 +1,6 @@
 ## Zecrey nft Concurrent test
 
-Within 30 minutes, the number of transactions sent increased gradually from 10000 to 300000
+Within 30 minutes, the number of transactions sent increased gradually from 1000 to 30000
 
 ## The test is divided into two modules
 

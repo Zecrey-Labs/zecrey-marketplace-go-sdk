@@ -8,7 +8,7 @@ import (
 )
 
 func makeOfferWrongBatch(index int) {
-	for j := 0; j < index*10000; j++ {
+	for j := 0; j < index*PerMinute;; j++ {
 		go makeSellOfferSellAssetIdWrong(index)
 		go makeSellOfferAssetTypeWrong(index)
 		go makeSellOfferAssetAmountWrong(index)

@@ -29,7 +29,7 @@ var mintNftTestCase = []string{
 }
 
 func mintNftCorrectWrongBatch(index int) {
-	for j := 0; j < index*10000; j++ {
+	for j := 0; j < index*PerMinute;; j++ {
 		go mintNftWrong(index)
 	}
 }

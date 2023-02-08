@@ -6,7 +6,7 @@ import (
 
 func withdrawNftCorrectOnce(index int) {
 	if index == 1 {
-		for j := 0; j < index*10000; j++ {
+		for j := 0; j < index*PerMinute;; j++ {
 			go withdrawNftCorrect(index)
 		}
 	}
