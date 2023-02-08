@@ -22,17 +22,17 @@ func main() {
 	}
 
 	for i := 1; i < 30; i++ {
-		go createCollectionCorrectBatch(i)
-		go createCollectionWrongBatch(i)
-		go mintNftCorrectOnce(i)
-		go mintNftCorrectWrongBatch(i)
-		go makeOfferCorrectBatch(i)
-		go makeOfferWrongBatch(i)
-		go transferNftCorrectOnce(i)
-		go transferNftWrongBatch(i)
-		go withdrawNftCorrectOnce(i)
-		go withdrawNftWrongBatch(i)
-		go acceptOfferWrongBatch(i)
+		createCollectionCorrectBatch(i)
+		createCollectionWrongBatch(i)
+		mintNftCorrectOnce(i)
+		mintNftCorrectWrongBatch(i)
+		makeOfferCorrectBatch(i)
+		makeOfferWrongBatch(i)
+		transferNftCorrectOnce(i)
+		transferNftWrongBatch(i)
+		withdrawNftCorrectOnce(i)
+		withdrawNftWrongBatch(i)
+		acceptOfferWrongBatch(i)
 		time.Sleep(60 * time.Second)
 	}
 	time.Sleep(10 * time.Minute)
