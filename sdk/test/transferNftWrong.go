@@ -31,6 +31,7 @@ func transferNftWrong(index int) {
 	resultSdk, err := getPreTransferNftTx(accountName, ToAccountName, assetId)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "transferNftWrong", index, "getPreTransferNftTx", err.Error()))
+		return
 	}
 	_, err = SignAndSendTransferNftTx(client.GetKeyManager(), assetId, resultSdk.Transtion)
 	if err != nil {
@@ -82,7 +83,7 @@ func getPreTransferNftTx(accountName, toAccountName, AssetId string) (*sdk.Respe
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
 		return nil, err
 	}
-	return resultSdk, err
+	return resultSdk, nil
 }
 func sdkTransferNftTxInfo(key sdk.KeyManager, txInfoSdk string) (string, error) {
 	txInfo := &sdk.TransferNftTxInfo{}

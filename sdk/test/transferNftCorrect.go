@@ -10,7 +10,6 @@ func transferNftCorrectOnce(index int) {
 			go transferNftCorrect(index)
 		}
 	}
-
 }
 
 func transferNftCorrect(index int) {

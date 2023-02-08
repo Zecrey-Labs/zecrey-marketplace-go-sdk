@@ -49,6 +49,10 @@ func mintNftWrong(index int) {
 		txinfo := *txDefaultinfo
 		txinfo.Name = fmt.Sprintf("%s %d ", txinfo.Name, rand.Int())
 		resultSdk, err := getPreMintNftTx(accountName, txinfo.CollectionId, txinfo.Name, "txinfo.ContentHash")
+		if err != nil {
+			fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "mintNftCorrect", index, "getPreMintNftTx", err.Error()))
+			return
+		}
 		txInfo := &sdk.MintNftTxInfo{}
 		err = json.Unmarshal([]byte(resultSdk.Transtion), txInfo)
 		if err != nil {
