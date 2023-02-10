@@ -284,9 +284,9 @@ func TestWithdraw(t *testing.T) {
 }
 
 func TestSellOffer(t *testing.T) {
-	var AssetId int64 = 3
-	seed := "asdfasdfasdf98fd05c70sdafasdfasdffdasdfsadfsdfsfdasdf30383efcb3954631"
-	accountName := "alice"
+	var AssetId int64 = 27285
+	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
+	accountName := "amber1"
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
@@ -318,9 +318,9 @@ func TestBuyOffer(t *testing.T) {
 }
 
 func TestCancelOffer(t *testing.T) {
-	var OfferId int64 = 4
-	seed := "asdfasdfasdf98fd05c70sdafasdfasdffdasdfsadfsdfsfdasdf30383efcb3954631"
-	accountName := "alice"
+	var OfferId int64 = 29560
+	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
+	accountName := "amber1"
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
@@ -334,14 +334,14 @@ func TestCancelOffer(t *testing.T) {
 }
 
 func TestAcceptOffer(t *testing.T) {
-	var offerId int64 = 6
-	seed := "13243b9a9fdec6dc90c7cc1eb1c939134dfb659d2f0asdfas5413213213213213"
-	accountName := "bob"
+	var offerId int64 = 24507
+	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
+	accountName := "amber1"
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := c.AcceptOffer(offerId, false, big.NewInt(1230000))
+	result, err := c.AcceptOffer(offerId, false, big.NewInt(500000000000000000))
 	if err != nil {
 		t.Fatal(err)
 	}
