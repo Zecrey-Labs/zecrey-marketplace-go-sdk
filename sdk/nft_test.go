@@ -619,6 +619,19 @@ func TestUploadMediaInBatch(t *testing.T) {
 	}
 }
 
+func TestUploadMediaRepeat(t *testing.T) {
+	path := "/Users/zhangwei/Documents/collection2222/Portrait"
+	files, _ := ioutil.ReadDir(path)
+	var list []string
+	for i := 0; i < 1000; i++ {
+		result, err := UploadMedia(path + "/" + files[0].Name())
+		if err == nil {
+			list = append(list, result.PublicId)
+			fmt.Println(result.PublicId)
+		}
+	}
+}
+
 func TestCreateCollectionInBatch(t *testing.T) {
 	collections := map[string][]string{
 		"Portrait": {"collection/xj5dg8wxxlu53iaaxq1s", "collection/m1bxivrprc2sxykorvjq",
@@ -711,7 +724,7 @@ func TestQueryEfficiency_getAccountAssets(t *testing.T) {
 {"query":"query MyQuery @cached {\n  actionGetAccountAssets(account_index: %d) {\n    confirmedAssetIdList\n    pendingAssets {\n      account_name\n      audio_thumb\n      collection_id\n      content_hash\n      created_at\n      creator_earning_rate\n      description\n      expired_at\n      id\n      image_thumb\n      levels\n      media\n      name\n      nft_index\n      properties\n      stats\n      status\n      video_thumb\n    }\n  }\n}\n","variables":{}}
 `, accountIndex)
 	vegetaTest("getAccountAssets", queryStr)
-	//TestQueryEfficiency_getAccountCollections(t)
+	TestQueryEfficiency_getAccountCollections(t)
 }
 func TestQueryEfficiency_getAccountCollections(t *testing.T) {
 	accountIndex := 4

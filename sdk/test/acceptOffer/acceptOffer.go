@@ -14,17 +14,17 @@ import (
 )
 
 /*
-先用一个账号sellOffer很多nft
-再用other账号进行buyOffer
-一共俩账号即可
+	先用一个账号sellOffer很多nft
+	再用other账号进行buyOffer
+	一共俩账号即可
 */
 
-var (
-	log, _ = zap.NewDevelopment()
-)
+func InitCtx(_client *sdk.Client, _l1Addr common.Address) *ClientCtx {
+	return &ClientCtx{_client, _l1Addr}
+}
 
 type ClientCtx struct {
-	Client sdk.Client
+	Client *sdk.Client
 	L1Addr common.Address
 }
 
@@ -60,7 +60,7 @@ func (c *ClientCtx) acceptOfferTest() error {
 			res[idx].offerId = params.offerId
 			_, err := c.Client.AcceptOffer(params.offerId, params.offerId == 1, params.assetAmount)
 			if err != nil {
-				log.Error("AcceptOffer failed", zap.Error(err))
+				fmt.Println(fmt.Errorf("AcceptOffer failed", zap.Error(err)))
 				res[idx].Success = false
 				res[idx].err = err.Error()
 				return

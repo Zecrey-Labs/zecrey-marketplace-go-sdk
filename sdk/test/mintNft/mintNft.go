@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk"
 	"github.com/ethereum/go-ethereum/common"
-	"go.uber.org/zap"
 	"math/rand"
-	"sync"
 	"time"
 )
 
+/*
+ 一个账号mint 1000个
+*/
 type RandomOptionParam struct {
 	RandomCollectionId bool
 	RandomNftUrl       bool
@@ -21,14 +22,16 @@ type RandomOptionParam struct {
 	RandomStats        bool
 
 	CollectionId int64
+	Properties   string
+	Levels       string
+	Stats        string
+	Medias       []string
 }
 
-var (
-	log, _ = zap.NewDevelopment()
-)
+var ()
 
 type ClientCtx struct {
-	Client sdk.Client
+	Client *sdk.Client
 	L1Addr common.Address
 }
 type RandomOption func(t *RandomOptionParam)
@@ -43,6 +46,10 @@ type MitNftTxInfo struct {
 	Stats        string
 }
 
+func InitCtx(_client *sdk.Client, _l1Addr common.Address) *ClientCtx {
+	return &ClientCtx{_client, _l1Addr}
+}
+
 func (c *ClientCtx) MitNftTest(repeat int, ops ...RandomOption) error {
 	option := RandomOptionParam{}
 	for _, op := range ops {
@@ -50,9 +57,6 @@ func (c *ClientCtx) MitNftTest(repeat int, ops ...RandomOption) error {
 	}
 	//pre get
 	txInfo := MitNftTxInfo{}
-
-	wg := sync.WaitGroup{}
-	wg.Add(repeat)
 	res := make([]struct {
 		Success bool
 		Err     string
@@ -60,13 +64,11 @@ func (c *ClientCtx) MitNftTest(repeat int, ops ...RandomOption) error {
 
 	for i := 0; i < repeat; i++ {
 		randTxInfo := c.randomTxInfo(txInfo, option)
-
-		go func(idx int) {
-			defer wg.Done()
-			_, err := c.Client.MintNft(randTxInfo.CollectionId, randTxInfo.NftUrl, randTxInfo.Name, randTxInfo.Description, randTxInfo.Media,
+		func(idx int) {
+			_, err := c.Client.MintNft(randTxInfo.CollectionId, randTxInfo.NftUrl, randTxInfo.Name, randTxInfo.Description, option.Medias[idx],
 				randTxInfo.Properties, randTxInfo.Levels, randTxInfo.Stats)
 			if err != nil {
-				log.Error("MintNft failed", zap.Error(err))
+				fmt.Errorf("MintNft failed %v", err)
 				res[idx].Success = false
 				res[idx].Err = err.Error()
 				return
@@ -75,7 +77,6 @@ func (c *ClientCtx) MitNftTest(repeat int, ops ...RandomOption) error {
 		}(i)
 	}
 
-	wg.Wait()
 	var failedTx []string
 
 	for _, r := range res {
@@ -91,20 +92,25 @@ func (c *ClientCtx) MitNftTest(repeat int, ops ...RandomOption) error {
 }
 
 func (c *ClientCtx) randomTxInfo(txInfo MitNftTxInfo, option RandomOptionParam) MitNftTxInfo {
+	txInfo.CollectionId = option.CollectionId
+	txInfo.Properties = option.Properties
+	txInfo.Levels = option.Levels
+	txInfo.Stats = option.Stats
+
 	rand.Seed(time.Now().UnixNano())
 	if option.RandomCollectionId {
+
 	}
 	if option.RandomNftUrl {
-
+		txInfo.NftUrl = fmt.Sprintf("mintNftUrlTest%d", rand.Int())
 	}
 	if option.RandomName {
-
+		txInfo.Name = fmt.Sprintf("mintNftTest%d", rand.Int())
 	}
 	if option.RandomDescription {
-
+		txInfo.Description = fmt.Sprintf("mintNftDescriptionTest%d", rand.Int())
 	}
 	if option.RandomMedia {
-
 	}
 	if option.RandomProperties {
 
@@ -115,5 +121,6 @@ func (c *ClientCtx) randomTxInfo(txInfo MitNftTxInfo, option RandomOptionParam) 
 	if option.RandomStats {
 
 	}
+
 	return txInfo
 }

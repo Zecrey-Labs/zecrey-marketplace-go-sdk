@@ -6,7 +6,6 @@ import (
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/util"
 	"github.com/ethereum/go-ethereum/common"
-	"go.uber.org/zap"
 	"io/ioutil"
 	"math/big"
 	"math/rand"
@@ -16,14 +15,11 @@ import (
 )
 
 /*
-
- */
-var (
-	log, _ = zap.NewDevelopment()
-)
+ 多个账号list,输出
+*/
 
 type ClientCtx struct {
-	Client sdk.Client
+	Client *sdk.Client
 	L1Addr common.Address
 }
 type RandomOption func(t *RandomOptionParam)
@@ -34,7 +30,11 @@ type RandomOptionParam struct {
 	AssetAmountDefault int64
 }
 
-func (c *ClientCtx) listOfferTest(ops ...RandomOption) error {
+func InitCtx(_client *sdk.Client, _l1Addr common.Address) *ClientCtx {
+	return &ClientCtx{_client, _l1Addr}
+}
+
+func (c *ClientCtx) ListOfferTest(ops ...RandomOption) error {
 	option := RandomOptionParam{
 		AssetAmountDefault: 1000000,
 	}
@@ -63,12 +63,6 @@ func (c *ClientCtx) listOfferTest(ops ...RandomOption) error {
 		err     string
 	}, repeat)
 
-	//offer2Cancel := make([]struct {
-	//	Success bool
-	//	nftId   int64
-	//	err     string
-	//}, repeat)
-
 	for i := 0; i < repeat; i++ {
 		nftId := nftList[i].nftId
 		assetAmount := c.randomTxParams(option)
@@ -77,7 +71,7 @@ func (c *ClientCtx) listOfferTest(ops ...RandomOption) error {
 			res[idx].nftId = nftId
 			_, err := c.Client.CreateSellOffer(nftId, 0, big.NewInt(assetAmount))
 			if err != nil {
-				log.Error("CancelOffer failed", zap.Error(err))
+				fmt.Println(fmt.Errorf("CancelOffer failed%s", err.Error()))
 				res[idx].Success = false
 				res[idx].err = err.Error()
 				return

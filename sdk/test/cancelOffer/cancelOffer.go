@@ -6,7 +6,6 @@ import (
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/util"
 	"github.com/ethereum/go-ethereum/common"
-	"go.uber.org/zap"
 	"io/ioutil"
 	"path/filepath"
 	"sync"
@@ -16,16 +15,17 @@ import (
 一个账号去取消先前listOffer的
 一个账号即可完成
 */
-var (
-	log, _ = zap.NewDevelopment()
-)
+
+func InitCtx(_client *sdk.Client, _l1Addr common.Address) *ClientCtx {
+	return &ClientCtx{_client, _l1Addr}
+}
 
 type ClientCtx struct {
-	Client sdk.Client
+	Client *sdk.Client
 	L1Addr common.Address
 }
 
-func (c *ClientCtx) cancelOfferTest() error {
+func (c *ClientCtx) CancelOfferTest() error {
 	data, err := ioutil.ReadFile(filepath.Join(".", util.DefaultDir, util.Offer2Cancel))
 	if err != nil {
 		panic(err)
@@ -55,7 +55,7 @@ func (c *ClientCtx) cancelOfferTest() error {
 			res[idx].offerId = params.offerId
 			_, err := c.Client.CancelOffer(params.offerId)
 			if err != nil {
-				log.Error("CancelOffer failed", zap.Error(err))
+				fmt.Println(fmt.Errorf("CancelOffer failed %s", err.Error()))
 				res[idx].Success = false
 				res[idx].err = err.Error()
 				return

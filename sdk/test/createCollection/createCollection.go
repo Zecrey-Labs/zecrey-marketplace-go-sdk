@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
 	"math/rand"
-	"sync"
 	"time"
 )
 
@@ -17,7 +16,9 @@ type RandomOptionParam struct {
 	RandomCreatorEarningRate bool
 	RandomOps                bool
 
-	xxx string
+	Ops                []model.CollectionOption
+	CategoryId         int64
+	CreatorEarningRate int64
 }
 
 /*
@@ -28,7 +29,7 @@ var (
 )
 
 type ClientCtx struct {
-	Client sdk.Client
+	Client *sdk.Client
 	L1Addr common.Address
 }
 type RandomOption func(t *RandomOptionParam)
@@ -39,6 +40,9 @@ type TxInfo struct {
 	Ops                []model.CollectionOption
 }
 
+func InitCtx(_client *sdk.Client, _l1Addr common.Address) *ClientCtx {
+	return &ClientCtx{_client, _l1Addr}
+}
 func (c *ClientCtx) CreateCollectionTest(repeat int, ops ...RandomOption) error {
 	option := RandomOptionParam{}
 	for _, op := range ops {
@@ -47,8 +51,6 @@ func (c *ClientCtx) CreateCollectionTest(repeat int, ops ...RandomOption) error 
 	//pre get
 	txInfo := TxInfo{}
 
-	wg := sync.WaitGroup{}
-	wg.Add(repeat)
 	res := make([]struct {
 		Success bool
 		Err     string
@@ -58,7 +60,6 @@ func (c *ClientCtx) CreateCollectionTest(repeat int, ops ...RandomOption) error 
 		randTxInfo := c.randomTxInfo(txInfo, option)
 
 		go func(idx int) {
-			defer wg.Done()
 			_, err := c.Client.CreateCollection(randTxInfo.ShortName, randTxInfo.CategoryId, randTxInfo.CreatorEarningRate, randTxInfo.Ops...)
 			if err != nil {
 				log.Error("CreateCollection failed", zap.Error(err))
@@ -69,10 +70,7 @@ func (c *ClientCtx) CreateCollectionTest(repeat int, ops ...RandomOption) error 
 			res[idx].Success = true
 		}(i)
 	}
-
-	wg.Wait()
 	var failedTx []string
-
 	for _, r := range res {
 		if !r.Success {
 			failedTx = append(failedTx, r.Err)
@@ -88,7 +86,7 @@ func (c *ClientCtx) CreateCollectionTest(repeat int, ops ...RandomOption) error 
 func (c *ClientCtx) randomTxInfo(txInfo TxInfo, option RandomOptionParam) TxInfo {
 	rand.Seed(time.Now().UnixNano())
 	if option.RandomShortName {
-
+		txInfo.ShortName = fmt.Sprintf("createCollectionTest%d", rand.Int())
 	}
 	if option.RandomCreatorEarningRate {
 

@@ -20,7 +20,7 @@ var (
 )
 
 type ClientCtx struct {
-	Client sdk.Client
+	Client *sdk.Client
 	L1Addr common.Address
 }
 type RandomOption func(t *RandomOptionParam)

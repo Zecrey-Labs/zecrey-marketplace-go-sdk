@@ -10,6 +10,7 @@ require (
 	github.com/zecrey-labs/zecrey-eth-rpc v0.0.16-0.20220901141132-9dc73c6ca518
 	github.com/zecrey-labs/zecrey-legend v1.0.20
 	github.com/zeromicro/go-zero v1.3.3
+	go.uber.org/zap v1.21.0
 )
 
 require (
@@ -45,15 +46,18 @@ require (
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	github.com/tklauser/numcpus v0.2.2 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
+	github.com/zecrey-labs/zecrey-legend-go-sdk v0.0.23 // indirect
 	go.opentelemetry.io/otel v1.7.0 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.3.0 // indirect
 	go.opentelemetry.io/otel/exporters/zipkin v1.3.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.7.0 // indirect
 	go.opentelemetry.io/otel/trace v1.7.0 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/automaxprocs v1.4.0 // indirect
+	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/net v0.2.0 // indirect
-	golang.org/x/sys v0.2.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	google.golang.org/grpc v1.50.1 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
