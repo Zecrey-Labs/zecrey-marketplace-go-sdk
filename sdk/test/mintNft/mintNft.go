@@ -50,7 +50,7 @@ func InitCtx(_client *sdk.Client, _l1Addr common.Address) *ClientCtx {
 	return &ClientCtx{_client, _l1Addr}
 }
 
-func (c *ClientCtx) MitNftTest(repeat int, ops ...RandomOption) error {
+func (c *ClientCtx) MitNftTest(repeat, Index int, ops ...RandomOption) error {
 	option := RandomOptionParam{}
 	for _, op := range ops {
 		op(&option)
@@ -62,19 +62,16 @@ func (c *ClientCtx) MitNftTest(repeat int, ops ...RandomOption) error {
 		Err     string
 	}, repeat)
 
-	for i := 0; i < repeat; i++ {
+	for idx := 0; idx < repeat; idx++ {
 		randTxInfo := c.randomTxInfo(txInfo, option)
-		func(idx int) {
-			_, err := c.Client.MintNft(randTxInfo.CollectionId, randTxInfo.NftUrl, randTxInfo.Name, randTxInfo.Description, option.Medias[idx],
-				randTxInfo.Properties, randTxInfo.Levels, randTxInfo.Stats)
-			if err != nil {
-				fmt.Errorf("MintNft failed %v", err)
-				res[idx].Success = false
-				res[idx].Err = err.Error()
-				return
-			}
-			res[idx].Success = true
-		}(i)
+		resp, err := c.Client.MintNft(randTxInfo.CollectionId, randTxInfo.NftUrl, randTxInfo.Name, randTxInfo.Description, option.Medias[idx],
+			randTxInfo.Properties, randTxInfo.Levels, randTxInfo.Stats)
+		if err != nil {
+			res[idx].Success = false
+			res[idx].Err = err.Error()
+			continue
+		}
+		fmt.Println(fmt.Sprintf("Index=%d,nftId=%d", Index, resp.Asset.Id))
 	}
 
 	var failedTx []string
@@ -86,7 +83,7 @@ func (c *ClientCtx) MitNftTest(repeat int, ops ...RandomOption) error {
 	}
 
 	if len(failedTx) > 0 {
-		return fmt.Errorf("mintnft failed, tx: %v", failedTx)
+		return fmt.Errorf("mintnft failed,failNums:%d tx: %v", len(failedTx), failedTx)
 	}
 	return nil
 }

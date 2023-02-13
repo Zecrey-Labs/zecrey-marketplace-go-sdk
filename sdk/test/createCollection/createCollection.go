@@ -5,7 +5,6 @@ import (
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
 	"github.com/ethereum/go-ethereum/common"
-	"go.uber.org/zap"
 	"math/rand"
 	"time"
 )
@@ -20,13 +19,6 @@ type RandomOptionParam struct {
 	CategoryId         int64
 	CreatorEarningRate int64
 }
-
-/*
-一个账号即可完成
-*/
-var (
-	log, _ = zap.NewDevelopment()
-)
 
 type ClientCtx struct {
 	Client *sdk.Client
@@ -43,7 +35,7 @@ type TxInfo struct {
 func InitCtx(_client *sdk.Client, _l1Addr common.Address) *ClientCtx {
 	return &ClientCtx{_client, _l1Addr}
 }
-func (c *ClientCtx) CreateCollectionTest(repeat int, ops ...RandomOption) error {
+func (c *ClientCtx) CreateCollectionTest(repeat, index int, ops ...RandomOption) error {
 	option := RandomOptionParam{}
 	for _, op := range ops {
 		op(&option)
@@ -56,19 +48,15 @@ func (c *ClientCtx) CreateCollectionTest(repeat int, ops ...RandomOption) error 
 		Err     string
 	}, repeat)
 
-	for i := 0; i < repeat; i++ {
+	for idx := 0; idx < repeat; idx++ {
 		randTxInfo := c.randomTxInfo(txInfo, option)
-
-		go func(idx int) {
-			_, err := c.Client.CreateCollection(randTxInfo.ShortName, randTxInfo.CategoryId, randTxInfo.CreatorEarningRate, randTxInfo.Ops...)
-			if err != nil {
-				log.Error("CreateCollection failed", zap.Error(err))
-				res[idx].Success = false
-				res[idx].Err = err.Error()
-				return
-			}
-			res[idx].Success = true
-		}(i)
+		_, err := c.Client.CreateCollection(randTxInfo.ShortName, randTxInfo.CategoryId, randTxInfo.CreatorEarningRate, randTxInfo.Ops...)
+		if err != nil {
+			res[idx].Success = false
+			res[idx].Err = err.Error()
+			continue
+		}
+		res[idx].Success = true
 	}
 	var failedTx []string
 	for _, r := range res {
@@ -78,13 +66,16 @@ func (c *ClientCtx) CreateCollectionTest(repeat int, ops ...RandomOption) error 
 	}
 
 	if len(failedTx) > 0 {
-		return fmt.Errorf("CreateCollection failed, tx: %v", failedTx)
+		return fmt.Errorf("CreateCollection failed,index=%d failNum=%d tx: %v", index, len(failedTx), failedTx)
 	}
 	return nil
 }
 
 func (c *ClientCtx) randomTxInfo(txInfo TxInfo, option RandomOptionParam) TxInfo {
 	rand.Seed(time.Now().UnixNano())
+	txInfo.Ops = option.Ops
+	txInfo.CategoryId = fmt.Sprintf("%d", option.CategoryId)
+	txInfo.CreatorEarningRate = fmt.Sprintf("%d", option.CreatorEarningRate)
 	if option.RandomShortName {
 		txInfo.ShortName = fmt.Sprintf("createCollectionTest%d", rand.Int())
 	}
