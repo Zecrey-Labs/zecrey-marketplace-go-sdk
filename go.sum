@@ -1129,6 +1129,8 @@ github.com/yuin/gopher-lua v0.0.0-20200816102855-ee81675732da/go.mod h1:E1AXubJB
 github.com/zecrey-labs/zecrey-crypto v1.0.28/go.mod h1:8aDtzlDey9BRuXez1uUmthDYEGaFW/VSz7IFoZAAXsY=
 github.com/zecrey-labs/zecrey-crypto v1.0.34 h1:a8nvKc6CqdyVc1S89/aM237ut0qsyk2EQxHJW9roh2c=
 github.com/zecrey-labs/zecrey-crypto v1.0.34/go.mod h1:8aDtzlDey9BRuXez1uUmthDYEGaFW/VSz7IFoZAAXsY=
+github.com/zecrey-labs/zecrey-crypto v1.0.36 h1:Sqv6IS/IFYnAQGeBqyGLPZTZd4V5hnoa2z7PWiTxrzY=
+github.com/zecrey-labs/zecrey-crypto v1.0.36/go.mod h1:8aDtzlDey9BRuXez1uUmthDYEGaFW/VSz7IFoZAAXsY=
 github.com/zecrey-labs/zecrey-eth-rpc v0.0.16-0.20220901141132-9dc73c6ca518 h1:71DdLVHm1TedMi836IZqvbL6ACP6IqIAHRdw0OhxpX8=
 github.com/zecrey-labs/zecrey-eth-rpc v0.0.16-0.20220901141132-9dc73c6ca518/go.mod h1:D/qGWiW1mwInLjZshiLzms161r3OuTO7rVtQifgE0UU=
 github.com/zecrey-labs/zecrey-legend v1.0.20 h1:pPvo/ZTAshlt5muQ5AAk952E1BzCnWk5a94akAJGbbo=

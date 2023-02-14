@@ -105,7 +105,6 @@ func (t *CreateCProcessor) Process(ctx *Ctx) error {
 		panic(err)
 	}
 	ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", Collection2Nft, index), bytes, 0644)
-	fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v", index, t.Repeat, time.Now().Sub(now)))
 
 	var failedTx []string
 	for _, r := range res {
@@ -117,6 +116,7 @@ func (t *CreateCProcessor) Process(ctx *Ctx) error {
 		err := fmt.Errorf("CreateCollection failed,index=%d  failNum=%d   time=%v tx: %v", index, len(failedTx), time.Now().Sub(now), failedTx)
 		return err
 	}
+	fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v", index, t.Repeat, time.Now().Sub(now)))
 	return nil
 }
 

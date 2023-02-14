@@ -26,17 +26,17 @@ import (
 const (
 	//nftMarketUrl = "http://localhost:9999"
 
-	nftMarketUrl = "https://test-legend-nft.zecrey.com"
-	legendUrl    = "https://test-legend-app.zecrey.com"
-	hasuraUrl    = "https://legend-marketplace.hasura.app/v1/graphql"
-	//hasuraUrl = "https://hasura.zecrey.com/v1/graphql" //test
-	hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
+	//nftMarketUrl = "https://test-legend-nft.zecrey.com"
+	//legendUrl    = "https://test-legend-app.zecrey.com"
+	//hasuraUrl    = "https://legend-marketplace.hasura.app/v1/graphql"
+	////hasuraUrl = "https://hasura.zecrey.com/v1/graphql" //test
+	//hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
 	//hasuraAdminKey = "zecreyLegendTest@Hasura" //test
 
-	//nftMarketUrl   = "https://dev-legend-nft.zecrey.com"
-	//legendUrl      = "https://dev-legend-app.zecrey.com"
-	//hasuraUrl      = "https://legend-market-dev.hasura.app/v1/graphql"
-	//hasuraAdminKey = "kqWAsFWVvn61mFuiuQ5yqJkWpu5VS1B5FGTdFzlVlQJ9fMTr9yNIjOnN3hERC9ex" //dev
+	nftMarketUrl   = "https://dev-legend-nft.zecrey.com"
+	legendUrl      = "https://dev-legend-app.zecrey.com"
+	hasuraUrl      = "https://legend-market-dev.hasura.app/v1/graphql"
+	hasuraAdminKey = "kqWAsFWVvn61mFuiuQ5yqJkWpu5VS1B5FGTdFzlVlQJ9fMTr9yNIjOnN3hERC9ex" //dev
 
 	//nftMarketUrl   = "https://qa-legend-nft.zecrey.com"
 	//legendUrl      = "https://qa-legend-app.zecrey.com"
@@ -54,6 +54,10 @@ const (
 	REYAssetId = 2
 )
 
+var (
+	GlobalAssetId = REYAssetId
+)
+
 type Client struct {
 	accountName    string
 	l2pk           string
@@ -65,11 +69,11 @@ type Client struct {
 }
 
 func NewClient(accountName, seed string) (*Client, error) {
-	keyManager, err := NewSeedKeyManager(seed[2:])
+	keyManager, err := NewSeedKeyManager(seed)
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong seed:%s", seed))
 	}
-	l2pk, err := eddsaHelper.GetEddsaCompressedPublicKey(seed[2:])
+	l2pk, err := eddsaHelper.GetEddsaCompressedPublicKey(seed)
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong GetEddsaCompressedPublicKey :%s", err.Error()))
 	}
@@ -88,11 +92,11 @@ func NewClient(accountName, seed string) (*Client, error) {
 	}, nil
 }
 func NewClientNoSuffix(accountName, seed string) (*Client, error) {
-	keyManager, err := NewSeedKeyManager(seed[2:])
+	keyManager, err := NewSeedKeyManager(seed)
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong seed:%s", seed))
 	}
-	l2pk, err := eddsaHelper.GetEddsaCompressedPublicKey(seed[2:])
+	l2pk, err := eddsaHelper.GetEddsaCompressedPublicKey(seed)
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong GetEddsaCompressedPublicKey :%s", err.Error()))
 	}
@@ -768,6 +772,7 @@ func sdkCreateCollectionTxInfo(key KeyManager, txInfoSdk, Description, ShortName
 		return "", err
 	}
 	//reset
+	txInfo.GasFeeAssetId = int64(GlobalAssetId)
 	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	txInfo.Introduction = Description
 	txInfo.Name = ShortName
@@ -784,6 +789,7 @@ func sdkMintNftTxInfo(key KeyManager, txInfoSdk string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	txInfo.GasFeeAssetId = int64(GlobalAssetId)
 	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	tx, err := constructMintNftTx(key, txInfo)
 	if err != nil {
@@ -798,6 +804,7 @@ func sdkTransferNftTxInfo(key KeyManager, txInfoSdk string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	txInfo.GasFeeAssetId = int64(GlobalAssetId)
 	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	tx, err := constructTransferNftTx(key, txInfo)
 	if err != nil {
@@ -832,6 +839,7 @@ func sdkAtomicMatchWithTx(key KeyManager, txInfoSdk string, isSell bool, AssetAm
 		txInfo.SellOffer = signedOffer
 
 	}
+	txInfo.GasFeeAssetId = int64(GlobalAssetId)
 	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	tx, err := constructAtomicMatchTx(key, txInfo)
 	if err != nil {
@@ -846,6 +854,7 @@ func sdkWithdrawNftTxInfo(key KeyManager, txInfoSdk string, tol1Address string) 
 	if err != nil {
 		return "", err
 	}
+	txInfo.GasFeeAssetId = int64(GlobalAssetId)
 	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	txInfo.ToAddress = tol1Address
 	tx, err := constructWithdrawNftTx(key, txInfo)
@@ -860,6 +869,7 @@ func sdkWithdrawTxInfo(key KeyManager, txInfoSdk string, tol1Address string, ass
 	if err != nil {
 		return "", err
 	}
+	txInfo.GasFeeAssetId = int64(GlobalAssetId)
 	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	txInfo.AssetId = assetId
 	txInfo.AssetAmount = big.NewInt(assetAmount)

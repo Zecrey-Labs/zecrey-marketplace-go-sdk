@@ -23,12 +23,16 @@ type Ctx struct {
 }
 
 func GetCtx(index int) *Ctx {
-	privateKey, err := ethercrypto.LoadECDSA(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/localPrivateKeys/%s", fmt.Sprintf("key%d", index)))
+	privateKey, err := ethercrypto.LoadECDSA(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/test_account_in_dev_count_1000/%s", fmt.Sprintf("key%d", index)))
 	privateKeyString := hex.EncodeToString(ethercrypto.FromECDSA(privateKey))
 	l1Addr, err := ecdsaHelper.GenerateL1Address(privateKey)
-	l2PublicKey, seed, _ := sdk.GetSeedAndL2Pk(privateKeyString)
-	legendClient := legendSdk.NewZecreyLegendSDK("https://test-legend-app.zecrey.com")
+	l2PublicKey, seed, err := sdk.GetSeedAndL2Pk(privateKeyString)
+	if err != nil {
+		panic(fmt.Sprintf("GetSeedAndL2Pk failed:%v", err))
+	}
+	legendClient := legendSdk.NewZecreyLegendSDK("https://dev-legend-app.zecrey.com")
 	AccountInfo, err := legendClient.GetAccountInfoByPubKey(l2PublicKey)
+	fmt.Println("privateKeyString:", privateKeyString, "l2PublicKey:", l2PublicKey, "l1Addr", l1Addr, "name:", AccountInfo.AccountName)
 	if err != nil {
 		panic(fmt.Sprintf("NewClient failed:%v", err))
 	}

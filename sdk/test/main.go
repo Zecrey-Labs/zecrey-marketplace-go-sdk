@@ -8,13 +8,9 @@ import (
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/ModuleTest"
-	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/cancelOffer"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/createCollection"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/listOffer"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/mintNft"
-	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/transferNft"
-	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/util"
-	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/withdrawNft"
 	"github.com/ethereum/go-ethereum/common"
 	ethercrypto "github.com/ethereum/go-ethereum/crypto"
 	curve "github.com/zecrey-labs/zecrey-crypto/ecc/ztwistededwards/tebn254"
@@ -125,7 +121,7 @@ func testUpdateCollection(repeat int) {
 	wg := sync.WaitGroup{}
 	wg.Add(repeat)
 	for index := 0; index < repeat; index++ {
-		privateKey, err := ethercrypto.LoadECDSA(filepath.Join("./sdk/test", util.DefaultDir, util.KeyDir, fmt.Sprintf("key%d", index)))
+		privateKey, err := ethercrypto.LoadECDSA(filepath.Join("./sdk/test", "util.DefaultDir", "util.KeyDir", fmt.Sprintf("key%d", index)))
 		privateKeyString := hex.EncodeToString(ethercrypto.FromECDSA(privateKey))
 		l2pk, seed, _ := sdk.GetSeedAndL2Pk(privateKeyString)
 		legendClient := legendSdk.NewZecreyLegendSDK("https://dev-legend-app.zecrey.com")
@@ -205,7 +201,7 @@ func testMintNft(repeat int) {
 	wg := sync.WaitGroup{}
 	wg.Add(repeat)
 	for index := 0; index < repeat; index++ {
-		privateKey, _ := ethercrypto.LoadECDSA(filepath.Join("./sdk/test", util.DefaultDir, util.KeyDir, fmt.Sprintf("key%d", index)))
+		privateKey, _ := ethercrypto.LoadECDSA(filepath.Join("./sdk/test", "util.DefaultDir", "util.KeyDir", fmt.Sprintf("key%d", index)))
 		privateKeyString := hex.EncodeToString(ethercrypto.FromECDSA(privateKey))
 		_, seed, _ := sdk.GetSeedAndL2Pk(privateKeyString)
 		legendClient := legendSdk.NewZecreyLegendSDK("https://dev-legend-app.zecrey.com")
@@ -259,147 +255,6 @@ func testListOffer(repeat int) {
 	err := listOfferClient.ListOfferTest()
 	fmt.Println(fmt.Sprintf("==== test over time=%v err=%s", time.Now().Sub(now), err.Error()))
 }
-func testCancelOffer(repeat int) {
-	var legendClients []legendSdk.ZecreyLegendSDK
-	wg := sync.WaitGroup{}
-	wg.Add(repeat)
-	for index := 0; index < repeat; index++ {
-		privateKey, err := ethercrypto.LoadECDSA(filepath.Join("./sdk/test", util.DefaultDir, util.KeyDir, fmt.Sprintf("key%d", index)))
-		privateKeyString := hex.EncodeToString(ethercrypto.FromECDSA(privateKey))
-		l2pk, seed, _ := sdk.GetSeedAndL2Pk(privateKeyString)
-		legendClient := legendSdk.NewZecreyLegendSDK("https://dev-legend-app.zecrey.com")
-		res, err := legendClient.GetAccountInfoByPubKey(l2pk)
-		if err != nil {
-			fmt.Printf("NewZecreyLegendSDK failed:%v", err)
-			panic(fmt.Sprintf("NewZecreyLegendSDK failed:%v", err))
-		} else {
-			fmt.Printf("AccountName:%v", res.AccountName)
-			legendClients = append(legendClients, legendClient)
-		}
-
-		go func(res *legendSdk.RespGetAccountInfoByPubKey, seed string, index int) {
-			defer wg.Done()
-			client, err := sdk.NewClient(res.AccountName, seed)
-			l1addr, err := sdk.GetAccountL1Address(res.AccountName)
-			cancelOfferClient := cancelOffer.InitCtx(client, l1addr)
-			data, _ := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/medias/medias%d.json", index))
-			var Medias []string
-			json.Unmarshal(data, &Medias)
-			fmt.Println("counts:", len(Medias))
-			now := time.Now()
-			err = cancelOfferClient.CancelOfferTest()
-			fmt.Println(fmt.Sprintf("==== test over time=%v err=%s", time.Now().Sub(now), err.Error()))
-		}(res, seed, index)
-	}
-	wg.Wait()
-
-}
-func testAcceptOffer(repeat int) {
-	var legendClients []legendSdk.ZecreyLegendSDK
-	wg := sync.WaitGroup{}
-	wg.Add(repeat)
-	for index := 0; index < repeat; index++ {
-		privateKey, err := ethercrypto.LoadECDSA(filepath.Join("./sdk/test", util.DefaultDir, util.KeyDir, fmt.Sprintf("key%d", index)))
-		privateKeyString := hex.EncodeToString(ethercrypto.FromECDSA(privateKey))
-		l2pk, seed, _ := sdk.GetSeedAndL2Pk(privateKeyString)
-		legendClient := legendSdk.NewZecreyLegendSDK("https://dev-legend-app.zecrey.com")
-		res, err := legendClient.GetAccountInfoByPubKey(l2pk)
-		if err != nil {
-			fmt.Printf("NewZecreyLegendSDK failed:%v", err)
-			panic(fmt.Sprintf("NewZecreyLegendSDK failed:%v", err))
-		} else {
-			fmt.Printf("AccountName:%v", res.AccountName)
-			legendClients = append(legendClients, legendClient)
-		}
-
-		go func(res *legendSdk.RespGetAccountInfoByPubKey, seed string, index int) {
-			defer wg.Done()
-			client, err := sdk.NewClient(res.AccountName, seed)
-			l1addr, err := sdk.GetAccountL1Address(res.AccountName)
-			cancelOfferClient := cancelOffer.InitCtx(client, l1addr)
-			data, _ := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/medias/medias%d.json", index))
-			var Medias []string
-			json.Unmarshal(data, &Medias)
-			fmt.Println("counts:", len(Medias))
-			now := time.Now()
-			err = cancelOfferClient.CancelOfferTest()
-			fmt.Println(fmt.Sprintf("==== test over time=%v err=%s", time.Now().Sub(now), err.Error()))
-		}(res, seed, index)
-	}
-	wg.Wait()
-}
-func testTransferNft(repeat int) {
-	var legendClients []legendSdk.ZecreyLegendSDK
-	wg := sync.WaitGroup{}
-	wg.Add(repeat)
-	for index := 0; index < repeat; index++ {
-		privateKey, _ := ethercrypto.LoadECDSA(filepath.Join(".", util.DefaultDir, util.KeyDir, fmt.Sprintf("%d", index)))
-		privateKeyString := hex.EncodeToString(ethercrypto.FromECDSA(privateKey))
-		l2pk, seed, _ := sdk.GetSeedAndL2Pk(privateKeyString)
-		legendClient := legendSdk.NewZecreyLegendSDK("https://dev-legend-app.zecrey.com")
-		res, err := legendClient.GetAccountInfoByPubKey(l2pk)
-		if err != nil {
-			fmt.Printf("NewZecreyLegendSDK failed:%v", err)
-		} else {
-			fmt.Printf("AccountName:%v", res.AccountName)
-			legendClients = append(legendClients, legendClient)
-		}
-
-		go func(res *legendSdk.RespGetAccountInfoByPubKey, seed string, index int) {
-			defer wg.Done()
-			client, err := sdk.NewClient(res.AccountName, seed)
-			l1addr, err := sdk.GetAccountL1Address(res.AccountName)
-			transferNftClient := transferNft.InitCtx(client, l1addr)
-			data, _ := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/medias/medias%d.json", index))
-			var Medias []string
-			json.Unmarshal(data, &Medias)
-			fmt.Println("counts:", len(Medias))
-			now := time.Now()
-			err = transferNftClient.TransferNftTest(func(t *transferNft.RandomOptionParam) {
-
-			})
-			fmt.Println(fmt.Sprintf("==== test over time=%v err=%s", time.Now().Sub(now), err.Error()))
-		}(res, seed, index)
-
-	}
-	wg.Wait()
-}
-func testWithdrawNft(repeat int) {
-	var legendClients []legendSdk.ZecreyLegendSDK
-	wg := sync.WaitGroup{}
-	wg.Add(repeat)
-	for index := 0; index < repeat; index++ {
-		privateKey, _ := ethercrypto.LoadECDSA(filepath.Join(".", util.DefaultDir, util.KeyDir, fmt.Sprintf("%d", index)))
-		privateKeyString := hex.EncodeToString(ethercrypto.FromECDSA(privateKey))
-		l2pk, seed, _ := sdk.GetSeedAndL2Pk(privateKeyString)
-		legendClient := legendSdk.NewZecreyLegendSDK("https://dev-legend-app.zecrey.com")
-		res, err := legendClient.GetAccountInfoByPubKey(l2pk)
-		if err != nil {
-			fmt.Printf("NewZecreyLegendSDK failed:%v", err)
-		} else {
-			fmt.Printf("AccountName:%v", res.AccountName)
-			legendClients = append(legendClients, legendClient)
-		}
-
-		go func(res *legendSdk.RespGetAccountInfoByPubKey, seed string, index int) {
-			defer wg.Done()
-			client, err := sdk.NewClient(res.AccountName, seed)
-			l1addr, err := sdk.GetAccountL1Address(res.AccountName)
-			withdrawNftClient := withdrawNft.InitCtx(client, l1addr)
-			data, _ := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/medias/medias%d.json", index))
-			var Medias []string
-			json.Unmarshal(data, &Medias)
-			fmt.Println("counts:", len(Medias))
-			now := time.Now()
-			err = withdrawNftClient.WithdrawNftTest(func(t *withdrawNft.RandomOptionParam) {
-
-			})
-			fmt.Println(fmt.Sprintf("==== test over time=%v err=%s", time.Now().Sub(now), err.Error()))
-		}(res, seed, index)
-
-	}
-	wg.Wait()
-}
 
 //func main() {
 //	//testMintNft(7)
@@ -407,5 +262,5 @@ func testWithdrawNft(repeat int) {
 //}
 
 func main() {
-	ModuleTest.StartTest(1, ModuleTest.TxTypeMatch)
+	ModuleTest.StartTest(1, ModuleTest.TxTypeCreateCollection)
 }

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk"
-	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/util"
 	"github.com/ethereum/go-ethereum/common"
 	"io/ioutil"
 	"math/big"
@@ -41,7 +40,7 @@ func (c *ClientCtx) ListOfferTest(ops ...RandomOption) error {
 	for _, op := range ops {
 		op(&option)
 	}
-	data, err := ioutil.ReadFile(filepath.Join(".", util.DefaultDir, util.Nft2MakeSell))
+	data, err := ioutil.ReadFile(filepath.Join(".", "util.DefaultDir", "util.Nft2MakeSell"))
 	if err != nil {
 		panic(err)
 	}
