@@ -81,14 +81,13 @@ func NewCreateCollectionProcessor(RandomOptions ...RandomOption) *CreateCProcess
 func (t *CreateCProcessor) Process(ctx *Ctx) error {
 	index := ctx.Index
 	nftClient := ctx.Client
-	now := time.Now()
 
 	res := make([]struct {
 		Success bool
 		Err     string
 	}, t.Repeat)
 	var _collectionInfo []collection
-
+	now := time.Now()
 	for idx := 0; idx < t.Repeat; idx++ {
 		t.randomTxInfo(t.RandomOptionNext)
 		resp, err := nftClient.CreateCollection(t.ShortName, t.CategoryId, t.CreatorEarningRate, t.Ops...)
@@ -100,11 +99,14 @@ func (t *CreateCProcessor) Process(ctx *Ctx) error {
 		res[idx].Success = true
 		_collectionInfo = append(_collectionInfo, collection{index, ctx.PrivateKey, resp.Collection.Id})
 	}
-	bytes, err := json.Marshal(_collectionInfo)
-	if err != nil {
-		panic(err)
+	Duration := time.Now().Sub(now)
+	if len(_collectionInfo) != 0 {
+		bytes, err := json.Marshal(_collectionInfo)
+		if err != nil {
+			panic(err)
+		}
+		ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", Collection2Nft, index), bytes, 0644)
 	}
-	ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", Collection2Nft, index), bytes, 0644)
 
 	var failedTx []string
 	for _, r := range res {
@@ -113,10 +115,12 @@ func (t *CreateCProcessor) Process(ctx *Ctx) error {
 		}
 	}
 	if len(failedTx) > 0 {
-		err := fmt.Errorf("CreateCollection failed,index=%d  failNum=%d   time=%v tx: %v", index, len(failedTx), time.Now().Sub(now), failedTx)
+		err := fmt.Errorf("CreateCollection failed,index=%d  failNum=%d   time=%v tx: %v", index, len(failedTx), Duration, failedTx)
+
+		writeInfo(index, fmt.Sprintf("%v", Duration), fmt.Sprintf(" %v", failedTx))
 		return err
 	}
-	fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v", index, t.Repeat, time.Now().Sub(now)))
+	fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v", index, t.Repeat, Duration))
 	return nil
 }
 

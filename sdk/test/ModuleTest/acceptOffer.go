@@ -34,11 +34,10 @@ func NewAcceptOfferProcessor(RandomOptions ...AcceptOfferRandomOption) *AcceptOf
 }
 
 func (t *AcceptOfferProcessor) Process(ctx *Ctx) error {
-	now := time.Now()
 	var offer2accept []OfferInfo
 	data, err := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", OfferDir, ctx.Index))
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("ignore")
 	}
 	err = json.Unmarshal(data, &offer2accept)
 	if err != nil {
@@ -49,11 +48,15 @@ func (t *AcceptOfferProcessor) Process(ctx *Ctx) error {
 		Success bool
 		Err     string
 	}, t.Repeat)
-
+	now := time.Now()
 	for idx := 0; idx < t.Repeat; idx++ {
 		params := offer2accept[idx]
-		assetAmount, _ := big.NewInt(0).SetString(params.AssetAmount, 10)
-		_, err := ctx.Client.AcceptOffer(params.OfferId, false, assetAmount)
+		n := new(big.Int)
+		n, ok := n.SetString(params.AssetAmount, 10)
+		if !ok {
+			return fmt.Errorf("SetString: error params.AssetAmount=%s", params.AssetAmount)
+		}
+		_, err := ctx.Client.AcceptOffer(params.OfferId, false, big.NewInt(100000000000))
 		if err != nil {
 			res[idx].Success = false
 			res[idx].Err = err.Error()
@@ -61,17 +64,20 @@ func (t *AcceptOfferProcessor) Process(ctx *Ctx) error {
 		}
 		res[idx].Success = true
 	}
+	Duration := time.Now().Sub(now)
 	var failedTx []string
 	for _, r := range res {
 		if !r.Success {
 			failedTx = append(failedTx, r.Err)
 		}
 	}
+
 	if len(failedTx) > 0 {
-		err := fmt.Errorf("AcceptOffer failed, failNum=%d,time=%v tx: %v", len(failedTx), time.Now().Sub(now), failedTx)
+		err := fmt.Errorf("AcceptOffer failed, failNum=%d,time=%v tx: %v", len(failedTx), Duration, failedTx)
+		writeInfo(ctx.Index, fmt.Sprintf("%v", Duration), fmt.Sprintf(" %v", failedTx))
 		return err
 	}
-	fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v", ctx.Index, t.Repeat, time.Now().Sub(now)))
+	fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v", ctx.Index, t.Repeat, Duration))
 	return nil
 }
 func (c *AcceptOfferProcessor) End() {

@@ -632,24 +632,38 @@ func TestUploadMediaInBatch(t *testing.T) {
 func TestUploadMediaRepeat(t *testing.T) {
 	path := "/Users/zhangwei/Documents/collection2222/Portrait"
 	files, _ := ioutil.ReadDir(path)
-	for Index := 0; Index < 2; Index++ {
-		var list []string
-		for k := 0; k < 1; k++ {
-			result, err := UploadMedia(path + "/" + files[0].Name())
-			if err == nil {
-				list = append(list, result.PublicId)
-				fmt.Println(result.PublicId)
+
+	for _Index := 536; _Index < 1000; _Index++ {
+		//if _Index == 201 {
+		//	_Index = 378
+		//}
+		//var list []string
+		//for k := 0; k < 1; k++ {
+		result, err := UploadMedia(path + "/" + files[0].Name())
+		if err == nil {
+			//list = append(list, result.PublicId) //["collection/yqq2t6olmwaywvj2yrir"],result.PublicIdA
+			fmt.Println(result.PublicId)
+			bytes, err := json.Marshal([]string{result.PublicId})
+			if err != nil {
+				panic(err)
+			}
+			err = ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", "medias", _Index), bytes, 0644)
+			if err != nil {
+				panic(err)
 			}
 		}
-		bytes, err := json.Marshal(list)
-		if err != nil {
-			panic(err)
-		}
-		err = ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", "medias", Index), bytes, 0644)
-		if err != nil {
-			panic(err)
-		}
+		//}
+		//bytes, err := json.Marshal(list)
+		//if err != nil {
+		//	panic(err)
+		//}
+		//err = ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", "medias", _Index), bytes, 0644)
+		//if err != nil {
+		//	panic(err)
+		//}
+
 	}
+
 }
 
 func TestCreateCollectionInBatch(t *testing.T) {

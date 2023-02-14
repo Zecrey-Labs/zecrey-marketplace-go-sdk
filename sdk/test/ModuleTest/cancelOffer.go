@@ -28,12 +28,10 @@ func NewCancelOfferProcessor(RandomOptions ...CancelOfferRandomOption) *CancelOf
 }
 
 func (t *CancelOfferProcessor) Process(ctx *Ctx) error {
-	now := time.Now()
-
 	var offer2cancel []OfferInfo
 	data, err := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", OfferDir, ctx.Index))
 	if err != nil {
-		panic(err)
+		return err
 	}
 	err = json.Unmarshal(data, &offer2cancel)
 	if err != nil {
@@ -43,7 +41,7 @@ func (t *CancelOfferProcessor) Process(ctx *Ctx) error {
 		Success bool
 		Err     string
 	}, t.Repeat)
-
+	now := time.Now()
 	for idx := 0; idx < t.Repeat; idx++ {
 		res[idx].Success = true
 		params := offer2cancel[idx]
@@ -55,6 +53,7 @@ func (t *CancelOfferProcessor) Process(ctx *Ctx) error {
 		}
 		res[idx].Success = true
 	}
+	Duration := time.Now().Sub(now)
 	var failedTx []string
 	for _, r := range res {
 		if !r.Success {
@@ -62,11 +61,11 @@ func (t *CancelOfferProcessor) Process(ctx *Ctx) error {
 		}
 	}
 	if len(failedTx) > 0 {
-		err := fmt.Errorf("CancelOffer failed, failNum=%d tx: %v", len(failedTx), failedTx)
-		fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v errs=%v", ctx.Index, t.Repeat, time.Now().Sub(now), err))
+		err := fmt.Errorf("CancelOffer failed,index=%d, failNum=%d tx: %v", ctx.Index, len(failedTx), failedTx)
+		writeInfo(ctx.Index, fmt.Sprintf("%v", Duration), fmt.Sprintf(" %v", failedTx))
 		return err
 	}
-	fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v", ctx.Index, t.Repeat, time.Now().Sub(now)))
+	fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v", ctx.Index, t.Repeat, Duration))
 	return nil
 }
 func (c *CancelOfferProcessor) End() {

@@ -74,6 +74,8 @@ func NewMintNftProcessor(RandomOptions ...NftRandomOption) *MintNftProcessor {
 	return r
 }
 
+var MediaIndex int
+
 //Process  to get medias from TestUploadMediaRepeat
 func (c *MintNftProcessor) Process(ctx *Ctx) error {
 	option := NftRandomOptionParam{}
@@ -85,18 +87,27 @@ func (c *MintNftProcessor) Process(ctx *Ctx) error {
 		Success bool
 		Err     string
 	}, c.Repeat)
-	bytes, _ := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/collection2Nft/key%d", ctx.Index))
+	bytes, err := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/collection2Nft/key%d", ctx.Index))
+	if err != nil {
+		return fmt.Errorf("ignore it not have collection")
+	}
 	var _collectionInfo []collection
-	json.Unmarshal(bytes, &_collectionInfo)
+	err = json.Unmarshal(bytes, &_collectionInfo)
+	if err != nil || len(_collectionInfo) == 0 {
+		return fmt.Errorf("ignore it not have collection")
+	}
 
 	CollectionId := _collectionInfo[0].CollectionId
-
-	bytes, _ = ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/medias/key%d", ctx.Index))
+	MediaIndex++
+	bytes, _ = ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/medias/key%d", MediaIndex))
 	var media []string
 	json.Unmarshal(bytes, &media)
 	now := time.Now()
 	var nftinfo []NftInfo
 	for idx := 0; idx < c.Repeat; idx++ {
+		if len(media) == 0 {
+			return fmt.Errorf("index out of range [0] with length 0 key%d", ctx.Index)
+		}
 		c.randomTxInfo(option)
 		resp, err := ctx.Client.MintNft(CollectionId, c.NftUrl, c.Name, c.Description, media[idx],
 			c.Properties, c.Levels, c.Stats)
@@ -110,9 +121,12 @@ func (c *MintNftProcessor) Process(ctx *Ctx) error {
 
 		//fmt.Println(fmt.Sprintf("Index=%d,nftId=%d", ctx.Index, resp.Asset.Id))
 	}
-	bytes, _ = json.Marshal(nftinfo)
-	ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", NftDir, ctx.Index), bytes, 0644)
-	fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v", ctx.Index, c.Repeat, time.Now().Sub(now)))
+	Duration := time.Now().Sub(now)
+	if len(nftinfo) > 0 {
+		bytes, _ = json.Marshal(nftinfo)
+		ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", NftDir, ctx.Index), bytes, 0644)
+
+	}
 
 	var failedTx []string
 	for _, r := range res {
@@ -122,8 +136,11 @@ func (c *MintNftProcessor) Process(ctx *Ctx) error {
 	}
 
 	if len(failedTx) > 0 {
-		return fmt.Errorf("mintnft failed,failNums:%d index=%d time=%v tx: %v", len(failedTx), ctx.Index, time.Now().Sub(now), failedTx)
+		writeInfo(ctx.Index, fmt.Sprintf("%v", Duration), fmt.Sprintf(" %v", failedTx))
+		return fmt.Errorf("mintnft failed,failNums:%d index=%d time=%v tx: %v", len(failedTx), ctx.Index, Duration, failedTx)
 	}
+	fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v", ctx.Index, c.Repeat, Duration))
+
 	return nil
 }
 

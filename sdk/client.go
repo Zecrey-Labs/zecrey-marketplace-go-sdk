@@ -905,6 +905,8 @@ func sdkCancelOfferTxInfo(key KeyManager, tx string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	txInfo.GasFeeAssetId = int64(GlobalAssetId)
+	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	convertedTx := ConvertCancelOfferTxInfo(txInfo)
 	hFunc := mimc.NewMiMC()
 	msgHash, err := legendTxTypes.ComputeCancelOfferMsgHash(convertedTx, hFunc)

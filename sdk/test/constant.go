@@ -6,9 +6,9 @@ const (
 	//nftMarketUrl = "https://test-legend-nft.zecrey.com"
 	//legendUrl    = "https://test-legend-app.zecrey.com"
 	//hasuraUrl      = "https://legend-marketplace.hasura.app/v1/graphql"
-	//hasuraUrl = "https://hasura.zecrey.com/v1/graphql" //test
+	////hasuraUrl = "https://hasura.zecrey.com/v1/graphql" //test
 	//hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
-	//hasuraAdminKey = "zecreyLegendTest@Hasura" //test
+	////hasuraAdminKey = "zecreyLegendTest@Hasura" //test
 
 	nftMarketUrl   = "https://dev-legend-nft.zecrey.com"
 	legendUrl      = "https://dev-legend-app.zecrey.com"

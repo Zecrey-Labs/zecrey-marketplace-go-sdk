@@ -36,9 +36,8 @@ func NewTransferNftProcessor(RandomOptions ...TransferNftRandomOption) *Transfer
 }
 
 func (t *TransferProcessor) Process(ctx *Ctx) error {
-	now := time.Now()
 	option := TransferNftRandomOptionParam{
-		ToAccountName: "sher",
+		ToAccountName: "amber1",
 	}
 	for _, op := range t.RandomOptions {
 		op(&option)
@@ -46,7 +45,7 @@ func (t *TransferProcessor) Process(ctx *Ctx) error {
 	var nftinfo []NftInfo
 	data, err := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", NftDir, ctx.Index))
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("ignore")
 	}
 
 	err = json.Unmarshal(data, &nftinfo)
@@ -57,7 +56,7 @@ func (t *TransferProcessor) Process(ctx *Ctx) error {
 		Success bool
 		Err     string
 	}, t.Repeat)
-
+	now := time.Now()
 	for idx := 0; idx < t.Repeat; idx++ {
 		nftId := nftinfo[idx].NftId
 		_, err := ctx.Client.TransferNft(nftId, option.ToAccountName)
@@ -68,6 +67,7 @@ func (t *TransferProcessor) Process(ctx *Ctx) error {
 		}
 		res[idx].Success = true
 	}
+	Duration := time.Now().Sub(now)
 	var failedTx []string
 	for _, r := range res {
 		if !r.Success {
@@ -75,12 +75,14 @@ func (t *TransferProcessor) Process(ctx *Ctx) error {
 		}
 	}
 	if len(failedTx) > 0 {
-		err := fmt.Errorf("TransferNft failed, failNum=%d,time=%v tx: %v", len(failedTx), time.Now().Sub(now), failedTx)
+		err := fmt.Errorf("TransferNft failed, failNum=%d,time=%v tx: %v", len(failedTx), Duration, failedTx)
+		writeInfo(ctx.Index, fmt.Sprintf("%v", Duration), fmt.Sprintf(" %v", failedTx))
 		return err
 	}
-	fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v", ctx.Index, t.Repeat, time.Now().Sub(now)))
+	fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v", ctx.Index, t.Repeat, Duration))
 	return nil
 }
+
 func (c *TransferProcessor) End() {
 
 }

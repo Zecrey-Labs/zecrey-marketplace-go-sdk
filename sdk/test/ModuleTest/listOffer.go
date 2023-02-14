@@ -44,16 +44,16 @@ func NewlistOfferProcessor(RandomOptions ...ListOfferRandomOption) *ListOfferPro
 
 func (t *ListOfferProcessor) Process(ctx *Ctx) error {
 	option := ListOfferRandomOptionParam{
-		AssetAmountDefault: 1000000,
+		AssetAmountDefault: 10000000000,
 	}
 	for _, op := range t.RandomOptions {
 		op(&option)
 	}
-	now := time.Now()
+
 	var nftinfo []NftInfo
 	data, err := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", NftDir, ctx.Index))
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	err = json.Unmarshal(data, &nftinfo)
@@ -64,23 +64,25 @@ func (t *ListOfferProcessor) Process(ctx *Ctx) error {
 		Success bool
 		Err     string
 	}, t.Repeat)
-
+	now := time.Now()
 	var offer2cancel []OfferInfo
 	for idx := 0; idx < t.Repeat; idx++ {
 		nftId := nftinfo[idx].NftId
 		t.randomTxParams(option)
-		resp, err := ctx.Client.CreateSellOffer(nftId, 0, big.NewInt(t.AssetAmount))
+		resp, err := ctx.Client.CreateSellOffer(nftId, 0, big.NewInt(100000000000))
 		if err != nil {
 			res[idx].Success = false
 			res[idx].Err = err.Error()
 			continue
 		}
 		res[idx].Success = true
-		offer2cancel = append(offer2cancel, OfferInfo{ctx.Index, ctx.PrivateKey, resp.Offer.PaymentAssetAmount, resp.Offer.Id})
+		offer2cancel = append(offer2cancel, OfferInfo{ctx.Index, ctx.PrivateKey, fmt.Sprintf("%d", t.AssetAmount), resp.Offer.Id})
 	}
-
-	bytes, _ := json.Marshal(offer2cancel)
-	ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", OfferDir, ctx.Index), bytes, 0644)
+	if len(offer2cancel) > 0 {
+		bytes, _ := json.Marshal(offer2cancel)
+		ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", OfferDir, ctx.Index+1), bytes, 0644)
+	}
+	Duration := time.Now().Sub(now)
 	var failedTx []string
 	for _, r := range res {
 		if !r.Success {
@@ -88,11 +90,11 @@ func (t *ListOfferProcessor) Process(ctx *Ctx) error {
 		}
 	}
 	if len(failedTx) > 0 {
-		err := fmt.Errorf("ListOffer failed,index=%d,time=%v,failNum=%d tx: %v \n", ctx.Index, time.Now().Sub(now), len(failedTx), failedTx)
-		//fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v errs=%v", ctx.Index, t.Repeat, time.Now().Sub(now), err))
+		err := fmt.Errorf("ListOffer failed,index=%d,time=%v,failNum=%d tx: %v \n", ctx.Index, Duration, len(failedTx), failedTx)
+		writeInfo(ctx.Index, fmt.Sprintf("%v", Duration), fmt.Sprintf(" %v", failedTx))
 		return err
 	}
-	fmt.Println(fmt.Sprintf("ListOffer index=%d,successNum=%d,time=%v", ctx.Index, t.Repeat, time.Now().Sub(now)))
+	fmt.Println(fmt.Sprintf("ListOffer index=%d,successNum=%d,time=%v", ctx.Index, t.Repeat, Duration))
 	return nil
 }
 
@@ -100,7 +102,7 @@ func (t *ListOfferProcessor) randomTxParams(option ListOfferRandomOptionParam) *
 	rand.Seed(time.Now().UnixNano())
 	t.Repeat = option.Repeat
 	if option.RandomAssetAmount {
-		t.AssetAmount = rand.Int63n(1000000000)
+		t.AssetAmount = 1000000000
 	}
 	return t
 }
