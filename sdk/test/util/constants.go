@@ -8,7 +8,3 @@ const (
 	Nft2MakeSell = "nft2MakeSell.json"
 	Nft2Transfer = "nft2Transfer.json"
 )
-
-var (
-	AccountNames = []string{"amber1"}
-)

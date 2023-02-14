@@ -71,6 +71,7 @@ func (c *ClientCtx) MitNftTest(repeat, Index int, ops ...RandomOption) error {
 			res[idx].Err = err.Error()
 			continue
 		}
+		res[idx].Success = true
 		fmt.Println(fmt.Sprintf("Index=%d,nftId=%d", Index, resp.Asset.Id))
 	}
 

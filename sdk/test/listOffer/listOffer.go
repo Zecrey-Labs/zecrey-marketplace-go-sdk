@@ -48,7 +48,6 @@ func (c *ClientCtx) ListOfferTest(ops ...RandomOption) error {
 	var nftList []struct {
 		nftId int64
 	}
-
 	err = json.Unmarshal(data, &nftList)
 	if err != nil {
 		return err

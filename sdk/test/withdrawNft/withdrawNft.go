@@ -6,7 +6,6 @@ import (
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/util"
 	"github.com/ethereum/go-ethereum/common"
-	"go.uber.org/zap"
 	"io/ioutil"
 	"path/filepath"
 	"sync"
@@ -15,9 +14,9 @@ import (
 /*
 一个账号即可搞定
 */
-var (
-	log, _ = zap.NewDevelopment()
-)
+func InitCtx(_client *sdk.Client, _l1Addr common.Address) *ClientCtx {
+	return &ClientCtx{_client, _l1Addr}
+}
 
 type ClientCtx struct {
 	Client *sdk.Client
@@ -29,7 +28,7 @@ type RandomOptionParam struct {
 	ToAccountAddress string
 }
 
-func (c *ClientCtx) withdrawNftTest(ops ...RandomOption) error {
+func (c *ClientCtx) WithdrawNftTest(ops ...RandomOption) error {
 	option := RandomOptionParam{
 		ToAccountAddress: "0x0......",
 	}
@@ -58,26 +57,16 @@ func (c *ClientCtx) withdrawNftTest(ops ...RandomOption) error {
 		err     string
 	}, repeat)
 
-	//offer2Cancel := make([]struct {
-	//	Success bool
-	//	nftId   int64
-	//	err     string
-	//}, repeat)
-
-	for i := 0; i < repeat; i++ {
-		nftId := nftList[i].nftId
-		go func(idx int) {
-			defer wg.Done()
-			res[idx].nftId = nftId
-			_, err := c.Client.WithdrawNft(nftId, option.ToAccountAddress)
-			if err != nil {
-				log.Error("WithdrawNft failed", zap.Error(err))
-				res[idx].Success = false
-				res[idx].err = err.Error()
-				return
-			}
-			res[idx].Success = true
-		}(i)
+	for idx := 0; idx < repeat; idx++ {
+		nftId := nftList[idx].nftId
+		res[idx].nftId = nftId
+		_, err := c.Client.WithdrawNft(nftId, option.ToAccountAddress)
+		if err != nil {
+			res[idx].Success = false
+			res[idx].err = err.Error()
+			continue
+		}
+		res[idx].Success = true
 	}
 
 	wg.Wait()

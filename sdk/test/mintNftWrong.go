@@ -26,7 +26,7 @@ type MintNftTxInfo struct {
 }
 
 var mintNftTestCase = []string{
-	"CollectionId", "Media", "NftUrl", "Description", "CreatorTreasuryRate", "Stats", "Levels", "Properties",
+	"CollectionInfo", "Media", "NftUrl", "Description", "CreatorTreasuryRate", "Stats", "Levels", "Properties",
 }
 
 func mintNftCorrectWrongBatch(index int) {
@@ -67,7 +67,7 @@ func mintNftWrong(index int) {
 		_LevelsByte, err := json.Marshal(txinfo.Levels)
 		_StatsByte, err := json.Marshal(txinfo.Stats)
 		switch testCase {
-		case "CollectionId":
+		case "CollectionInfo":
 			r := rand.Intn(1000000) + 1000000000
 			txinfo.CollectionId = fmt.Sprintf("%d", r)
 		case "Media":

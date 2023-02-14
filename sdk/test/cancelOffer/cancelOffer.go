@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"io/ioutil"
 	"path/filepath"
-	"sync"
 )
 
 /*
@@ -40,31 +39,27 @@ func (c *ClientCtx) CancelOfferTest() error {
 	}
 
 	repeat := len(offerList)
-	wg := sync.WaitGroup{}
-	wg.Add(repeat)
+
 	res := make([]struct {
 		Success bool
 		offerId int64
 		err     string
 	}, repeat)
 
-	for i := 0; i < repeat; i++ {
-		params := offerList[i]
-		go func(idx int) {
-			defer wg.Done()
-			res[idx].offerId = params.offerId
-			_, err := c.Client.CancelOffer(params.offerId)
-			if err != nil {
-				fmt.Println(fmt.Errorf("CancelOffer failed %s", err.Error()))
-				res[idx].Success = false
-				res[idx].err = err.Error()
-				return
-			}
-			res[idx].Success = true
-		}(i)
+	for idx := 0; idx < repeat; idx++ {
+		params := offerList[idx]
+		res[idx].offerId = params.offerId
+		_, err := c.Client.CancelOffer(params.offerId)
+		if err != nil {
+			fmt.Println(fmt.Errorf("CancelOffer failed %s", err.Error()))
+			res[idx].Success = false
+			res[idx].err = err.Error()
+			continue
+		}
+		res[idx].Success = true
+
 	}
 
-	wg.Wait()
 	var failedTx []string
 
 	for _, r := range res {

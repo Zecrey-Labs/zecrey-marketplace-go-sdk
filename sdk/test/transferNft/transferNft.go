@@ -6,7 +6,6 @@ import (
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/util"
 	"github.com/ethereum/go-ethereum/common"
-	"go.uber.org/zap"
 	"io/ioutil"
 	"path/filepath"
 	"sync"
@@ -15,9 +14,9 @@ import (
 /*
 一个账号即可搞定
 */
-var (
-	log, _ = zap.NewDevelopment()
-)
+func InitCtx(_client *sdk.Client, _l1Addr common.Address) *ClientCtx {
+	return &ClientCtx{_client, _l1Addr}
+}
 
 type ClientCtx struct {
 	Client *sdk.Client
@@ -29,7 +28,7 @@ type RandomOptionParam struct {
 	ToAccountName string
 }
 
-func (c *ClientCtx) transferNftTest(ops ...RandomOption) error {
+func (c *ClientCtx) TransferNftTest(ops ...RandomOption) error {
 	option := RandomOptionParam{
 		ToAccountName: "sher",
 	}
@@ -71,7 +70,6 @@ func (c *ClientCtx) transferNftTest(ops ...RandomOption) error {
 			res[idx].nftId = nftId
 			_, err := c.Client.TransferNft(nftId, option.ToAccountName)
 			if err != nil {
-				log.Error("TransferNft failed", zap.Error(err))
 				res[idx].Success = false
 				res[idx].err = err.Error()
 				return
