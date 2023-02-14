@@ -2,13 +2,17 @@ package sdk
 
 import (
 	"bytes"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
 	"github.com/ethereum/go-ethereum/common"
+	ethercrypto "github.com/ethereum/go-ethereum/crypto"
 	vegeta "github.com/tsenart/vegeta/v12/lib"
+	"github.com/zecrey-labs/zecrey-crypto/util/ecdsaHelper"
 	"io/ioutil"
 	"math/big"
+	"math/rand"
 	"net/http"
 	"strings"
 	"testing"
@@ -381,17 +385,23 @@ func TestGetSeedAndL2Pk(t *testing.T) {
 }
 
 func TestRegisterAccountWithPrivateKey(t *testing.T) {
-	accountName := "alice"
-	l1Addr := "0x805e286D05388911cCdB10E3c7b9713415607c72"
-	//seed := "0x7ea589236ac7e6034a40ad31f27a6ea1bbaeb7746ba5e8d3408a3abb480a8688"
-	//l2pk := "22fc6f5d74c8639245462a0af6b5c931bd209c04034b28421a60336635ab85950a3163e68ec29319ca200fac009408369b0a1f75200a118aded920cd240e1358"
-	privateKey := "0xe94a8b4ddd33b2865a89bb764d70a0c3e3276007ece8f114a47a4e9581ec3567"
-	client, err := RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey)
-	if err != nil {
-		t.Fatal(err)
+	for index := 0; index < 10; index++ {
+		accountName := fmt.Sprintf("nftTest%d", rand.Int())
+		privateKey, err := ethercrypto.LoadECDSA(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/keys/%s", fmt.Sprintf("key%d", index)))
+		l1Addr, err := ecdsaHelper.GenerateL1Address(privateKey)
+		fmt.Println(l1Addr)
+		if err != nil {
+			panic(err)
+		}
+		privateKeyString := hex.EncodeToString(ethercrypto.FromECDSA(privateKey))
+		client, err := RegisterAccountWithPrivateKey(accountName, l1Addr, privateKeyString)
+		if err != nil {
+			t.Fatal(err)
+		}
+		accountName, l2pk, seed := client.GetMyInfo()
+		fmt.Println(fmt.Sprintf("registerAccountRet:\naccountName=%s\nl2pk=%s\nseed=%s", accountName, l2pk, seed))
 	}
-	accountName, l2pk, seed := client.GetMyInfo()
-	fmt.Println(fmt.Sprintf("registerAccountRet:\naccountName=%s\nl2pk=%s\nseed=%s", accountName, l2pk, seed))
+
 }
 
 func TestDepositNft(t *testing.T) {
@@ -622,12 +632,22 @@ func TestUploadMediaInBatch(t *testing.T) {
 func TestUploadMediaRepeat(t *testing.T) {
 	path := "/Users/zhangwei/Documents/collection2222/Portrait"
 	files, _ := ioutil.ReadDir(path)
-	var list []string
-	for i := 0; i < 1000; i++ {
-		result, err := UploadMedia(path + "/" + files[0].Name())
-		if err == nil {
-			list = append(list, result.PublicId)
-			fmt.Println(result.PublicId)
+	for Index := 0; Index < 2; Index++ {
+		var list []string
+		for k := 0; k < 1; k++ {
+			result, err := UploadMedia(path + "/" + files[0].Name())
+			if err == nil {
+				list = append(list, result.PublicId)
+				fmt.Println(result.PublicId)
+			}
+		}
+		bytes, err := json.Marshal(list)
+		if err != nil {
+			panic(err)
+		}
+		err = ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", "medias", Index), bytes, 0644)
+		if err != nil {
+			panic(err)
 		}
 	}
 }
@@ -724,7 +744,7 @@ func TestQueryEfficiency_getAccountAssets(t *testing.T) {
 {"query":"query MyQuery @cached {\n  actionGetAccountAssets(account_index: %d) {\n    confirmedAssetIdList\n    pendingAssets {\n      account_name\n      audio_thumb\n      collection_id\n      content_hash\n      created_at\n      creator_earning_rate\n      description\n      expired_at\n      id\n      image_thumb\n      levels\n      media\n      name\n      nft_index\n      properties\n      stats\n      status\n      video_thumb\n    }\n  }\n}\n","variables":{}}
 `, accountIndex)
 	vegetaTest("getAccountAssets", queryStr)
-	TestQueryEfficiency_getAccountCollections(t)
+	//TestQueryEfficiency_getAccountCollections(t)
 }
 func TestQueryEfficiency_getAccountCollections(t *testing.T) {
 	accountIndex := 4
@@ -748,7 +768,7 @@ func TestQueryEfficiency_getAssetByAssetId(t *testing.T) {
 {"query":"query MyQuery @cached {\n  actionGetAssetByAssetId(asset_id: %d) {\n    asset {\n      account_name\n      audio_thumb\n      collection_id\n      content_hash\n      created_at\n      creator_earning_rate\n      description\n      expired_at\n      id\n      image_thumb\n      levels\n      media\n      name\n      nft_index\n      properties\n      stats\n      status\n      video_thumb\n    }\n  }\n}\n","variables":{}}
 `, assetId)
 	vegetaTest("getAssetByAssetId", queryStr)
-	TestQueryEfficiency_getAssetOffers(t)
+	//TestQueryEfficiency_getAssetOffers(t)
 }
 func TestQueryEfficiency_getAssetOffers(t *testing.T) {
 	assetId := 3
@@ -756,7 +776,7 @@ func TestQueryEfficiency_getAssetOffers(t *testing.T) {
 {"query":"query MyQuery @cached {\n  actionGetAssetOffers(asset_id: %d) {\n    confirmedOfferIdList\n    pendingOffers {\n      account_name\n      asset_id\n      created_at\n      direction\n      expired_at\n      id\n      payment_asset_amount\n      payment_asset_id\n      signature\n      status\n    }\n  }\n}","variables":{}}
 `, assetId)
 	vegetaTest("getAssetOffers", queryStr)
-	//TestQueryEfficiency_getCollectionAssets(t)
+	TestQueryEfficiency_getCollectionAssets(t)
 }
 func TestQueryEfficiency_getCollectionAssets(t *testing.T) {
 	collectionId := 4

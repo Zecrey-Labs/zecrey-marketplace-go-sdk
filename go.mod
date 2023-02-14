@@ -6,7 +6,7 @@ require (
 	github.com/consensys/gnark-crypto v0.7.0
 	github.com/ethereum/go-ethereum v1.10.17
 	github.com/tsenart/vegeta/v12 v12.8.4
-	github.com/zecrey-labs/zecrey-crypto v1.0.34
+	github.com/zecrey-labs/zecrey-crypto v1.0.36
 	github.com/zecrey-labs/zecrey-eth-rpc v0.0.16-0.20220901141132-9dc73c6ca518
 	github.com/zecrey-labs/zecrey-legend v1.0.20
 	github.com/zeromicro/go-zero v1.3.3

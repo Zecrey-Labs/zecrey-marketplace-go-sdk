@@ -28,10 +28,10 @@ const (
 
 	nftMarketUrl = "https://test-legend-nft.zecrey.com"
 	legendUrl    = "https://test-legend-app.zecrey.com"
-	//hasuraUrl      = "https://legend-marketplace.hasura.app/v1/graphql"
-	hasuraUrl = "https://hasura.zecrey.com/v1/graphql" //test
-	//hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
-	hasuraAdminKey = "zecreyLegendTest@Hasura" //test
+	hasuraUrl    = "https://legend-marketplace.hasura.app/v1/graphql"
+	//hasuraUrl = "https://hasura.zecrey.com/v1/graphql" //test
+	hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
+	//hasuraAdminKey = "zecreyLegendTest@Hasura" //test
 
 	//nftMarketUrl   = "https://dev-legend-nft.zecrey.com"
 	//legendUrl      = "https://dev-legend-app.zecrey.com"
@@ -65,11 +65,14 @@ type Client struct {
 }
 
 func NewClient(accountName, seed string) (*Client, error) {
-	keyManager, err := NewSeedKeyManager(seed)
+	keyManager, err := NewSeedKeyManager(seed[2:])
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong seed:%s", seed))
 	}
-	l2pk := eddsaHelper.GetEddsaPrivateKey(seed[2:])
+	l2pk, err := eddsaHelper.GetEddsaCompressedPublicKey(seed[2:])
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("wrong GetEddsaCompressedPublicKey :%s", err.Error()))
+	}
 	connEth, err := _rpc.NewClient(chainRpcUrl)
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
@@ -84,7 +87,29 @@ func NewClient(accountName, seed string) (*Client, error) {
 		keyManager:     keyManager,
 	}, nil
 }
-
+func NewClientNoSuffix(accountName, seed string) (*Client, error) {
+	keyManager, err := NewSeedKeyManager(seed[2:])
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("wrong seed:%s", seed))
+	}
+	l2pk, err := eddsaHelper.GetEddsaCompressedPublicKey(seed[2:])
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("wrong GetEddsaCompressedPublicKey :%s", err.Error()))
+	}
+	connEth, err := _rpc.NewClient(chainRpcUrl)
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
+	}
+	return &Client{
+		accountName:    fmt.Sprintf("%s", accountName),
+		seed:           seed,
+		l2pk:           l2pk,
+		nftMarketUrl:   nftMarketUrl,
+		legendUrl:      legendUrl,
+		providerClient: connEth,
+		keyManager:     keyManager,
+	}, nil
+}
 func (c *Client) SetKeyManager(keyManager KeyManager) {
 	c.keyManager = keyManager
 }
@@ -199,7 +224,7 @@ func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, Descrip
 
 	ContentHash, err := calculateContentHash(c.accountName, CollectionId, Name, Properties, Levels, Stats)
 	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?treasury_rate=20&account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionId, Name, ContentHash))
-	//fmt.Println(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionId, Name, ContentHash))
+	//fmt.Println(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionInfo, Name, ContentHash))
 	if err != nil {
 		return nil, err
 	}

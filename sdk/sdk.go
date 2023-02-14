@@ -503,7 +503,10 @@ func newZecreyMarketplaceClientWithSeed(accountName, seed string) (*Client, erro
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong seed:%s", seed))
 	}
-	l2pk := eddsaHelper.GetEddsaPrivateKey(seed[2:])
+	l2pk, err := eddsaHelper.GetEddsaCompressedPublicKey(seed[2:])
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("wrong GetEddsaCompressedPublicKey :%s", err.Error()))
+	}
 	connEth, err := _rpc.NewClient(chainRpcUrl)
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("wrong rpc url:%s", chainRpcUrl))
@@ -551,7 +554,10 @@ func CreateL1Account() (l1Addr, privateKeyStr, l2pk, seed string, err error) {
 		logx.Errorf("[CreateL1Account] GetEddsaSeed err: %s", err)
 		return "", "", "", "", err
 	}
-	l2pk = eddsaHelper.GetEddsaPrivateKey(seed[2:])
+	l2pk, err = eddsaHelper.GetEddsaCompressedPublicKey(seed[2:])
+	if err != nil {
+		return "", "", "", "", fmt.Errorf(fmt.Sprintf("wrong GetEddsaCompressedPublicKey :%s", err.Error()))
+	}
 	return
 }
 
@@ -562,7 +568,10 @@ func GetSeedAndL2Pk(privateKeyStr string) (l2pk, seed string, err error) {
 		logx.Errorf("[CreateL1Account] GetEddsaSeed err: %s", err)
 		return "", "", err
 	}
-	l2pk = eddsaHelper.GetEddsaPrivateKey(seed[2:])
+	l2pk, err = eddsaHelper.GetEddsaCompressedPublicKey(seed[2:])
+	if err != nil {
+		return "", "", fmt.Errorf(fmt.Sprintf("wrong GetEddsaCompressedPublicKey :%s", err.Error()))
+	}
 	return
 }
 
