@@ -1,4 +1,4 @@
-package main
+package singleAccountTest
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func withdrawNftWrongBatch(index int) {
+func WithdrawNftWrongBatch(index int) {
 	for j := 0; j < index*PerMinute; j++ {
 		go withdrawNftAssetIdWrong(index)
 		time.Sleep(time.Millisecond)
@@ -16,14 +16,14 @@ func withdrawNftWrongBatch(index int) {
 }
 
 func withdrawNftAssetIdWrong(index int) {
-	_, err := client.WithdrawNft(rand.Int63n(10000000)+100000000, cfg.Tol1Address)
+	_, err := Client.WithdrawNft(rand.Int63n(10000000)+100000000, Cfg.Tol1Address)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "withdrawNftAssetIdWrong", index, "WithdrawNft", err.Error()))
 	}
 }
 
 func withdrawNftL1AddressWrong(index int) {
-	_, err := client.WithdrawNft(cfg.WithdrawAssetId, cfg.BoundaryStr2)
+	_, err := Client.WithdrawNft(Cfg.WithdrawAssetId, Cfg.BoundaryStr2)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "withdrawNftL1AddressWrong", index, "WithdrawNft", err.Error()))
 	}

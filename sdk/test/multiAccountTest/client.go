@@ -1,4 +1,4 @@
-package ModuleTest
+package multiAccountTest
 
 import (
 	"encoding/csv"
@@ -25,7 +25,7 @@ type Ctx struct {
 }
 
 func GetCtx(index int) *Ctx {
-	privateKey, err := ethercrypto.LoadECDSA(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/test_account_in_dev_count_1000/%s", fmt.Sprintf("key%d", index)))
+	privateKey, err := ethercrypto.LoadECDSA(fmt.Sprintf("%s%s%s", NftTestTmp, KeyDir, fmt.Sprintf("key%d", index)))
 	privateKeyString := hex.EncodeToString(ethercrypto.FromECDSA(privateKey))
 	l1Addr, err := ecdsaHelper.GenerateL1Address(privateKey)
 	l2PublicKey, seed, err := sdk.GetSeedAndL2Pk(privateKeyString)
@@ -35,7 +35,7 @@ func GetCtx(index int) *Ctx {
 	}
 	legendClient := legendSdk.NewZecreyLegendSDK("https://dev-legend-app.zecrey.com")
 	AccountInfo, err := legendClient.GetAccountInfoByPubKey(l2PublicKey)
-	//fmt.Println("privateKeyString:", privateKeyString, "l2PublicKey:", l2PublicKey, "l1Addr", l1Addr, "name:", AccountInfo.AccountName, "Index", index)
+	//fmt.Println("seed:", seed, "privateKeyString:", privateKeyString, "l2PublicKey:", l2PublicKey, "l1Addr", l1Addr, "name:", AccountInfo.AccountName, "Index", index)
 	fmt.Println(AccountInfo.AccountName, "Index", index)
 	if err != nil {
 		//panic(fmt.Sprintf("NewClient failed:%v", err))
@@ -52,7 +52,7 @@ func GetCtx(index int) *Ctx {
 var xlsFile *os.File
 
 func StartTest(accountNum int, testType TxType) {
-	MediaIndex = 653 //mediaIndex
+	MediaIndex = 0 //mediaIndex
 	xlsFile1, _ := initCsv(testType)
 	xlsFile = xlsFile1
 	defer xlsFile.Close()

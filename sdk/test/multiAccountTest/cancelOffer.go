@@ -1,4 +1,4 @@
-package ModuleTest
+package multiAccountTest
 
 import (
 	"encoding/json"
@@ -29,7 +29,7 @@ func NewCancelOfferProcessor(RandomOptions ...CancelOfferRandomOption) *CancelOf
 
 func (t *CancelOfferProcessor) Process(ctx *Ctx) error {
 	var offer2cancel []OfferInfo
-	data, err := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", OfferDir, ctx.Index))
+	data, err := ioutil.ReadFile(fmt.Sprintf("%s%s/key%d", NftTestTmp, OfferDir, ctx.Index))
 	if err != nil {
 		return err
 	}

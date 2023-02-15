@@ -1,4 +1,4 @@
-package main
+package singleAccountTest
 
 import (
 	"encoding/json"
@@ -29,7 +29,7 @@ var mintNftTestCase = []string{
 	"CollectionInfo", "Media", "NftUrl", "Description", "CreatorTreasuryRate", "Stats", "Levels", "Properties",
 }
 
-func mintNftCorrectWrongBatch(index int) {
+func MintNftCorrectWrongBatch(index int) {
 	for j := 0; j < index*PerMinute; j++ {
 		go mintNftWrong(index)
 		time.Sleep(time.Millisecond)
@@ -37,16 +37,16 @@ func mintNftCorrectWrongBatch(index int) {
 }
 func mintNftWrong(index int) {
 	txDefaultinfo := &MintNftTxInfo{
-		CollectionId: fmt.Sprintf("%d", cfg.CollectionId),
-		NftUrl:       cfg.NftUrl,
-		Name:         cfg.NftName,
-		Description:  cfg.Description,
-		Media:        cfg.NftMediaWrong,
-		Properties:   cfg.Properties,
-		Levels:       cfg.Levels,
-		Stats:        cfg.Stats,
+		CollectionId: fmt.Sprintf("%d", Cfg.CollectionId),
+		NftUrl:       Cfg.NftUrl,
+		Name:         Cfg.NftName,
+		Description:  Cfg.Description,
+		Media:        Cfg.NftMediaWrong,
+		Properties:   Cfg.Properties,
+		Levels:       Cfg.Levels,
+		Stats:        Cfg.Stats,
 	}
-	accountName, _, _ := client.GetMyInfo()
+	accountName, _, _ := Client.GetMyInfo()
 	for _, testCase := range mintNftTestCase {
 		txinfo := *txDefaultinfo
 		txinfo.Name = fmt.Sprintf("%s %d ", txinfo.Name, rand.Int())
@@ -71,15 +71,15 @@ func mintNftWrong(index int) {
 			r := rand.Intn(1000000) + 1000000000
 			txinfo.CollectionId = fmt.Sprintf("%d", r)
 		case "Media":
-			txinfo.Media = cfg.BoundaryStr2
+			txinfo.Media = Cfg.BoundaryStr2
 		case "NftUrl":
-			txinfo.NftUrl = cfg.BoundaryStr2
+			txinfo.NftUrl = Cfg.BoundaryStr2
 		case "Description":
 			r := rand.Intn(10)
 			if r < 5 {
-				txinfo.Description = cfg.BoundaryStr2
+				txinfo.Description = Cfg.BoundaryStr2
 			} else {
-				txinfo.Description = cfg.BoundaryStr3
+				txinfo.Description = Cfg.BoundaryStr3
 			}
 		case "Properties":
 			key := fmt.Sprintf("color——%d", rand.Intn(1000000))
@@ -90,13 +90,13 @@ func mintNftWrong(index int) {
 			}
 			r := rand.Intn(10)
 			if r < 5 {
-				assetProperty.Name = cfg.BoundaryStr2
+				assetProperty.Name = Cfg.BoundaryStr2
 			}
 			_Properties := []sdk.Propertie{assetProperty}
 			_PropertiesByte, err = json.Marshal(_Properties)
 			Properties := string(_PropertiesByte)
 			if r >= 5 {
-				Properties = cfg.BoundaryStr3
+				Properties = Cfg.BoundaryStr3
 			}
 			txinfo.Properties = Properties
 		case "Levels":
@@ -107,14 +107,14 @@ func mintNftWrong(index int) {
 			}
 			r := rand.Intn(10)
 			if r < 5 {
-				assetLevel.Name = cfg.BoundaryStr2
+				assetLevel.Name = Cfg.BoundaryStr2
 			}
 			_Levels := []sdk.Level{assetLevel}
 			_LevelsByte, err = json.Marshal(_Levels)
 
 			Levels := string(_LevelsByte)
 			if r >= 5 {
-				Levels = cfg.BoundaryStr3
+				Levels = Cfg.BoundaryStr3
 			}
 			txinfo.Levels = Levels
 		case "Stats":
@@ -125,14 +125,14 @@ func mintNftWrong(index int) {
 			}
 			r := rand.Intn(10)
 			if r < 5 {
-				assetStats.Name = cfg.BoundaryStr2
+				assetStats.Name = Cfg.BoundaryStr2
 			}
 			_Stats := []sdk.Stat{assetStats}
 			_StatsByte, err = json.Marshal(_Stats)
 
 			Stats := string(_StatsByte)
 			if r >= 5 {
-				Stats = cfg.BoundaryStr3
+				Stats = Cfg.BoundaryStr3
 			}
 			txinfo.Stats = Stats
 		case "CreatorTreasuryRate":
@@ -146,7 +146,7 @@ func mintNftWrong(index int) {
 }
 
 func SignAndSendMintNftTx(CollectionId, NftUrl, Name, Description, Media, _PropertiesByte, _LevelsByte, _StatsByte string, txInfo *sdk.MintNftTxInfo) (*sdk.RespCreateAsset, error) {
-	tx, err := constructMintNftTx(client.GetKeyManager(), txInfo)
+	tx, err := constructMintNftTx(Client.GetKeyManager(), txInfo)
 
 	resp, err := http.PostForm(nftMarketUrl+"/api/v1/asset/createAsset",
 		url.Values{

@@ -1,4 +1,4 @@
-package ModuleTest
+package multiAccountTest
 
 import (
 	"encoding/json"
@@ -11,6 +11,7 @@ import (
 
 type ListOfferRandomOptionParam struct {
 	RandomAssetAmount bool
+	UseForAccept      bool
 
 	AssetAmountDefault int64
 	Repeat             int
@@ -19,10 +20,12 @@ type ListOfferRandomOptionParam struct {
 type ListOfferRandomOption func(t *ListOfferRandomOptionParam)
 
 type ListOfferProcessor struct {
+	UseForAccept  bool
 	Repeat        int
 	AssetAmount   int64
 	RandomOptions []ListOfferRandomOption
 }
+
 type OfferInfo struct {
 	AccountKeyIndex int
 	PrivateKey      string
@@ -44,19 +47,19 @@ func NewlistOfferProcessor(RandomOptions ...ListOfferRandomOption) *ListOfferPro
 
 func (t *ListOfferProcessor) Process(ctx *Ctx) error {
 	option := ListOfferRandomOptionParam{
-		AssetAmountDefault: 10000000000,
+		AssetAmountDefault: 100,
 	}
 	for _, op := range t.RandomOptions {
 		op(&option)
 	}
 
-	var nftinfo []NftInfo
-	data, err := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", NftDir, ctx.Index))
+	var nftInfo []NftInfo
+	data, err := ioutil.ReadFile(fmt.Sprintf("%s%s/key%d", NftTestTmp, NftDir, ctx.Index))
 	if err != nil {
-		return err
+		return fmt.Errorf("ignore")
 	}
 
-	err = json.Unmarshal(data, &nftinfo)
+	err = json.Unmarshal(data, &nftInfo)
 	if err != nil {
 		return err
 	}
@@ -67,9 +70,9 @@ func (t *ListOfferProcessor) Process(ctx *Ctx) error {
 	now := time.Now()
 	var offer2cancel []OfferInfo
 	for idx := 0; idx < t.Repeat; idx++ {
-		nftId := nftinfo[idx].NftId
+		nftId := nftInfo[idx].NftId
 		t.randomTxParams(option)
-		resp, err := ctx.Client.CreateSellOffer(nftId, 0, big.NewInt(100000000000))
+		resp, err := ctx.Client.CreateSellOffer(nftId, 0, big.NewInt(0).SetInt64(t.AssetAmount))
 		if err != nil {
 			res[idx].Success = false
 			res[idx].Err = err.Error()
@@ -80,7 +83,11 @@ func (t *ListOfferProcessor) Process(ctx *Ctx) error {
 	}
 	if len(offer2cancel) > 0 {
 		bytes, _ := json.Marshal(offer2cancel)
-		ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", OfferDir, ctx.Index+1), bytes, 0644)
+		if t.UseForAccept {
+			ioutil.WriteFile(fmt.Sprintf("%s%s/key%d", NftTestTmp, OfferDir, ctx.Index+2), bytes, 0644)
+		} else {
+			ioutil.WriteFile(fmt.Sprintf("%s%s/key%d", NftTestTmp, OfferDir, ctx.Index), bytes, 0644)
+		}
 	}
 	Duration := time.Now().Sub(now)
 	var failedTx []string
@@ -101,8 +108,10 @@ func (t *ListOfferProcessor) Process(ctx *Ctx) error {
 func (t *ListOfferProcessor) randomTxParams(option ListOfferRandomOptionParam) *ListOfferProcessor {
 	rand.Seed(time.Now().UnixNano())
 	t.Repeat = option.Repeat
+	t.AssetAmount = option.AssetAmountDefault
+	t.UseForAccept = option.UseForAccept
 	if option.RandomAssetAmount {
-		t.AssetAmount = 1000000000
+		t.AssetAmount = rand.Int63n(100000000000)
 	}
 	return t
 }

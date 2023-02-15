@@ -1,4 +1,4 @@
-package ModuleTest
+package multiAccountTest
 
 import (
 	"encoding/json"
@@ -105,7 +105,7 @@ func (t *CreateCProcessor) Process(ctx *Ctx) error {
 		if err != nil {
 			panic(err)
 		}
-		ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", Collection2Nft, index), bytes, 0644)
+		ioutil.WriteFile(fmt.Sprintf("%s%s/key%d", NftTestTmp, Collection2Nft, index), bytes, 0644)
 	}
 
 	var failedTx []string

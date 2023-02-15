@@ -1,4 +1,4 @@
-package main
+package singleAccountTest
 
 import (
 	"encoding/json"
@@ -26,7 +26,7 @@ var createCollectionTestCase = []string{
 	"ShortName", "Link", "CreatorEarningRate", "CategoryId",
 }
 
-func createCollectionWrongBatch(index int) {
+func CreateCollectionWrongBatch(index int) {
 	for j := 0; j < index*PerMinute; j++ {
 		go createCollectionWrong(index)
 		time.Sleep(time.Millisecond)
@@ -34,7 +34,7 @@ func createCollectionWrongBatch(index int) {
 }
 
 func createCollectionWrong(index int) {
-	accountName, _, _ := client.GetMyInfo()
+	accountName, _, _ := Client.GetMyInfo()
 	txInfoSdk, err := getPreCollectionTx(accountName)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "createCollectionWrong", index, "createCollectionWrong", err.Error()))
@@ -49,41 +49,41 @@ func createCollectionWrong(index int) {
 	//reset
 	txInfo.GasFeeAssetAmount = big.NewInt(MinGasFee)
 	txCaseDefaultInfo := &marketCreateCollectionTxInfo{
-		ShortName:          cfg.ShortName,
-		CategoryId:         cfg.CategoryId,
-		CreatorEarningRate: cfg.CreatorEarningRate,
+		ShortName:          Cfg.ShortName,
+		CategoryId:         Cfg.CategoryId,
+		CreatorEarningRate: Cfg.CreatorEarningRate,
 		ops: []model.CollectionOption{
-			model.WithCollectionUrl(cfg.CollectionUrl),
-			model.WithExternalLink(cfg.ExternalLink),
-			model.WithTwitterLink(cfg.TwitterLink),
-			model.WithInstagramLink(cfg.InstagramLink),
-			model.WithTelegramLink(cfg.TelegramLink),
-			model.WithDiscordLink(cfg.DiscordLink),
-			model.WithLogoImage(cfg.LogoImage),
-			model.WithFeaturedImage(cfg.FeaturedImage),
-			model.WithBannerImage(cfg.BannerImage),
-			model.WithDescription(cfg.Description)},
+			model.WithCollectionUrl(Cfg.CollectionUrl),
+			model.WithExternalLink(Cfg.ExternalLink),
+			model.WithTwitterLink(Cfg.TwitterLink),
+			model.WithInstagramLink(Cfg.InstagramLink),
+			model.WithTelegramLink(Cfg.TelegramLink),
+			model.WithDiscordLink(Cfg.DiscordLink),
+			model.WithLogoImage(Cfg.LogoImage),
+			model.WithFeaturedImage(Cfg.FeaturedImage),
+			model.WithBannerImage(Cfg.BannerImage),
+			model.WithDescription(Cfg.Description)},
 	}
 	for _, testCase := range createCollectionTestCase {
 		txCaseInfo := *txCaseDefaultInfo
 		txCaseInfo.ShortName = fmt.Sprintf("txCaseInfo.ShortName#%d", rand.Int())
 		switch testCase {
 		case "ShortName":
-			txCaseInfo.ShortName = cfg.BoundaryStr
+			txCaseInfo.ShortName = Cfg.BoundaryStr
 		case "Link":
 			l := len(txCaseInfo.ops)
 			r := rand.Intn(l)
 			for _index, do := range []model.CollectionOption{
-				model.WithCollectionUrl(cfg.BoundaryStr2),
-				model.WithExternalLink(cfg.BoundaryStr2),
-				model.WithTwitterLink(cfg.BoundaryStr2),
-				model.WithInstagramLink(cfg.BoundaryStr2),
-				model.WithTelegramLink(cfg.BoundaryStr3),
-				model.WithDiscordLink(cfg.BoundaryStr3),
-				model.WithLogoImage(cfg.BoundaryStr3),
-				model.WithFeaturedImage(cfg.BoundaryStr3),
-				model.WithBannerImage(cfg.BoundaryStr3),
-				model.WithDescription(cfg.BoundaryStr3),
+				model.WithCollectionUrl(Cfg.BoundaryStr2),
+				model.WithExternalLink(Cfg.BoundaryStr2),
+				model.WithTwitterLink(Cfg.BoundaryStr2),
+				model.WithInstagramLink(Cfg.BoundaryStr2),
+				model.WithTelegramLink(Cfg.BoundaryStr3),
+				model.WithDiscordLink(Cfg.BoundaryStr3),
+				model.WithLogoImage(Cfg.BoundaryStr3),
+				model.WithFeaturedImage(Cfg.BoundaryStr3),
+				model.WithBannerImage(Cfg.BoundaryStr3),
+				model.WithDescription(Cfg.BoundaryStr3),
 			} {
 				if _index == r {
 					txCaseInfo.ops = append(txCaseInfo.ops, do)
@@ -98,7 +98,7 @@ func createCollectionWrong(index int) {
 			txCaseInfo.CategoryId = fmt.Sprintf("%d", r)
 		}
 
-		_, err := SignAndSendCreateCollectionTx(client.GetKeyManager(), txInfo, txCaseInfo.ShortName, txCaseInfo.CategoryId, txCaseInfo.CreatorEarningRate, txCaseInfo.ops...)
+		_, err := SignAndSendCreateCollectionTx(Client.GetKeyManager(), txInfo, txCaseInfo.ShortName, txCaseInfo.CategoryId, txCaseInfo.CreatorEarningRate, txCaseInfo.ops...)
 
 		fmt.Println(fmt.Sprintf("Hope to fail ,txType=%s,testType=%s,index=%d,func=%s,err=%s", "CreateCollection", "Wrong", index, "SignAndSendCreateCollectionTx2", err.Error()))
 

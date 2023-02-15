@@ -820,6 +820,7 @@ func sdkAtomicMatchWithTx(key KeyManager, txInfoSdk string, isSell bool, AssetAm
 		return "", err
 	}
 	if !isSell {
+		txInfo.BuyOffer.AssetId = int64(GlobalAssetId)
 		txInfo.BuyOffer.AssetAmount = AssetAmount
 		signedTx, err := constructOfferTx(key, txInfo.BuyOffer)
 		if err != nil {
@@ -830,6 +831,7 @@ func sdkAtomicMatchWithTx(key KeyManager, txInfoSdk string, isSell bool, AssetAm
 
 	}
 	if isSell {
+		txInfo.SellOffer.AssetId = int64(GlobalAssetId)
 		txInfo.SellOffer.AssetAmount = AssetAmount
 		signedTx, err := constructOfferTx(key, txInfo.SellOffer)
 		if err != nil {
@@ -891,6 +893,7 @@ func sdkOfferTxInfo(key KeyManager, txInfoSdk string, AssetAmount *big.Int, isSe
 	if isSell {
 		txInfo.Type = 1
 	}
+	txInfo.AssetId = int64(GlobalAssetId)
 	txInfo.AssetAmount = AssetAmount
 	tx, err := constructOfferTx(key, txInfo)
 	if err != nil {

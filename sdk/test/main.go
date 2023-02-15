@@ -1,46 +1,41 @@
 package main
 
 import (
-	"flag"
+	"fmt"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk"
-	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/ModuleTest"
+	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/multiAccountTest"
+	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/test/singleAccountTest"
 	"github.com/zeromicro/go-zero/core/conf"
 	"time"
 )
 
-var configFile = flag.String("f",
-	"/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/config.yaml", "the config file")
-
-var cfg Config
-var client *sdk.Client
-
 func testAll() {
-	conf.MustLoad(*configFile, &cfg)
-	_client, err := sdk.NewClient(cfg.AccountName, cfg.Seed)
-	client = _client
+	conf.MustLoad(*singleAccountTest.ConfigFile, &singleAccountTest.Cfg)
+	_client, err := sdk.NewClient(singleAccountTest.Cfg.AccountName, singleAccountTest.Cfg.Seed)
+	singleAccountTest.Client = _client
 	if err != nil {
 		panic(err)
 	}
 
 	for i := 1; i < 30; i++ {
-		createCollectionCorrectBatch(i)
-		createCollectionWrongBatch(i)
-		mintNftCorrectOnce(i)
-		mintNftCorrectWrongBatch(i)
-		makeOfferCorrectBatch(i)
-		makeOfferWrongBatch(i)
-		transferNftCorrectOnce(i)
-		transferNftWrongBatch(i)
-		withdrawNftCorrectOnce(i)
-		withdrawNftWrongBatch(i)
-		acceptOfferWrongBatch(i)
+		singleAccountTest.CreateCollectionCorrectBatch(i)
+		singleAccountTest.CreateCollectionWrongBatch(i)
+		singleAccountTest.MintNftCorrectOnce(i)
+		singleAccountTest.MintNftCorrectWrongBatch(i)
+		singleAccountTest.MakeOfferCorrectBatch(i)
+		singleAccountTest.MakeOfferWrongBatch(i)
+		singleAccountTest.TransferNftCorrectOnce(i)
+		singleAccountTest.TransferNftWrongBatch(i)
+		singleAccountTest.WithdrawNftCorrectOnce(i)
+		singleAccountTest.WithdrawNftWrongBatch(i)
+		singleAccountTest.AcceptOfferWrongBatch(i)
 		time.Sleep(60 * time.Second)
 	}
 
 	time.Sleep(10 * time.Minute)
-	panic("==== test over !!!")
+	fmt.Println("==== test over !!!")
 }
 
 func main() {
-	ModuleTest.StartTest(1000, ModuleTest.TxTypeMatch)
+	multiAccountTest.StartTest(1000, multiAccountTest.TxTypeMatch)
 }

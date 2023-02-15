@@ -1,4 +1,4 @@
-package ModuleTest
+package multiAccountTest
 
 import (
 	"encoding/json"
@@ -38,7 +38,7 @@ func (t *WithdrawProcessor) Process(ctx *Ctx) error {
 		op(&option)
 	}
 	var nftinfo []NftInfo
-	data, err := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", NftDir, ctx.Index))
+	data, err := ioutil.ReadFile(fmt.Sprintf("%s%s/key%d", NftTestTmp, NftDir, ctx.Index))
 	if err != nil {
 		return fmt.Errorf("ignore")
 	}

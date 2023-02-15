@@ -1,4 +1,4 @@
-package main
+package singleAccountTest
 
 import (
 	"encoding/json"
@@ -19,7 +19,7 @@ type TransferNftTxInfo struct {
 	AssetId string
 }
 
-func transferNftWrongBatch(index int) {
+func TransferNftWrongBatch(index int) {
 	for j := 0; j < index*PerMinute; j++ {
 		go transferNftWrong(index)
 		time.Sleep(time.Millisecond)
@@ -27,15 +27,15 @@ func transferNftWrongBatch(index int) {
 }
 
 func transferNftWrong(index int) {
-	accountName, _, _ := client.GetMyInfo()
+	accountName, _, _ := Client.GetMyInfo()
 	assetId := fmt.Sprintf("%d", rand.Intn(1000000000000))
-	ToAccountName := cfg.BoundaryStr2
+	ToAccountName := Cfg.BoundaryStr2
 	resultSdk, err := getPreTransferNftTx(accountName, ToAccountName, assetId)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "transferNftWrong", index, "getPreTransferNftTx", err.Error()))
 		return
 	}
-	_, err = SignAndSendTransferNftTx(client.GetKeyManager(), assetId, resultSdk.Transtion)
+	_, err = SignAndSendTransferNftTx(Client.GetKeyManager(), assetId, resultSdk.Transtion)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "transferNftWrong", index, "MintNft", err.Error()))
 	}

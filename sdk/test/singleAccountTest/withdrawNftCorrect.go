@@ -1,11 +1,11 @@
-package main
+package singleAccountTest
 
 import (
 	"fmt"
 	"time"
 )
 
-func withdrawNftCorrectOnce(index int) {
+func WithdrawNftCorrectOnce(index int) {
 	if index == 1 {
 		for j := 0; j < index*PerMinute; j++ {
 			go withdrawNftCorrect(index)
@@ -15,7 +15,7 @@ func withdrawNftCorrectOnce(index int) {
 }
 
 func withdrawNftCorrect(index int) {
-	_, err := client.WithdrawNft(cfg.WithdrawAssetId, cfg.Tol1Address)
+	_, err := Client.WithdrawNft(Cfg.WithdrawAssetId, Cfg.Tol1Address)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("success! txType=%s,index=%d,func=%s,err=%s", "withdrawNftAssetIdWrong", index, "WithdrawNft", err.Error()))
 	} else {

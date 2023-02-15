@@ -1,4 +1,4 @@
-package ModuleTest
+package multiAccountTest
 
 import "github.com/zecrey-labs/zecrey-legend-go-sdk/sdk"
 
@@ -6,7 +6,8 @@ const (
 	OfferDir       = "offerDir"
 	NftDir         = "nftDir" //makeSell transfer withdraw
 	Collection2Nft = "collection2Nft"
-	Media2Nft      = "media2Nft.json"
+	NftTestTmp     = "/Users/user0/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/"
+	KeyDir         = "test_account_in_dev_count_1000/"
 )
 
 type TxType int

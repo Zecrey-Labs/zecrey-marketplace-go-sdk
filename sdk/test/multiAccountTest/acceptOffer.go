@@ -1,4 +1,4 @@
-package ModuleTest
+package multiAccountTest
 
 import (
 	"encoding/json"
@@ -35,7 +35,7 @@ func NewAcceptOfferProcessor(RandomOptions ...AcceptOfferRandomOption) *AcceptOf
 
 func (t *AcceptOfferProcessor) Process(ctx *Ctx) error {
 	var offer2accept []OfferInfo
-	data, err := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", OfferDir, ctx.Index))
+	data, err := ioutil.ReadFile(fmt.Sprintf("%s%s/key%d", NftTestTmp, OfferDir, ctx.Index))
 	if err != nil {
 		return fmt.Errorf("ignore")
 	}
@@ -56,7 +56,9 @@ func (t *AcceptOfferProcessor) Process(ctx *Ctx) error {
 		if !ok {
 			return fmt.Errorf("SetString: error params.AssetAmount=%s", params.AssetAmount)
 		}
-		_, err := ctx.Client.AcceptOffer(params.OfferId, false, big.NewInt(100000000000))
+		fmt.Println("convert ", n.String())
+		fmt.Println("params.AssetAmount ", params.AssetAmount)
+		_, err := ctx.Client.AcceptOffer(params.OfferId, false, n)
 		if err != nil {
 			res[idx].Success = false
 			res[idx].Err = err.Error()

@@ -1,4 +1,4 @@
-package ModuleTest
+package multiAccountTest
 
 type Processor interface {
 	Process(tx *Ctx) error
@@ -23,7 +23,7 @@ func GetProcessors() *Processors {
 	processors.processorsMap[TxTypeWithdrawNft] = NewWithdrawNftProcessor(func(t *WithdrawNftRandomOptionParam) { t.Repeat = 1 })
 	processors.processorsMap[TxTypeListOffer] = NewlistOfferProcessor(func(t *ListOfferRandomOptionParam) {
 		t.Repeat = 1
-		t.RandomAssetAmount = true
+		t.UseForAccept = true
 	})
 	return processors
 }

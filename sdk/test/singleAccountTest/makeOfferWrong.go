@@ -1,4 +1,4 @@
-package main
+package singleAccountTest
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func makeOfferWrongBatch(index int) {
+func MakeOfferWrongBatch(index int) {
 	for j := 0; j < index*PerMinute; j++ {
 		go makeSellOfferSellAssetIdWrong(index)
 		time.Sleep(time.Millisecond)
@@ -20,7 +20,7 @@ func makeOfferWrongBatch(index int) {
 }
 
 func makeSellOfferSellAssetIdWrong(index int) {
-	result, err := client.CreateSellOffer(rand.Int63()+1000000000000, 0, big.NewInt(rand.Int63()))
+	result, err := Client.CreateSellOffer(rand.Int63()+1000000000000, 0, big.NewInt(rand.Int63()))
 	if err != nil {
 		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "makeSellOfferSellAssetIdWrong", index, "CreateSellOffer", err.Error()))
 	}
@@ -32,7 +32,7 @@ func makeSellOfferSellAssetIdWrong(index int) {
 
 // can success
 func makeSellOfferAssetTypeWrong(index int) {
-	_, err := client.CreateSellOffer(cfg.SellAssetId, rand.Int63n(10)+10, big.NewInt(rand.Int63()))
+	_, err := Client.CreateSellOffer(Cfg.SellAssetId, rand.Int63n(10)+10, big.NewInt(rand.Int63()))
 	if err != nil {
 		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "makeSellOfferAssetTypeWrong", index, "CreateSellOffer", err.Error()))
 	}
@@ -40,7 +40,7 @@ func makeSellOfferAssetTypeWrong(index int) {
 
 // can success
 func makeSellOfferAssetAmountWrong(index int) {
-	_, err := client.CreateSellOffer(cfg.SellAssetId, 0, big.NewInt(rand.Int63n(100000000000000)))
+	_, err := Client.CreateSellOffer(Cfg.SellAssetId, 0, big.NewInt(rand.Int63n(100000000000000)))
 	if err != nil {
 		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "makeSellOfferAssetAmountWrong", index, "CreateSellOffer", err.Error()))
 	}

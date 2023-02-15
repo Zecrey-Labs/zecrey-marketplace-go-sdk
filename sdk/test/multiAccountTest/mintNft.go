@@ -1,4 +1,4 @@
-package ModuleTest
+package multiAccountTest
 
 import (
 	"encoding/json"
@@ -46,16 +46,13 @@ type MintNftProcessor struct {
 
 func GetDefaultNftOption() NftRandomOption {
 	r := func(t *NftRandomOptionParam) {
-		var medias []string
-		bytes, _ := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s", Media2Nft))
-		json.Unmarshal(bytes, &medias)
 		t.RandomNftUrl = true
 		t.RandomName = true
 		t.RandomDescription = true
 		t.Properties = "[]"
 		t.Levels = "[]"
 		t.Stats = "[]"
-		t.Medias = medias
+		t.Medias = []string{}
 	}
 	return r
 }
@@ -87,7 +84,7 @@ func (c *MintNftProcessor) Process(ctx *Ctx) error {
 		Success bool
 		Err     string
 	}, c.Repeat)
-	bytes, err := ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/collection2Nft/key%d", ctx.Index))
+	bytes, err := ioutil.ReadFile(fmt.Sprintf("%s%s/key%d", NftTestTmp, Collection2Nft, ctx.Index))
 	if err != nil {
 		return fmt.Errorf("ignore it not have collection")
 	}
@@ -99,7 +96,7 @@ func (c *MintNftProcessor) Process(ctx *Ctx) error {
 
 	CollectionId := _collectionInfo[0].CollectionId
 	MediaIndex++
-	bytes, _ = ioutil.ReadFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/medias/key%d", MediaIndex))
+	bytes, _ = ioutil.ReadFile(fmt.Sprintf("%smedias/key%d", MediaIndex))
 	var media []string
 	json.Unmarshal(bytes, &media)
 	now := time.Now()
@@ -124,7 +121,7 @@ func (c *MintNftProcessor) Process(ctx *Ctx) error {
 	Duration := time.Now().Sub(now)
 	if len(nftinfo) > 0 {
 		bytes, _ = json.Marshal(nftinfo)
-		ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", NftDir, ctx.Index), bytes, 0644)
+		ioutil.WriteFile(fmt.Sprintf("%s%s/key%d", NftTestTmp, NftDir, ctx.Index), bytes, 0644)
 
 	}
 

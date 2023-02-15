@@ -1,4 +1,4 @@
-package main
+package singleAccountTest
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func acceptOfferWrongBatch(index int) {
+func AcceptOfferWrongBatch(index int) {
 	for j := 0; j < index*PerMinute; j++ {
 		go acceptOfferWrong(index)
 		time.Sleep(time.Millisecond)
@@ -15,7 +15,7 @@ func acceptOfferWrongBatch(index int) {
 }
 
 func acceptOfferWrong(index int) {
-	_, err := client.AcceptOffer(rand.Int63n(10000)+1000000, false, big.NewInt(1230000))
+	_, err := Client.AcceptOffer(rand.Int63n(10000)+1000000, false, big.NewInt(1230000))
 	if err != nil {
 		fmt.Println(fmt.Sprintf("fail! txType=%s,index=%d,func=%s,err=%s", "makeOfferCorrect", index, "MintNft", err.Error()))
 		return

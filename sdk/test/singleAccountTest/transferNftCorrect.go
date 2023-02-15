@@ -1,11 +1,11 @@
-package main
+package singleAccountTest
 
 import (
 	"fmt"
 	"time"
 )
 
-func transferNftCorrectOnce(index int) {
+func TransferNftCorrectOnce(index int) {
 	if index == 1 {
 		for j := 0; j < index*PerMinute; j++ {
 			go transferNftCorrect(index)
@@ -15,13 +15,13 @@ func transferNftCorrectOnce(index int) {
 }
 
 func transferNftCorrect(index int) {
-	accountName, _, _ := client.GetMyInfo()
-	resultSdk, err := getPreTransferNftTx(accountName, cfg.ToAccountName, fmt.Sprintf("%d", cfg.TransferAssetId))
+	accountName, _, _ := Client.GetMyInfo()
+	resultSdk, err := getPreTransferNftTx(accountName, Cfg.ToAccountName, fmt.Sprintf("%d", Cfg.TransferAssetId))
 	if err != nil {
 		fmt.Println(fmt.Sprintf("success ! txType=%s,index=%d,func=%s,err=%s", "transferNftCorrect", index, "getPreTransferNftTx", err.Error()))
 		return
 	}
-	_, err = SignAndSendTransferNftTx(client.GetKeyManager(), fmt.Sprintf("%d", cfg.TransferAssetId), resultSdk.Transtion)
+	_, err = SignAndSendTransferNftTx(Client.GetKeyManager(), fmt.Sprintf("%d", Cfg.TransferAssetId), resultSdk.Transtion)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("success ! txType=%s,index=%d,func=%s,err=%s", "transferNftCorrect", index, "MintNft", err.Error()))
 	} else {
