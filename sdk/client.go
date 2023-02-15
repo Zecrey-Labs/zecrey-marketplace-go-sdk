@@ -26,17 +26,17 @@ import (
 const (
 	//nftMarketUrl = "http://localhost:9999"
 
-	//nftMarketUrl = "https://test-legend-nft.zecrey.com"
-	//legendUrl    = "https://test-legend-app.zecrey.com"
-	//hasuraUrl    = "https://legend-marketplace.hasura.app/v1/graphql"
-	////hasuraUrl = "https://hasura.zecrey.com/v1/graphql" //test
-	//hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
+	nftMarketUrl = "https://test-legend-nft.zecrey.com"
+	legendUrl    = "https://test-legend-app.zecrey.com"
+	hasuraUrl    = "https://legend-marketplace.hasura.app/v1/graphql"
+	//hasuraUrl = "https://hasura.zecrey.com/v1/graphql" //test
+	hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
 	//hasuraAdminKey = "zecreyLegendTest@Hasura" //test
 
-	nftMarketUrl   = "https://dev-legend-nft.zecrey.com"
-	legendUrl      = "https://dev-legend-app.zecrey.com"
-	hasuraUrl      = "https://legend-market-dev.hasura.app/v1/graphql"
-	hasuraAdminKey = "kqWAsFWVvn61mFuiuQ5yqJkWpu5VS1B5FGTdFzlVlQJ9fMTr9yNIjOnN3hERC9ex" //dev
+	//nftMarketUrl   = "https://dev-legend-nft.zecrey.com"
+	//legendUrl      = "https://dev-legend-app.zecrey.com"
+	//hasuraUrl      = "https://legend-market-dev.hasura.app/v1/graphql"
+	//hasuraAdminKey = "kqWAsFWVvn61mFuiuQ5yqJkWpu5VS1B5FGTdFzlVlQJ9fMTr9yNIjOnN3hERC9ex" //dev
 
 	//nftMarketUrl   = "https://qa-legend-nft.zecrey.com"
 	//legendUrl      = "https://qa-legend-app.zecrey.com"
@@ -126,23 +126,23 @@ func (c *Client) CreateCollection(ShortName string, CategoryId string, CreatorEa
 
 	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkCreateCollectionTxInfo?account_name=%s", c.accountName))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk http get err:%s", err)
 	}
 	body, err := ioutil.ReadAll(respSdkTx.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk ioutil read err:%s", string(body))
 	}
 	if respSdkTx.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
+		return nil, fmt.Errorf("sdk statusCode %d err:%s", respSdkTx.StatusCode, string(body))
 	}
 
 	resultSdk := &RespetSdktxInfo{}
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json unmarshal 1 err:%s", err)
 	}
 	tx, err := sdkCreateCollectionTxInfo(c.keyManager, resultSdk.Transtion, cp.Description, ShortName)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdkCreateCollectionTxInfo err:%s", err)
 	}
 	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/collection/createCollection",
 		url.Values{
@@ -161,19 +161,19 @@ func (c *Client) CreateCollection(ShortName string, CategoryId string, CreatorEa
 			"payment_asset_ids":    {cp.PaymentAssetIds},
 			"transaction":          {tx}})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("post err:%s", err)
 	}
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("resp.Body err:%s", err)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
+		return nil, fmt.Errorf("status2Code %d err:%s", resp.StatusCode, string(body))
 	}
 	result := &RespCreateCollection{}
 	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json unmarshal 2 err:%s", err)
 	}
 	return result, nil
 }

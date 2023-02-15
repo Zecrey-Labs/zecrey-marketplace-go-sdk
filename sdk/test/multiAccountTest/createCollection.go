@@ -30,9 +30,9 @@ func GetDefaultOption() RandomOption {
 	InstagramLink := "https://www.instagram.com/alice/"
 	TelegramLink := "https://tgstat.com/channel/@alice"
 	DiscordLink := "https://discord.com/api/v10/applications/<aliceid>/commands"
-	LogoImage := "collection/j9w9z4dmcd2beufvkxkp"
-	FeaturedImage := "collection/j9w9z4dmcd2beufvkxkp"
-	BannerImage := "collection/j9w9z4dmcd2beufvkxkp"
+	LogoImage := "collection/lqkqjt3ocky4pgr1l0zx"
+	FeaturedImage := "collection/lqkqjt3ocky4pgr1l0zx"
+	BannerImage := "collection/lqkqjt3ocky4pgr1l0zx"
 	Description := "Description information"
 	r := func(t *RandomOptionParam) {
 		t.CategoryId = 1

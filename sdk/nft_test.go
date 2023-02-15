@@ -338,14 +338,14 @@ func TestCancelOffer(t *testing.T) {
 }
 
 func TestAcceptOffer(t *testing.T) {
-	var offerId int64 = 24507
-	seed := "ee823a72698fd05c70fbdf36ba2ea467d33cf628c94ef030383efcb39581e43f"
-	accountName := "amber1"
+	var offerId int64 = 926
+	seed := "0xe4ab091621febdf3068131913c31fb0de49ab63598c266ebc4070d8395782daa"
+	accountName := "testname1676273145582"
 	c, err := NewClient(accountName, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := c.AcceptOffer(offerId, false, big.NewInt(500000000000000000))
+	result, err := c.AcceptOffer(offerId, false, big.NewInt(100000000000))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -758,7 +758,7 @@ func TestQueryEfficiency_getAccountAssets(t *testing.T) {
 {"query":"query MyQuery @cached {\n  actionGetAccountAssets(account_index: %d) {\n    confirmedAssetIdList\n    pendingAssets {\n      account_name\n      audio_thumb\n      collection_id\n      content_hash\n      created_at\n      creator_earning_rate\n      description\n      expired_at\n      id\n      image_thumb\n      levels\n      media\n      name\n      nft_index\n      properties\n      stats\n      status\n      video_thumb\n    }\n  }\n}\n","variables":{}}
 `, accountIndex)
 	vegetaTest("getAccountAssets", queryStr)
-	//TestQueryEfficiency_getAccountCollections(t)
+	TestQueryEfficiency_getAccountCollections(t)
 }
 func TestQueryEfficiency_getAccountCollections(t *testing.T) {
 	accountIndex := 4
@@ -869,8 +869,10 @@ func TestQueryEfficiency_CollectionActivity(t *testing.T) {
 
 func vegetaTest(apiPath, queryStr string) {
 	var metrics vegeta.Metrics
-	var Freq = 250
-	var duration = 60 * time.Second
+	//var Freq = 250
+	//var duration = 5*60 * time.Second
+	var Freq = 500
+	var duration = 30 * time.Second
 	for i := 1; i < 100; i++ {
 		var data = []byte(queryStr)
 		req, err := http.NewRequest(http.MethodPost, hasuraUrl, bytes.NewReader(data))
