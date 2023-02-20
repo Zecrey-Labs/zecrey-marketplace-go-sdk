@@ -230,22 +230,22 @@ func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, Descrip
 	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?treasury_rate=20&account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionId, Name, ContentHash))
 	//fmt.Println(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionInfo, Name, ContentHash))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk http get err:%s", err)
 	}
 	body, err := ioutil.ReadAll(respSdkTx.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk ioutil read err:%s", string(body))
 	}
 	if respSdkTx.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
+		return nil, fmt.Errorf("sdk statusCode %d err:%s", respSdkTx.StatusCode, string(body))
 	}
 	resultSdk := &RespetSdktxInfo{}
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json unmarshal 1 err:%s", err)
 	}
 	tx, err := sdkMintNftTxInfo(c.keyManager, resultSdk.Transtion)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdkMintNftTxInfo err:%s", err)
 	}
 
 	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/asset/createAsset",
@@ -265,10 +265,10 @@ func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, Descrip
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("resp.Body err:%s", err)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
+		return nil, fmt.Errorf("status2Code %d err:%s", resp.StatusCode, string(body))
 	}
 	result := &RespCreateAsset{}
 	if err := json.Unmarshal(body, &result); err != nil {
@@ -408,23 +408,23 @@ func (c *Client) Withdraw(tol1Address string, assetId, assetAmount int64) (*Resp
 func (c *Client) CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error) {
 	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=true", c.accountName, AssetId, AssetType, AssetAmount))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk get %s", err.Error())
 	}
 	body, err := ioutil.ReadAll(respSdkTx.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk readbody %s", err.Error())
 	}
 	if respSdkTx.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
+		return nil, fmt.Errorf("sdk code%d %s", respSdkTx.StatusCode, string(body))
 	}
 	resultSdk := &RespetSdktxInfo{}
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk resultSdk %s", err.Error())
 	}
 
 	tx, err := sdkOfferTxInfo(c.keyManager, resultSdk.Transtion, AssetAmount, true)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sdk convert  %s", err.Error())
 	}
 	return c.Offer(c.accountName, tx)
 }
@@ -504,19 +504,19 @@ func (c *Client) Offer(accountName string, tx string) (*RespListOffer, error) {
 		},
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(" postform  %s", err.Error())
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(" io read all  %s", err.Error())
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
+		return nil, fmt.Errorf("post code%d %s", resp.StatusCode, string(body))
 	}
 	result := &RespListOffer{}
 	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json unmarshal %s", err.Error())
 	}
 	return result, nil
 }

@@ -62,7 +62,7 @@ func GetCtx(index int) *Ctx {
 var xlsFile *os.File
 
 func StartTest(accountNum int, testType TxType) {
-	MediaIndex = 0 //mediaIndex
+	MediaIndex = 820 //mediaIndex
 	xlsFile1, _ := initCsv(testType)
 	xlsFile = xlsFile1
 	defer xlsFile.Close()
@@ -72,7 +72,8 @@ func StartTest(accountNum int, testType TxType) {
 	Processor := GetProcessors().processorsMap[testType]
 	count := 0
 	for index := 0; index < accountNum; index++ {
-		time.Sleep(5 * time.Millisecond)
+		//time.Sleep(50 * time.Millisecond)
+		time.Sleep(300 * time.Millisecond)
 		go func(_index int) {
 			defer wg.Done()
 			if ctx := GetCtx(_index); ctx != nil {
@@ -91,10 +92,6 @@ func StartTest(accountNum int, testType TxType) {
 }
 
 func writeInfo(index int, Duration string, errStr string) {
-	//fmt.Errorf("CreateCollection failed,index=%d  failNum=%d   time=%v tx: %v", index, len(failedTx), time.Now().Sub(now), failedTx)
-	//xlsFile1, err := initCsv()
-	//xlsFile = xlsFile1
-	//defer xlsFile.Close()
 	wStr := csv.NewWriter(xlsFile)
 
 	s0 := []string{fmt.Sprintf("%d", index), Duration, errStr}
@@ -109,12 +106,12 @@ func initCsv(testType TxType) (*os.File, error) {
 	strTime := time.Now().Format("20060102150405")
 	nameList := map[TxType]string{}
 	nameList[TxTypeCreateCollection] = fmt.Sprintf("CreateCollection_%s.csv", strTime)
-	nameList[TxTypeMint] = fmt.Sprintf("MintNft%s.csv", strTime)
-	nameList[TxTypeTransfer] = fmt.Sprintf("TransferNft%s.csv", strTime)
-	nameList[TxTypeMatch] = fmt.Sprintf("MatchOffer%s.csv", strTime)
-	nameList[TxTypeCancelOffer] = fmt.Sprintf("CancelOffer%s.csv", strTime)
-	nameList[TxTypeWithdrawNft] = fmt.Sprintf("WithdrawNft%s.csv", strTime)
-	nameList[TxTypeListOffer] = fmt.Sprintf("ListOffer%s.csv", strTime)
+	nameList[TxTypeMint] = fmt.Sprintf("MintNft_%s.csv", strTime)
+	nameList[TxTypeTransfer] = fmt.Sprintf("TransferNft_%s.csv", strTime)
+	nameList[TxTypeMatch] = fmt.Sprintf("MatchOffer_%s.csv", strTime)
+	nameList[TxTypeCancelOffer] = fmt.Sprintf("CancelOffer_%s.csv", strTime)
+	nameList[TxTypeWithdrawNft] = fmt.Sprintf("WithdrawNft_%s.csv", strTime)
+	nameList[TxTypeListOffer] = fmt.Sprintf("ListOffer_%s.csv", strTime)
 	filename := fmt.Sprintf("%s.csv", nameList[testType])
 	xlsFile, fErr := os.OpenFile("./"+filename, os.O_RDWR|os.O_CREATE, 0766)
 	if fErr != nil {

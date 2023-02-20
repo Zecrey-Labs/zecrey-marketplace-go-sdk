@@ -71,7 +71,7 @@ func NewMintNftProcessor(RandomOptions ...NftRandomOption) *MintNftProcessor {
 	return r
 }
 
-var MediaIndex int
+var MediaIndex int //from media dir
 
 //Process  to get medias from TestUploadMediaRepeat
 func (c *MintNftProcessor) Process(ctx *Ctx) error {
@@ -96,7 +96,7 @@ func (c *MintNftProcessor) Process(ctx *Ctx) error {
 
 	CollectionId := _collectionInfo[0].CollectionId
 	MediaIndex++
-	bytes, _ = ioutil.ReadFile(fmt.Sprintf("%smedias/key%d", MediaIndex))
+	bytes, _ = ioutil.ReadFile(fmt.Sprintf("%smedias/key%d", NftTestTmp, MediaIndex))
 	var media []string
 	json.Unmarshal(bytes, &media)
 	now := time.Now()
