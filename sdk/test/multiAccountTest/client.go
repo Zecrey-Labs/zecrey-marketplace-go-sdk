@@ -3,12 +3,14 @@ package multiAccountTest
 import (
 	"encoding/csv"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk"
 	"github.com/ethereum/go-ethereum/common"
 	ethercrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/zecrey-labs/zecrey-crypto/util/ecdsaHelper"
 	legendSdk "github.com/zecrey-labs/zecrey-legend-go-sdk/sdk"
+	"io/ioutil"
 	"os"
 
 	"sync"
@@ -40,7 +42,7 @@ func GetCtx(index int) *Ctx {
 	}
 	legendClient := legendSdk.NewZecreyLegendSDK(TestNetwork)
 	AccountInfo, err := legendClient.GetAccountInfoByPubKey(l2PublicKey)
-	//fmt.Println("seed:", seed, "privateKeyString:", privateKeyString, "l2PublicKey:", l2PublicKey, "l1Addr", l1Addr, "name:", AccountInfo.AccountName, "Index", index)
+	//fmt.Println("seed[2:]:", seed[2:], "privateKeyString:", privateKeyString, "l2PublicKey:", l2PublicKey, "l1Addr", l1Addr, "name:", AccountInfo.AccountName, "Index", index)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("legendClient.GetAccountInfoByPubKey failed:%v index:%d", err, index))
 		//panic(fmt.Sprintf("GetSeedAndL2Pk failed:%v", err))
@@ -58,11 +60,45 @@ func GetCtx(index int) *Ctx {
 	}
 	return &Ctx{privateKeyString, client, common.HexToAddress(l1Addr), AccountInfo, seed, index}
 }
+func GetCtxAmber(index int) *Ctx {
+	privateKey, err := ethercrypto.LoadECDSA(fmt.Sprintf("%s%s%s", NftTestTmp, KeyDir, fmt.Sprintf("key%d", index)))
+	if err != nil {
+		fmt.Println(fmt.Sprintf("ethercrypto.LoadECDSA failed:%v index:%d", err, index))
+		return nil
+	}
+	privateKeyString := hex.EncodeToString(ethercrypto.FromECDSA(privateKey))
+	l1Addr, err := ecdsaHelper.GenerateL1Address(privateKey)
+	l2PublicKey, seed, err := sdk.GetSeedAndL2Pk(privateKeyString)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("sdk.GetSeedAndL2Pk failed:%v index:%d", err, index))
+		//panic(fmt.Sprintf("GetSeedAndL2Pk failed:%v", err))
+		return nil
+	}
+	legendClient := legendSdk.NewZecreyLegendSDK(TestNetwork)
+	AccountInfo, err := legendClient.GetAccountInfoByPubKey(l2PublicKey)
+	//fmt.Println("seed[2:]:", seed[2:], "privateKeyString:", privateKeyString, "l2PublicKey:", l2PublicKey, "l1Addr", l1Addr, "name:", AccountInfo.AccountName, "Index", index)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("legendClient.GetAccountInfoByPubKey failed:%v index:%d", err, index))
+		//panic(fmt.Sprintf("GetSeedAndL2Pk failed:%v", err))
+		return nil
+	}
+	fmt.Println(AccountInfo.AccountName, "Index", index)
+	if err != nil {
+		//panic(fmt.Sprintf("NewClient failed:%v", err))
+		return nil
+	}
+	client, err := sdk.NewClientNoSuffix(AccountInfo.AccountName, seed[2:])
+	if err != nil {
+		//panic(err)
+		return nil
+	}
+	return &Ctx{privateKeyString, client, common.HexToAddress(l1Addr), AccountInfo, seed[2:], index}
+}
 
 var xlsFile *os.File
 
 func StartTest(accountNum int, testType TxType) {
-	MediaIndex = 820 //mediaIndex
+	MediaIndex = 251 //mediaIndex
 	xlsFile1, _ := initCsv(testType)
 	xlsFile = xlsFile1
 	defer xlsFile.Close()
@@ -72,8 +108,7 @@ func StartTest(accountNum int, testType TxType) {
 	Processor := GetProcessors().processorsMap[testType]
 	count := 0
 	for index := 0; index < accountNum; index++ {
-		//time.Sleep(50 * time.Millisecond)
-		time.Sleep(300 * time.Millisecond)
+		time.Sleep(5 * time.Millisecond)
 		go func(_index int) {
 			defer wg.Done()
 			if ctx := GetCtx(_index); ctx != nil {
@@ -88,6 +123,11 @@ func StartTest(accountNum int, testType TxType) {
 
 	wg.Wait()
 	Processor.End()
+	bytes, err := json.Marshal(accountNoMoney)
+	if err != nil {
+		panic(err)
+	}
+	ioutil.WriteFile(fmt.Sprintf("/Users/user0/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/noMoney.json"), bytes, 0644)
 	fmt.Println(fmt.Sprintf("==== test over all time=%v\n success=%d", time.Now().Sub(now), count))
 }
 

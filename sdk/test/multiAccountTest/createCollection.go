@@ -6,6 +6,7 @@ import (
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk/model"
 	"io/ioutil"
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -23,6 +24,8 @@ type RandomOptionParam struct {
 
 type RandomOption func(t *RandomOptionParam)
 
+var accountNoMoney []string
+
 func GetDefaultOption() RandomOption {
 	CollectionUrl := "https://res.cloudinary.com/zecrey/image/upload/collection/ahykviwc0suhoyzusb5q.jpg"
 	ExternalLink := "https://weibo.com/alice"
@@ -30,9 +33,12 @@ func GetDefaultOption() RandomOption {
 	InstagramLink := "https://www.instagram.com/alice/"
 	TelegramLink := "https://tgstat.com/channel/@alice"
 	DiscordLink := "https://discord.com/api/v10/applications/<aliceid>/commands"
-	LogoImage := "collection/lqkqjt3ocky4pgr1l0zx"
-	FeaturedImage := "collection/lqkqjt3ocky4pgr1l0zx"
-	BannerImage := "collection/lqkqjt3ocky4pgr1l0zx"
+	//LogoImage := "collection/lqkqjt3ocky4pgr1l0zx"
+	//FeaturedImage := "collection/lqkqjt3ocky4pgr1l0zx"
+	//BannerImage := "collection/lqkqjt3ocky4pgr1l0zx"
+	LogoImage := "collection/qh5lhbqung7e1cky8zzp"
+	FeaturedImage := "collection/qh5lhbqung7e1cky8zzp"
+	BannerImage := "collection/qh5lhbqung7e1cky8zzp"
 	Description := "Description information"
 	r := func(t *RandomOptionParam) {
 		t.CategoryId = 1
@@ -87,19 +93,22 @@ func (t *CreateCProcessor) Process(ctx *Ctx) error {
 		Err     string
 	}, t.Repeat)
 	var _collectionInfo []collection
-	now := time.Now()
+
 	for idx := 0; idx < t.Repeat; idx++ {
 		t.randomTxInfo(t.RandomOptionNext)
+		now := time.Now().UnixMilli()
 		resp, err := nftClient.CreateCollection(t.ShortName, t.CategoryId, t.CreatorEarningRate, t.Ops...)
 		if err != nil {
 			res[idx].Success = false
 			res[idx].Err = err.Error()
 			continue
 		}
+		Duration := time.Now().UnixMilli()
+		fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%vms", index, t.Repeat, Duration-now))
 		res[idx].Success = true
 		_collectionInfo = append(_collectionInfo, collection{index, ctx.PrivateKey, resp.Collection.Id})
 	}
-	Duration := time.Now().Sub(now)
+
 	if len(_collectionInfo) != 0 {
 		bytes, err := json.Marshal(_collectionInfo)
 		if err != nil {
@@ -111,16 +120,18 @@ func (t *CreateCProcessor) Process(ctx *Ctx) error {
 	var failedTx []string
 	for _, r := range res {
 		if !r.Success {
+			if strings.Contains(r.Err, "you don't have enough balance of asset Gas") {
+				accountNoMoney = append(accountNoMoney, ctx.L1Addr.String())
+			}
 			failedTx = append(failedTx, r.Err)
 		}
 	}
 	if len(failedTx) > 0 {
-		err := fmt.Errorf("CreateCollection failed,index=%d  failNum=%d   time=%v tx: %v", index, len(failedTx), Duration, failedTx)
-
-		writeInfo(index, fmt.Sprintf("%v", Duration), fmt.Sprintf(" %v", failedTx))
+		err := fmt.Errorf("CreateCollection failed,index=%d  failNum=%d   time=%v tx: %v", index, len(failedTx), 0, failedTx)
+		writeInfo(index, fmt.Sprintf("%v", 0), fmt.Sprintf(" %v", failedTx))
 		return err
 	}
-	fmt.Println(fmt.Sprintf("index=%d,successNum=%d,time=%v", index, t.Repeat, Duration))
+	fmt.Println(fmt.Sprintf("index=%d,successNum=%d", index, t.Repeat))
 	return nil
 }
 

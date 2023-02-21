@@ -8,6 +8,8 @@ const (
 	Collection2Nft = "collection2Nft"
 	NftTestTmp     = "/Users/user0/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/"
 	KeyDir         = "test_account_in_dev_count_1000/"
+	TestNetwork    = "https://dev-legend-app.zecrey.com"
+	//TestNetwork    ="http://localhost:9999"
 )
 
 type TxType int
