@@ -46,7 +46,7 @@ const (
 	hasuraTimeDeadline = 15 //15s
 	chainRpcUrl        = "https://data-seed-prebsc-1-s1.binance.org:8545"
 	QueryNftUrl        = "https://deep-index.moralis.io"
-	QueryNftUrlKey     = "spuyxedESvV6g7F8RRHfZvUYMeRWcrTbVGUZgvI306q0n14PYi9J3TLrqxPZUdd2"
+	QueryNftUrlKey     = ""
 	DefaultGasLimit    = 5000000
 	NameSuffix         = ".zec"
 	MinGasFee          = 100000000000000 // 0.0001BNB
