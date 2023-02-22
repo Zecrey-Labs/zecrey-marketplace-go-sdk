@@ -492,7 +492,7 @@ func TestGetAccountByAccountName(t *testing.T) {
 }
 
 func TestGetAccountAssetsInfoByAccountName(t *testing.T) {
-	accountName := "amber1"
+	accountName := "user0"
 	accountInfo, err := GetAccountAssetsInfoByAccountName(accountName)
 	if err != nil {
 		t.Fatal(err)
@@ -510,6 +510,15 @@ func TestGetAssetsList(t *testing.T) {
 	fmt.Println(string(data))
 }
 
+func TestGetAddressL1NftList(t *testing.T) {
+	address := "0x09E45d6FcF322c4D93E6aFE7076601FF10BA942E"
+	testNet := "bsc%20testnet"
+	nftList, err := GetAddressL1NftList(address, testNet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(string(nftList))
+}
 func TestGetAccountIndex(t *testing.T) {
 	accountName := "alice"
 	accountInfo, err := GetAccountIndex(accountName)
@@ -631,9 +640,12 @@ func TestUploadMediaInBatch(t *testing.T) {
 
 func TestUploadMediaRepeat(t *testing.T) {
 	path := "/Users/zhangwei/Documents/collection2222/Portrait"
-	files, _ := ioutil.ReadDir(path)
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return
+	}
 
-	for _Index := 536; _Index < 1000; _Index++ {
+	for _Index := 0; _Index < 700; _Index++ {
 		//if _Index == 201 {
 		//	_Index = 378
 		//}
@@ -647,7 +659,7 @@ func TestUploadMediaRepeat(t *testing.T) {
 			if err != nil {
 				panic(err)
 			}
-			err = ioutil.WriteFile(fmt.Sprintf("/Users/zhangwei/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", "medias", _Index), bytes, 0644)
+			err = ioutil.WriteFile(fmt.Sprintf("/Users/user0/work/zecrey-marketplace-go-sdk/sdk/test/.nftTestTmp/%s/key%d", "medias", _Index), bytes, 0644)
 			if err != nil {
 				panic(err)
 			}
@@ -782,7 +794,7 @@ func TestQueryEfficiency_getAssetByAssetId(t *testing.T) {
 {"query":"query MyQuery @cached {\n  actionGetAssetByAssetId(asset_id: %d) {\n    asset {\n      account_name\n      audio_thumb\n      collection_id\n      content_hash\n      created_at\n      creator_earning_rate\n      description\n      expired_at\n      id\n      image_thumb\n      levels\n      media\n      name\n      nft_index\n      properties\n      stats\n      status\n      video_thumb\n    }\n  }\n}\n","variables":{}}
 `, assetId)
 	vegetaTest("getAssetByAssetId", queryStr)
-	//TestQueryEfficiency_getAssetOffers(t)
+	TestQueryEfficiency_getAssetOffers(t)
 }
 func TestQueryEfficiency_getAssetOffers(t *testing.T) {
 	assetId := 3
@@ -871,8 +883,11 @@ func vegetaTest(apiPath, queryStr string) {
 	var metrics vegeta.Metrics
 	//var Freq = 250
 	//var duration = 5*60 * time.Second
-	var Freq = 500
+
+	var Freq = 200
 	var duration = 30 * time.Second
+	//var Freq = 500
+	//var duration = 30 * time.Second
 	for i := 1; i < 100; i++ {
 		var data = []byte(queryStr)
 		req, err := http.NewRequest(http.MethodPost, hasuraUrl, bytes.NewReader(data))

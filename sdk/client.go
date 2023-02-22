@@ -24,14 +24,14 @@ import (
 )
 
 const (
-	//nftMarketUrl = "http://localhost:9999"
+	//nftMarketUrl = "http://localhost:7777"
 
 	nftMarketUrl = "https://test-legend-nft.zecrey.com"
 	legendUrl    = "https://test-legend-app.zecrey.com"
-	hasuraUrl    = "https://legend-marketplace.hasura.app/v1/graphql"
-	//hasuraUrl = "https://hasura.zecrey.com/v1/graphql" //test
-	hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
-	//hasuraAdminKey = "zecreyLegendTest@Hasura" //test
+	//hasuraUrl    = "https://legend-marketplace.hasura.app/v1/graphql"
+	hasuraUrl = "https://hasura.zecrey.com/v1/graphql" //test
+	//hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
+	hasuraAdminKey = "zecreyLegendTest@Hasura" //test
 
 	//nftMarketUrl   = "https://dev-legend-nft.zecrey.com"
 	//legendUrl      = "https://dev-legend-app.zecrey.com"
@@ -45,6 +45,8 @@ const (
 
 	hasuraTimeDeadline = 15 //15s
 	chainRpcUrl        = "https://data-seed-prebsc-1-s1.binance.org:8545"
+	QueryNftUrl        = "https://deep-index.moralis.io"
+	QueryNftUrlKey     = "spuyxedESvV6g7F8RRHfZvUYMeRWcrTbVGUZgvI306q0n14PYi9J3TLrqxPZUdd2"
 	DefaultGasLimit    = 5000000
 	NameSuffix         = ".zec"
 	MinGasFee          = 100000000000000 // 0.0001BNB
@@ -462,7 +464,7 @@ func (c *Client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
 		return nil, err
 	}
 	if respSdkTx.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
+		return nil, fmt.Errorf("sdk status2Code %d err:%s", respSdkTx.StatusCode, string(body))
 	}
 	resultSdk := &RespetSdktxInfo{}
 	if err := json.Unmarshal(body, &resultSdk); err != nil {
@@ -487,7 +489,7 @@ func (c *Client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(string(body))
+		return nil, fmt.Errorf("status2Code %d err:%s", resp.StatusCode, string(body))
 	}
 	result := &RespCancelOffer{}
 	if err := json.Unmarshal(body, &result); err != nil {

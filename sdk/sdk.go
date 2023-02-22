@@ -141,6 +141,21 @@ func GetAssetsList() (*RespGetAssetsList, error) {
 	}
 	return result, nil
 }
+
+func GetAddressL1NftList(address, testNet string) ([]byte, error) {
+	url := fmt.Sprintf("%s/api/v2/%s/nft?chain=%s&format=decimal", QueryNftUrl, address, testNet)
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("X-API-Key", QueryNftUrlKey)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+	return body, nil
+}
 func GetNextNonce(accountIdx int64) (int64, error) {
 	resp, err := http.Get(legendUrl +
 		fmt.Sprintf("/api/v1/tx/getNextNonce?account_index=%d", accountIdx))
@@ -574,7 +589,19 @@ func GetSeedAndL2Pk(privateKeyStr string) (l2pk, seed string, err error) {
 	}
 	return
 }
-
+func GetSeedAndL2PkAmber(privateKeyStr string) (l2pk, seed string, err error) {
+	privECDSA, err := crypto.ToECDSA(common.FromHex(privateKeyStr))
+	seed, err = eddsaHelper.GetEddsaSeed(privECDSA)
+	if err != nil {
+		logx.Errorf("[CreateL1Account] GetEddsaSeed err: %s", err)
+		return "", "", err
+	}
+	l2pk, err = eddsaHelper.GetEddsaCompressedPublicKey(seed[2:])
+	if err != nil {
+		return "", "", fmt.Errorf(fmt.Sprintf("wrong GetEddsaCompressedPublicKey :%s", err.Error()))
+	}
+	return
+}
 func RegisterAccountWithPrivateKey(accountName, l1Addr, privateKey string) (*Client, error) {
 	l2pk, seed, err := GetSeedAndL2Pk(privateKey)
 	if err != nil {
