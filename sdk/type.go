@@ -150,6 +150,25 @@ type Stat struct {
 	MaxValue int64  `json:"maxValue"`
 }
 
+type HasuraPropertie struct {
+	Id    string `json:"id"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type HasuraLevel struct {
+	Id       string `json:"id"`
+	Key      string `json:"key"`
+	Value    int64  `json:"value"`
+	MaxValue int64  `json:"maxValue"`
+}
+
+type HasuraStat struct {
+	Id       string `json:"id"`
+	Key      string `json:"key"`
+	Value    int64  `json:"value"`
+	MaxValue int64  `json:"maxValue"`
+}
 type NftInfo struct {
 	Id                 int64       `json:"id"`
 	AccountName        string      `json:"account_name"`
@@ -337,24 +356,24 @@ type MediaDetail struct {
 }
 
 type HauaraNftInfo struct {
-	Id                 int64       `json:"id"`
-	NftIndex           int64       `json:"nft_index"`
-	CollectionId       int64       `json:"collection_id"`
-	CreatorEarningRate int64       `json:"creator_earning_rate"`
-	Name               string      `json:"name"`
-	Description        string      `json:"description"`
-	Media              MediaDetail `json:"media_detail"`
-	ImageThumb         string      `json:"image_thumb"`
-	VideoThumb         string      `json:"video_thumb"`
-	AudioThumb         string      `json:"audio_thumb"`
-	Status             int64       `json:"status"`
-	ContentHash        string      `json:"content_hash"`
-	NftUrl             string      `json:"nft_url"`
-	ExpiredAt          int64       `json:"expired_at"`
-	CreatedAt          int64       `json:"created_at"`
-	Properties         Propertie   `json:"properties"`
-	Levels             Level       `json:"levels"`
-	Stats              Stat        `json:"stats"`
+	Id                 int64             `json:"id"`
+	NftIndex           int64             `json:"nft_index"`
+	CollectionId       int64             `json:"collection_id"`
+	CreatorEarningRate int64             `json:"creator_earning_rate"`
+	Name               string            `json:"name"`
+	Description        string            `json:"description"`
+	Media              MediaDetail       `json:"media_detail"`
+	ImageThumb         string            `json:"image_thumb"`
+	VideoThumb         string            `json:"video_thumb"`
+	AudioThumb         string            `json:"audio_thumb"`
+	Status             int64             `json:"status"`
+	ContentHash        string            `json:"content_hash"`
+	NftUrl             string            `json:"nft_url"`
+	ExpiredAt          int64             `json:"expired_at"`
+	CreatedAt          string            `json:"created_at"`
+	Properties         []HasuraPropertie `json:"asset_properties"`
+	Levels             []HasuraLevel     `json:"asset_levels"`
+	Stats              []HasuraStat      `json:"asset_stats"`
 }
 
 type HasuraOffer struct {
@@ -389,6 +408,14 @@ type HasuraDataCollectionId struct {
 type RespGetDefaultCollectionId struct {
 	Data *HasuraDataCollectionId `json:"data"`
 }
+
+type HasuraNfts struct {
+	Assets []*HauaraNftInfo `json:"asset"`
+}
+type RespGetNFts struct {
+	Data *HasuraNfts `json:"data"`
+}
+
 type RespGetNftBeingBuy struct {
 	Data *HasuraDataOffer `json:"data"`
 }

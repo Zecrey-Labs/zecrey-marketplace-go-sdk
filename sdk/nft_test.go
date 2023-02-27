@@ -85,6 +85,22 @@ func TestGetDefaultCollection(t *testing.T) {
 	fmt.Println(result)
 }
 
+func TestGetCollectionNftsByIregex(t *testing.T) {
+	result, err := GetCollectionNftsByIregex(6, "Storm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(fmt.Sprintf("%v", result))
+}
+
+func TestGetCollectionAccountNftsByIregex(t *testing.T) {
+	result, err := GetCollectionAccountNftsByIregex(6, "_Day", "Storm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(fmt.Sprintf("%v", result))
+}
+
 func TestGetCollectionsByAccountIndex(t *testing.T) {
 	var accountIndex int64 = 4
 	result, err := GetCollectionsByAccountIndex(accountIndex)

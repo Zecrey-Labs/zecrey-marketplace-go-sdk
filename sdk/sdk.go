@@ -286,6 +286,42 @@ func GetDefaultCollectionId(accountName string) (int64, error) {
 	return result.Data.Collection[0].Id, nil
 }
 
+func GetCollectionNftsByIregex(collectionId int64, iregex string) ([]*HauaraNftInfo, error) {
+	queryStr := fmt.Sprintf(`
+	{"query":"query MyQuery {\n  asset(where: {collection_id: {_eq: \"%d\"}, name: {_iregex: \"%s.+\"}}) {\n    id\n    nft_index\n    collection_id\n    creator_earning_rate\n    name\n    description\n    media_detail {\n      id\n    }\n    image_thumb\n    video_thumb\n    audio_thumb\n    status\n    content_hash\n    nft_url\n    expired_at\n    created_at\n    asset_properties {\n      id\n      key\n      value\n    }\n    asset_levels {\n      id\n      key\n      value\n      max_value\n    }\n    asset_stats {\n      id\n      key\n      value\n      max_value\n    }\n  }\n}\n","variables":{}}
+	`, collectionId, iregex)
+
+	var data = []byte(queryStr)
+	body, err := post2Hasura(data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &RespGetNFts{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result.Data.Assets, nil
+}
+
+func GetCollectionAccountNftsByIregex(collectionId int64, accountName, iregex string) ([]*HauaraNftInfo, error) {
+	queryStr := fmt.Sprintf(`
+	{"query":"query MyQuery {\n  asset(where: {collection_id: {_eq: \"%d\"}, name: {_iregex: \"%s.+\"}}) {\n    id\n    nft_index\n    collection_id\n    creator_earning_rate\n    name\n    description\n    media_detail {\n      id\n    }\n    image_thumb\n    video_thumb\n    audio_thumb\n    status\n    content_hash\n    nft_url\n    expired_at\n    created_at\n    asset_properties {\n      id\n      key\n      value\n    }\n    asset_levels {\n      id\n      key\n      value\n      max_value\n    }\n    asset_stats {\n      id\n      key\n      value\n      max_value\n    }\n  }\n}\n","variables":{}}
+	`, collectionId, fmt.Sprintf("%s%s", iregex, accountName))
+
+	var data = []byte(queryStr)
+	body, err := post2Hasura(data)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &RespGetNFts{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return result.Data.Assets, nil
+}
+
 func GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetSdkAccountCollections, error) {
 	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAccountCollections?account_index=%d", AccountIndex))
 	if err != nil {
