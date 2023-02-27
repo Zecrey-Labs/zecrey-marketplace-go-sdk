@@ -379,6 +379,16 @@ type RespGetListingOffers struct {
 	Data *HasuraDataOffer `json:"data"`
 }
 
+type HasuraCollectionId struct {
+	Id int64 `json:"id"`
+}
+type HasuraDataCollectionId struct {
+	Collection []*HasuraCollectionId `json:"collection"`
+}
+
+type RespGetDefaultCollectionId struct {
+	Data *HasuraDataCollectionId `json:"data"`
+}
 type RespGetNftBeingBuy struct {
 	Data *HasuraDataOffer `json:"data"`
 }

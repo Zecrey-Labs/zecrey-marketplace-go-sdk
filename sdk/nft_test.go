@@ -77,6 +77,13 @@ func TestGetCollectionById(t *testing.T) {
 	}
 	fmt.Println(string(data))
 }
+func TestGetDefaultCollection(t *testing.T) {
+	result, err := GetDefaultCollectionId("amber1.zec")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(result)
+}
 
 func TestGetCollectionsByAccountIndex(t *testing.T) {
 	var accountIndex int64 = 4

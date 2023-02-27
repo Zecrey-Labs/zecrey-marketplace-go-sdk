@@ -268,6 +268,23 @@ func GetCollectionById(collectionId int64) (*RespGetSdkCollectionById, error) {
 	}
 	return result, nil
 }
+func GetDefaultCollectionId(accountName string) (int64, error) {
+	queryStr := fmt.Sprintf(`
+	{"query":"query MyQuery {\n  collection(limit: 1, where: {account: {account_name: {_eq: \"%s\"}}, l2_collection_id: {_eq: \"0\"}}) {\n    id\n  }\n}\n","variables":{}}
+	`, accountName)
+
+	var data = []byte(queryStr)
+	body, err := post2Hasura(data)
+	if err != nil {
+		return 0, err
+	}
+
+	result := &RespGetDefaultCollectionId{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, err
+	}
+	return result.Data.Collection[0].Id, nil
+}
 
 func GetCollectionsByAccountIndex(AccountIndex int64) (*RespGetSdkAccountCollections, error) {
 	resp, err := http.Get(nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAccountCollections?account_index=%d", AccountIndex))
