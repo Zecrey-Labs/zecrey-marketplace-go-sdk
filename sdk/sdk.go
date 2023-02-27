@@ -16,7 +16,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/zecrey-labs/zecrey-crypto/util/ecdsaHelper"
@@ -691,11 +690,18 @@ func bytesToAddress(b []byte) common.Address {
 	return a
 }
 
-func SignMessage(key KeyManager, message string) string {
-	sig, err := key.Sign([]byte(message), mimc.NewMiMC())
+func SignMessage(seed string, message string) (string, error) {
+	signed, err := eddsaHelper.SignMessage(seed, message)
 	if err != nil {
-		panic("failed to sign message, err: " + err.Error())
+		return "", err
 	}
-	signed := hex.EncodeToString(sig[:])
-	return signed
+	return signed, nil
+}
+
+func VerifyMessage(l2publicKey string, eddsaSig, rawMessage string) (bool, error) {
+	b, err := eddsaHelper.VerifySig(l2publicKey, eddsaSig, rawMessage)
+	if err != nil {
+		return false, err
+	}
+	return b, err
 }

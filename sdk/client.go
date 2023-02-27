@@ -188,7 +188,10 @@ func (c *Client) UpdateCollection(Id string, Name string, ops ...model.Collectio
 	CategoryId := "1"
 	timestamp := time.Now().Unix()
 	message := fmt.Sprintf("%dupdate_collection", timestamp)
-	signature := SignMessage(c.keyManager, message)
+	signature, err := SignMessage(c.seed, message)
+	if err != nil {
+		return nil, fmt.Errorf("signMessage err:%v", err)
+	}
 	resp, err := http.PostForm(c.nftMarketUrl+"/api/v1/collection/updateCollection",
 		url.Values{
 			"id":             {Id},

@@ -141,9 +141,9 @@ func TestUpdateCollection(t *testing.T) {
 	InstagramLink := "-"
 	TelegramLink := "-"
 	DiscordLink := "-"
-	LogoImage := "collection/cbenqstwzx5uy9oedjrb"
-	FeaturedImage := "collection/cbenqstwzx5uy9oedjrb"
-	BannerImage := "collection/cbenqstwzx5uy9oedjrb"
+	LogoImage := "collection/szu9exh9hdg9apk2ixon"
+	FeaturedImage := "collection/szu9exh9hdg9apk2ixon"
+	BannerImage := "collection/szu9exh9hdg9apk2ixon"
 
 	var AccountIndex int64 = 2
 	seed := "28e1a3762f....."
@@ -174,6 +174,24 @@ func TestUpdateCollection(t *testing.T) {
 	}
 	data, err = json.Marshal(result)
 	fmt.Println("GetCollectionsByAccountIndex:", string(data))
+}
+
+func TestSignMessage(t *testing.T) {
+	message := "eth"
+	seed := " 28e1a3762f....."
+	c, err := NewClient("amber1", seed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	eddsaSig, err := SignMessage(seed, message)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := VerifyMessage(c.l2pk, eddsaSig, message)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(b)
 }
 
 func TestMintNft(t *testing.T) {
