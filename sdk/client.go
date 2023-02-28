@@ -30,6 +30,7 @@ const (
 	legendUrl    = "https://test-legend-app.zecrey.com"
 	//hasuraUrl    = "https://legend-marketplace.hasura.app/v1/graphql"
 	hasuraUrl = "https://hasura.zecrey.com/v1/graphql" //test
+	//hasuraUrl = "https://zecrey.stellate.sh" //new test
 	//hasuraAdminKey = "j76XNG0u72QWBt4gS167wJlhnFNHSI5A6R1427KGJyMrFWI7s8wOvz1vmA4DsGos" //test
 	hasuraAdminKey = "zecreyLegendTest@Hasura" //test
 
@@ -229,10 +230,9 @@ func (c *Client) UpdateCollection(Id string, Name string, ops ...model.Collectio
 	return result, nil
 }
 
-func (c *Client) MintNft(CollectionId int64, NftUrl string, Name string, Description string, Media string, Properties string, Levels string, Stats string) (*RespCreateAsset, error) {
-
-	ContentHash, err := calculateContentHash(c.accountName, CollectionId, Name, Properties, Levels, Stats)
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?treasury_rate=20&account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionId, Name, ContentHash))
+func (c *Client) MintNft(CollectionId int64, toAccountName, NftUrl string, Name string, Description string, Media string, Properties string, Levels string, Stats string) (*RespCreateAsset, error) {
+	ContentHash, err := calculateContentHash(toAccountName, CollectionId, Name, Properties, Levels, Stats)
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?treasury_rate=20&account_name=%s&to_account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, toAccountName, CollectionId, Name, ContentHash))
 	//fmt.Println(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionInfo, Name, ContentHash))
 	if err != nil {
 		return nil, fmt.Errorf("sdk http get err:%s", err)

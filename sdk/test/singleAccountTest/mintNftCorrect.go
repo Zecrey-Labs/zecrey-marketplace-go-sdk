@@ -20,6 +20,7 @@ func mintNftCorrect(index int) {
 	Description := fmt.Sprintf("nft Description%s%d", Cfg.NftDescription, rand.Int())
 	_, err := Client.MintNft(
 		Cfg.CollectionId,
+		"amber1.zec",
 		Cfg.NftUrl, Name,
 		Description, Cfg.NftMedia,
 		Cfg.Properties, Cfg.Levels, Cfg.Stats)

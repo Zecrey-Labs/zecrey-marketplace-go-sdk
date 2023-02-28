@@ -228,7 +228,7 @@ func TestMintNft(t *testing.T) {
 	NftUrl := "-"
 	Name := fmt.Sprintf("nftName2:%s", accountName)
 	Description := fmt.Sprintf("%s `s nft", accountName)
-	Media := "collection/dz5hwqaszpwtflg0sfz4"
+	Media := "collection/wewnwn6yjk1eevemkvbn"
 	// get content hash
 	var _Properties []Propertie
 	var _Levels []Level
@@ -240,6 +240,7 @@ func TestMintNft(t *testing.T) {
 
 	ret, err := c.MintNft(
 		CollectionId,
+		"gavin6.zec",
 		NftUrl, Name,
 		Description, Media,
 		string(_PropertiesByte), string(_LevelsByte), string(_StatsByte))
@@ -788,7 +789,7 @@ func TestMintNftInBatch(t *testing.T) {
 		_StatsByte, err := json.Marshal(_Stats)
 
 		ret, err := c.MintNft(
-			CollectionId, NftUrl, Name, Description, Media,
+			CollectionId, "amber1.zec", NftUrl, Name, Description, Media,
 			string(_PropertiesByte), string(_LevelsByte), string(_StatsByte))
 		if err != nil {
 			t.Fatal(err)
