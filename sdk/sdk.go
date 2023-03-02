@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	legendSdk "github.com/zecrey-labs/zecrey-legend-go-sdk/sdk"
 	"io"
 	"io/ioutil"
 	"math/big"
@@ -25,6 +26,19 @@ import (
 	zecreyLegendUtil "github.com/zecrey-labs/zecrey-legend/common/util"
 	"github.com/zeromicro/go-zero/core/logx"
 )
+
+func GetAccountInfoBySeed(seed string) (*legendSdk.RespGetAccountInfoByPubKey, error) {
+	l2pk, err := eddsaHelper.GetEddsaCompressedPublicKey(seed)
+	if err != nil {
+		return nil, err
+	}
+	legendClient := legendSdk.NewZecreyLegendSDK(legendUrl)
+	AccountInfo, err := legendClient.GetAccountInfoByPubKey(l2pk)
+	if err != nil {
+		return nil, err
+	}
+	return AccountInfo, nil
+}
 
 func GetAccountL1Address(accountName string) (common.Address, error) {
 	providerClient, err := _rpc.NewClient(chainRpcUrl)
