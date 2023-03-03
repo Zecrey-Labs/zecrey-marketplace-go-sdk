@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	//nftMarketUrl = "http://localhost:7777"
+	//nftMarketUrl = "http://localhost:9999"
 
 	nftMarketUrl = "https://test-legend-nft.zecrey.com"
 	legendUrl    = "https://test-legend-app.zecrey.com"
@@ -58,7 +58,7 @@ const (
 )
 
 var (
-	GlobalAssetId = REYAssetId
+	GlobalAssetId = BNBAssetId
 )
 
 type Client struct {

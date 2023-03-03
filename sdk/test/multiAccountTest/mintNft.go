@@ -106,7 +106,8 @@ func (c *MintNftProcessor) Process(ctx *Ctx) error {
 			return fmt.Errorf("index out of range [0] with length 0 key%d", ctx.Index)
 		}
 		c.randomTxInfo(option)
-		resp, err := ctx.Client.MintNft(CollectionId, "amber1.zec", c.NftUrl, c.Name, c.Description, media[idx],
+		toname, _, _ := ctx.Client.GetMyInfo()
+		resp, err := ctx.Client.MintNft(CollectionId, toname, c.NftUrl, c.Name, c.Description, media[idx],
 			c.Properties, c.Levels, c.Stats)
 		if err != nil {
 			res[idx].Success = false

@@ -10,7 +10,7 @@ import (
 func MakeOfferCorrectBatch(index int) {
 	for j := 0; j < index*PerMinute; j++ {
 		go makeSellOfferCorrect(index)
-		time.Sleep(time.Millisecond)
+		time.Sleep(5 * time.Millisecond)
 		//go makeBuyOfferCorrect(index)
 		//time.Sleep(time.Millisecond)
 	}

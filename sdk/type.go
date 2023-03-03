@@ -320,7 +320,18 @@ type RespGetLayer2BasicInfo struct {
 type RespGetAccountByAccountName struct {
 	Account NftAccountInfo `json:"account"`
 }
-
+type AccountAsset struct {
+	AssetId                  uint32 `json:"asset_id"`
+	Balance                  string `json:"balance"`
+	LpAmount                 string `json:"lp_amount"`
+	OfferCanceledOrFinalized string `json:"offer_canceled_or_finalized"`
+}
+type RespGetAccountInfoByPubKey struct {
+	AccountStatus uint32          `json:"account_status"`
+	AccountName   string          `json:"account_name"`
+	AccountIndex  int64           `json:"account_index"`
+	Assets        []*AccountAsset `json:"assets"`
+}
 type RespGetNextNonce struct {
 	Nonce int64 `json:"nonce"`
 }
