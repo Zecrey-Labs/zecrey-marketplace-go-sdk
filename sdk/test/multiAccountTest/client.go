@@ -48,7 +48,7 @@ func GetCtx(index int) *Ctx {
 		//panic(fmt.Sprintf("GetSeedAndL2Pk failed:%v", err))
 		return nil
 	}
-	fmt.Println(AccountInfo.AccountName, "Index", index)
+	fmt.Println(AccountInfo.AccountName, "Index", index, "AccountInfo", AccountInfo.AccountIndex)
 	if err != nil {
 		//panic(fmt.Sprintf("NewClient failed:%v", err))
 		return nil
@@ -98,7 +98,7 @@ func GetCtxAmber(index int) *Ctx {
 var xlsFile *os.File
 
 func StartTest(accountNum int, testType TxType) {
-	MediaIndex = 251 //mediaIndex
+	MediaIndex = 0 //mediaIndex
 	xlsFile1, _ := initCsv(testType)
 	xlsFile = xlsFile1
 	defer xlsFile.Close()

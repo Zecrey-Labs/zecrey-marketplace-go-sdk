@@ -127,7 +127,7 @@ func (c *Client) CreateCollection(ShortName string, CategoryId string, CreatorEa
 		do.F(cp)
 	}
 
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkCreateCollectionTxInfo?account_name=%s", c.accountName))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getCreateCollectionTxInfo?account_name=%s", c.accountName))
 	if err != nil {
 		return nil, fmt.Errorf("sdk http get err:%s", err)
 	}
@@ -232,8 +232,8 @@ func (c *Client) UpdateCollection(Id string, Name string, ops ...model.Collectio
 
 func (c *Client) MintNft(CollectionId int64, toAccountName, NftUrl string, Name string, Description string, Media string, Properties string, Levels string, Stats string) (*RespCreateAsset, error) {
 	ContentHash, err := calculateContentHash(toAccountName, CollectionId, Name, Properties, Levels, Stats)
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?treasury_rate=20&account_name=%s&to_account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, toAccountName, CollectionId, Name, ContentHash))
-	//fmt.Println(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionInfo, Name, ContentHash))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getMintNftTxInfo?treasury_rate=20&account_name=%s&to_account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, toAccountName, CollectionId, Name, ContentHash))
+	//fmt.Println(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getMintNftTxInfo?account_name=%s&collection_id=%d&name=%s&content_hash=%s", c.accountName, CollectionInfo, Name, ContentHash))
 	if err != nil {
 		return nil, fmt.Errorf("sdk http get err:%s", err)
 	}
@@ -285,7 +285,7 @@ func (c *Client) MintNft(CollectionId int64, toAccountName, NftUrl string, Name 
 func (c *Client) TransferNft(
 	AssetId int64,
 	toAccountName string) (*RespSendTransferNft, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkTransferNftTxInfo?account_name=%s&to_account_name=%s%s&nft_id=%d", c.accountName, toAccountName, NameSuffix, AssetId))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getTransferNftTxInfo?account_name=%s&to_account_name=%s%s&nft_id=%d", c.accountName, toAccountName, NameSuffix, AssetId))
 	if err != nil {
 		return nil, err
 	}
@@ -328,7 +328,7 @@ func (c *Client) TransferNft(
 }
 
 func (c *Client) WithdrawNft(AssetId int64, tol1Address string) (*RespSendWithdrawNft, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkWithdrawNftTxInfo?account_name=%s&nft_id=%d", c.accountName, AssetId))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getWithdrawNftTxInfo?account_name=%s&nft_id=%d", c.accountName, AssetId))
 	if err != nil {
 		return nil, err
 	}
@@ -370,7 +370,7 @@ func (c *Client) WithdrawNft(AssetId int64, tol1Address string) (*RespSendWithdr
 }
 
 func (c *Client) Withdraw(tol1Address string, assetId, assetAmount int64) (*RespSendWithdrawTx, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkWithdrawTxInfo?account_name=%s", c.accountName))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getWithdrawTxInfo?account_name=%s", c.accountName))
 	if err != nil {
 		return nil, err
 	}
@@ -411,7 +411,7 @@ func (c *Client) Withdraw(tol1Address string, assetId, assetAmount int64) (*Resp
 }
 
 func (c *Client) CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=true", c.accountName, AssetId, AssetType, AssetAmount))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=true", c.accountName, AssetId, AssetType, AssetAmount))
 	if err != nil {
 		return nil, fmt.Errorf("sdk get %s", err.Error())
 	}
@@ -435,7 +435,7 @@ func (c *Client) CreateSellOffer(AssetId int64, AssetType int64, AssetAmount *bi
 }
 
 func (c *Client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big.Int) (*RespListOffer, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=false", c.accountName, AssetId, AssetType, AssetAmount))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getOfferTxInfo?account_name=%s&nft_id=%d&money_id=%d&money_amount=%d&is_sell=false", c.accountName, AssetId, AssetType, AssetAmount))
 	if err != nil {
 		return nil, err
 	}
@@ -458,7 +458,7 @@ func (c *Client) CreateBuyOffer(AssetId int64, AssetType int64, AssetAmount *big
 }
 
 func (c *Client) CancelOffer(offerId int64) (*RespCancelOffer, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkCancelOfferTxInfo?account_name=%s&offer_id=%d", c.accountName, offerId))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getCancelOfferTxInfo?account_name=%s&offer_id=%d", c.accountName, offerId))
 	if err != nil {
 		return nil, err
 	}
@@ -527,7 +527,7 @@ func (c *Client) Offer(accountName string, tx string) (*RespListOffer, error) {
 }
 
 func (c *Client) AcceptOffer(offerId int64, isSell bool, assetAmount *big.Int) (*RespAcceptOffer, error) {
-	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getSdkAtomicMatchWithTx?account_name=%s&offer_id=%d&money_id=%d&money_amount=%s&is_sell=%v", c.accountName, offerId, 0, assetAmount.String(), isSell))
+	respSdkTx, err := http.Get(c.nftMarketUrl + fmt.Sprintf("/api/v1/sdk/getAtomicMatchWithTx?account_name=%s&offer_id=%d&money_id=%d&money_amount=%s&is_sell=%v", c.accountName, offerId, 0, assetAmount.String(), isSell))
 	if err != nil {
 		return nil, err
 	}
