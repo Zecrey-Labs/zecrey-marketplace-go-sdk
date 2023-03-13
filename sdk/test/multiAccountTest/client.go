@@ -5,13 +5,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+
 	"github.com/Zecrey-Labs/zecrey-marketplace-go-sdk/sdk"
 	"github.com/ethereum/go-ethereum/common"
 	ethercrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/zecrey-labs/zecrey-crypto/util/ecdsaHelper"
 	legendSdk "github.com/zecrey-labs/zecrey-legend-go-sdk/sdk"
-	"io/ioutil"
-	"os"
 
 	"sync"
 	"time"
@@ -40,7 +41,7 @@ func GetCtx(index int) *Ctx {
 		//panic(fmt.Sprintf("GetSeedAndL2Pk failed:%v", err))
 		return nil
 	}
-	legendClient := legendSdk.NewZecreyLegendSDK(TestNetwork)
+	legendClient := legendSdk.NewZecreyLegendSDKWithEcdsaPrivateKey(TestNetwork, privateKey)
 	AccountInfo, err := legendClient.GetAccountInfoByPubKey(l2PublicKey)
 	//fmt.Println("seed[2:]:", seed[2:], "privateKeyString:", privateKeyString, "l2PublicKey:", l2PublicKey, "l1Addr", l1Addr, "name:", AccountInfo.AccountName, "Index", index)
 	if err != nil {
@@ -74,7 +75,7 @@ func GetCtxAmber(index int) *Ctx {
 		//panic(fmt.Sprintf("GetSeedAndL2Pk failed:%v", err))
 		return nil
 	}
-	legendClient := legendSdk.NewZecreyLegendSDK(TestNetwork)
+	legendClient := legendSdk.NewZecreyLegendSDKWithEcdsaPrivateKey(TestNetwork, privateKey)
 	AccountInfo, err := legendClient.GetAccountInfoByPubKey(l2PublicKey)
 	//fmt.Println("seed[2:]:", seed[2:], "privateKeyString:", privateKeyString, "l2PublicKey:", l2PublicKey, "l1Addr", l1Addr, "name:", AccountInfo.AccountName, "Index", index)
 	if err != nil {

@@ -6,8 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	legendSdk "github.com/zecrey-labs/zecrey-legend-go-sdk/sdk"
 	"io"
 	"io/ioutil"
 	"math/big"
@@ -16,6 +14,9 @@ import (
 	"net/url"
 	"os"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	legendSdk "github.com/zecrey-labs/zecrey-legend-go-sdk/sdk"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -32,7 +33,7 @@ func GetAccountInfoBySeed(seed string) (*legendSdk.RespGetAccountInfoByPubKey, e
 	if err != nil {
 		return nil, err
 	}
-	legendClient := legendSdk.NewZecreyLegendSDK(legendUrl)
+	legendClient := legendSdk.NewZecreyLegendSDKWithSeed(legendUrl, seed)
 	AccountInfo, err := legendClient.GetAccountInfoByPubKey(l2pk)
 	if err != nil {
 		return nil, err
